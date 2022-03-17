@@ -1,0 +1,572 @@
+<!doctype html>
+<html>
+	<head>
+		<title>PONG- Rapport de projet</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<link  href="rapport/css/rapport.css" rel="stylesheet"/>
+		<script>
+			function goTo(id){
+				if(typeof id != 'string')
+					return;
+
+				var top = 0;
+
+				if(id!="top"){
+					top = document.getElementById(id.substring(1)).getBoundingClientRect().top;
+
+					var divId = "div"+id.substring(1);
+					document.getElementById(divId).style.borderLeft = "10px solid #008000";
+					document.getElementById(divId).style.borderRight = "10px solid #008000";
+				}
+
+				var speed = (top-window.scrollY)/20;
+				var end = false;
+
+				var i = setInterval(function(){
+					if(window.scrollY!=top){
+						if( window.scrollY<=0 && speed<0 ){	// TOP
+							scrollTo(0, top);
+							clearInterval(i);
+							end = true;
+							console.log("TOP");
+
+						}else if( (window.innerHeight + window.scrollY)>=document.body.offsetHeight && speed>0 ){ // BOTTOM
+							scrollTo(0, top);
+							clearInterval(i);
+							end = true;
+							console.log("BOTTOM");
+
+						}else if( (window.scrollY+speed>=top && speed>0) || (window.scrollY+speed<=top && speed<0) ){ // TARGET
+							scrollTo(0, top);
+							clearInterval(i);
+							end = true;
+							console.log("TARGET");
+
+						}else{
+							scrollBy(0, speed);
+						}
+
+					}else{
+						clearInterval(i); // NO NEED TO SCROLL
+						end = true;
+						console.log("NONE");
+					}
+
+					if( id!="top" && end){
+						var i1 = setInterval(function(){
+							document.getElementById(divId).style.borderLeft = "8px solid #008000";
+							document.getElementById(divId).style.borderRight = "8px solid #008000";
+							clearInterval(i1);
+						}, 700);
+
+						var i2 = setInterval(function(){
+							document.getElementById(divId).style.borderLeft = "6px solid #008000";
+							document.getElementById(divId).style.borderRight = "6px solid #008000";
+							clearInterval(i2);
+						}, 900);
+
+						var i3 = setInterval(function(){
+							document.getElementById(divId).style.borderLeft = "4px solid #008000";
+							document.getElementById(divId).style.borderRight = "4px solid #008000";
+							clearInterval(i3);
+						}, 1100);
+
+						var i4 = setInterval(function(){
+							document.getElementById(divId).style.borderLeft = "2px solid #008000";
+							document.getElementById(divId).style.borderRight = "2px solid #008000";
+							clearInterval(i4);
+						}, 1300);
+
+						var i5 = setInterval(function(){
+							document.getElementById(divId).style.borderLeft = "none";
+							document.getElementById(divId).style.borderRight = "none";
+							clearInterval(i5);
+						}, 1500);
+					}
+				}, 50)
+			}
+		</script>
+	</head>
+<body>
+	<div class="title" id="title">PONG</div> <br/>
+
+	<hr/>
+	<div class="bloc" style="text-align: center; width: 200px;">
+		<a href="pong3D.html" target="_blank" style="text-decoration: none;"><div class="smallTitle" style="cursor: pointer;">JOUER</div></a>
+	</div>
+
+	<hr/>
+	<div class="bloc">
+		<div class="smallTitle">Sommaire</div>
+		<hr/>
+		<table>
+			<tr>
+				<td>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#1')">Deroulement du jeu</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#3')">Fenêtre 3D</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#5')">Graphisme</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#7')">Point de vue caméra</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#9')">Dynamique</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#11')">Intelligence artificielle de l'adversaire</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#13')">Triche</button></div>
+				</td>
+
+				<td>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#2')">Technologies logicielles</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#4')">Architecture logicielle</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#6')">Dialogues avec l'utilisateur</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#8')">Gestion des collisions</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#10')">Jokers</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#12')">Musique et sons</button></div>
+					<div class="text" ><button class="button" style="width: 300px;" onclick="goTo('#14')">Les petits <b>+</b></button></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<hr id="1"/>
+	<div class="bloc" id="div1">
+		<div class="smallTitle">Deroulement du jeu</div>
+		<hr/>
+
+		<p><div class="text">
+			Le jeu se joue à deux joueur.
+			<br/>
+			Le joueur vert est contrôlé par l'utilisateur avec les touches :
+			<ul style="list-style-type: none;">
+				<li><div class="key">Q</div> : aller à gauche,</li>
+				<li><div class="key">D</div> : aller à droite.</li>
+			</ul>
+			Le joueur rouge peut être contrôlé par un autre utilisateur avec les touches :
+			<ul style="list-style-type: none;">
+				<li><div class="key">&#x2190;</div> : aller à gauche,</li>
+				<li><div class="key">&#x2192;</div> : aller à droite.</li>
+			</ul>
+			Sinon, il peut être contrôlé par une IA.
+		</div></p>
+
+		<p><div class="text">
+			Chaque manche commence avec la balle au dessus de la raquette du joueur ayant perdu la manche précédente ou au dessus de celle du joueur 1 pour la permière manche.
+			<br/>
+			De plus, une mécanique de "<i>casse briques</i>" a été rajoutée avec des briques cassables par la balle.
+		</div></p>
+
+		<p><div class="text">
+			La balle peut rebondir sur les côtés du niveau (sauf en bas, car c'est la zone où l'on marque des points), sur la petite zone centrale et sur la raquette de chacun des joueurs.
+		</div></p>
+
+		<p><div class="text">
+			Derrière la raquette se trouve un ou plusieurs boucliers qui peuvent être détruits si la balle les touche. Ils sont au nombre de <b>3</b> en mode "<i>versus</i>". En mode "<i>histoire</i>", il y en a <b>1</b>, <b>3</b> ou <b>5</b> en fonction du niveau.
+		</div></p>
+
+		<p><div class="text">
+			Les scores des joueurs sont affichés sur les côtés du terrain de jeu, au dessus des leurs avatars.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/ingame.png"><img src="rapport/images/ingame.png" alt="in game screenshot" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Screenshot d'une partie entre deux joueurs.</div>
+		</p>
+
+		<p><div class="text">
+			Une manche se joue normalement en <b>3 points</b>, mais il est possible de changer cette valeur en <b>5 points</b>, <b>10 points</b> ou de jouer en mode "<i>infini</i>", sans limite de points.
+			<br/>
+			Si un joueur est à un point du score maximum (balle de match), son score s'affiche en argenté.
+			<br/>
+			Si il atteint le score maximum, son score s'affiche en doré.
+			<br/>
+			En mode "<i>histoire</i>", le score à atteindre est fixé à <b>3 points</b>.
+		</div></p>
+
+		<p><div class="text">
+			Si la partie est en mode "<i>versus</i>", le joueur peut revenir au menu principal en cas de victoire ou de défaite.
+		</div></p>
+
+		<p><div class="text">
+			Si la partie est en mode "<i>histoire</i>", la victoire entraine un passage au niveau suivant. Si le niveau final a été atteint, le joueur peut revenir au menu principal.
+		</div></p>
+
+		<p><div class="text">
+			Le mode "<i>histoire</i>" comporte trois niveaux, chacun avec un adversaire, une IA et un nombre de boucliers différents. Le niveau actuel est affiché en bas au centre. Quand le joueur atteint le dernier niveau, l'affichage prend une coleur dorée.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/boss.png"><img src="rapport/images/boss.png" alt="ilast boss" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Screenshot du <i>boss</i>.</div>
+		</p>
+	</div>
+
+	<hr id="2"/>
+	<div class="bloc" id="div2">
+		<div class="smallTitle">Technologies logicielles</div>
+		<hr/>
+
+		<p><div class="text">
+		 	Le jeu utilise uniquement des éléments graphiques de bases de <i>Three.js</i>, à l'exception d'une police de caractère pour les textes en 3D.
+		</div></p>
+
+		<p><div class="text">
+		 	Les autres bibliothèques utilisées sont :
+		 	<ul>
+		 		<li><i>dat.gui.js</i> : affichage des options développeur,</li>
+		 		<li><i>howler.js</i> : gestion du son,</li>
+		 		<li><i>KeyboardState.js</i> : gestion des inputs claviers;</li>
+	 		</ul>
+		</div></p>
+
+		<p><div class="text">
+			<i>Howler.js</i> a été ajoutée suite a des problèmes d'utilisation des fonctions de gestion du son de <i>Three.js</i>.
+			<br/>
+			<i>KeyboardState.js</i> permet de gérer très simplement les entrées au clavier.
+		</div></p>
+	</div>
+
+	<hr id="3"/>
+	<div class="bloc" id="div3">
+		<div class="smallTitle">Fenêtre 3D</div>
+		<hr/>
+
+		<p><div class="text">
+			La fenêtre de jeu d'adapte à la hauteur de l'écran. Sur un écran trop étroit, les modèles sur les bords et les scores peuvent être cachés. Un ratio de 16:9 est conseillé.
+			<br/>
+			De même, sur une fenêtre trop petite, les éléments d'interface seront inutilisables.
+		</div></p>
+
+		<p><div class="text">
+			Le mode plein écran est accessible avec la touche <div class="key">F</div>.
+			<br/>
+			La capture d'écran est accessible avec la touche <div class="key">P</div>.
+		</div></p>
+	</div>
+
+	<hr id="4"/>
+	<div class="bloc" id="div4">
+		<div class="smallTitle">Architecture logicielle</div>
+		<hr/>
+
+		<p><div class="text">
+			Le projet est basé sur le <i>BoilerPlate Builder</i>.
+		</div></p>
+
+		<p><div class="text">
+			La librairie <i>Require.js</i> n'a pas été utilisée par manque de temps.
+		</div></p>
+
+		<p><div class="text">
+			Un panneau <i>dat.gui.js</i> permet d'accéder à certains paramètres pour le développeur.
+		</div></p>
+	</div>
+
+	<hr id="5"/>
+	<div class="bloc" id="div5">
+		<div class="smallTitle">Graphisme</div>
+		<hr/>
+
+		<p><div class="text">
+			Le décors est composé de trois éléments principaux :
+			<ul>
+				<li>le terrain de jeu, au centre,</li>
+				<li>les zones pour les avaters des joueurs, sur les côtés.</li>
+			</ul>
+			Au premier plan de la zone centrale se trouve l'espace de jeu, avec les barres, la balle, les boucliers et les briques à casser.
+			<br/>
+			Elle accueille aussi en arrière plan le public.
+			<br/>
+			En arrière plan, la couleur du ciel change de façon cyclique.
+		</div></p>
+
+		<p><div class="text">
+			Le joueur principal est représenté par un bonhomme vert avec des lunettes 3D.
+			<br/>
+			Le joueur de droite peut avoir différentes représentations :
+			<br/>
+			<ul>
+				<li>petit diablotin : niveau 1 du mode "<i>histoire</i>",</li>
+				<li>moyen diablotin : niveau 2 du mode "<i>histoire</i>",</li>
+				<li>diable : niveau 3 (Boss) du mode "<i>histoire</i>",</li>
+				<li>diablotin de taille aléatoire : en mode "<i>versus</i>" contre l'IA,</li>
+				<li>bonhomme avec des lunettes de soleil : en mode "<i>versus</i>" contre un humain.</li>
+			</ul>
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/lvl1.png"><img src="rapport/images/lvl1.png" alt="level 1 imp" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Adversaire du niveau 1.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/lvl2.png"><img src="rapport/images/lvl2.png" alt="level 2 imp" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Adversaire du niveau 2.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/lvl3.png"><img src="rapport/images/lvl3.png" alt="level 3 demon" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Adversaire du niveau 3.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/p2.png"><img src="rapport/images/p2.png" alt="player 2" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Adversaire humain.</div>
+		</p>
+
+		<p><div class="text">
+			Le jeu n'utilise aucune texture, uniquement des matériaux de couleurs et de transparences différentes.
+		</div></p>
+
+		<p><div class="text">
+			L'effet de post processing prévu (<i>glitch</i> quand un joueur humain prend un point) n'a pas été implémenté par manque de temps.
+		</div></p>
+	</div>
+
+	<hr id="6"/>
+	<div class="bloc" id="div6">
+		<div class="smallTitle">Dialogues avec l'utilisateur</div>
+		<hr/>
+
+		<p><div class="text">
+			Quand un point est marqué, le score est mis à jour et une fois la célébration du public terminée, le jeu lance l'échange suivant.
+			<br/>
+			Quand le score maximum est atteint, un menu permet de retourner à  l'accueil.
+		</div></p>
+
+		<p><div class="text">
+			Lors de la fin d'un niveau du mode "<i>histoire</i>", un menu permet de quitter ou de passer au niveau suivant (si possible).
+		</div></p>
+
+		<p><div class="text">
+			Un appui sur la touche <div class="key">H</div> pendant la partie, ou sur le bouton <b>Aide</b> du menu principal affiche un petit écran d'aide qui récapitule les contrôles.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/help.png"><img src="rapport/images/help.png" alt="help menu" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Menu d'aide pendant une partie.</div>
+		</p>
+	</div>
+
+	<hr id="7"/>
+	<div class="bloc" id="div7">
+		<div class="smallTitle">Point de vue caméra</div>
+		<hr/>
+
+		<p><div class="text">
+			Quatre vues de caméra sont disponibles via les touches 1 à 4 :
+			<ul style="list-style-type: none;">
+				<li><div class="key">1</div> caméra joueur 1 : vue centrée sur la barre du joueur 1,</li>
+				<li><div class="key">2</div> caméra joueur 2 : vue centrée sur la barre du joueur 2,</li>
+				<li><div class="key">3</div> caméra balle : vue centrée sur la balle,</li>
+				<li><div class="key">4</div> caméra centrale : vue du terrain par défaut.</li>
+			</ul>
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/view1.png"><img src="rapport/images/view1.png" alt="view 1" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Vue centrée sur le joueur 1.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/view2.png"><img src="rapport/images/view2.png" alt="view 2" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Vue centrée sur le joueur 2.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/view3.png"><img src="rapport/images/view3.png" alt="view 3" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Vue centrée sur la balle.</div>
+		</p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/view4.png"><img src="rapport/images/view4.png" alt="view 4" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Vue générale (par défaut).</div>
+		</p>
+	</div>
+
+	<hr id="8"/>
+	<div class="bloc" id="div8">
+		<div class="smallTitle">Gestion des collisions</div>
+		<hr/>
+
+		<p><div class="text">
+			La gestion des collisions utilise le ray casting pour savoir si la balle rentrera en collision avec un élément en fonction du vecteur vitesse de la balle.
+			<br/>
+			Cette gestion est divisée en trois fonctions :
+			<ul>
+				<li><b>collide</b> : regarde si la balle touchera l'objet donné en paramètre,</li>
+				<li><b>collisionManager</b> : calcule toutes les collisions possibles avec <b>collide</b> et trouve celle qui arrivera en premier, c'est à dire celle dont le point d'impact est le plus proche de la balle,</li>
+				<li><b>bounceManager</b> : gère ce qu'il se passe dans le cas de la collision trouvée par <b>collisionManager</b> (rebond, destruction d'un objet, ...).</li>
+			</ul>
+		</div></p>
+
+		<p><div class="text">
+			Pour consolider le tout, quand une collision est calculée, la balle est déplacée au point d'impact et on calcule si il lui reste de la distance à parcourir pendant la frame courant. Si c'est le cas, on continue de calculer les collisions avec la distance restante.
+			<br/>
+			Ce système permet de gérer plusieurs collisions dans le même cycle, ce qui peut arriver à de grandes vitesses.
+		</div></p>
+
+		<p><div class="text">
+			Cependant, il arrive encore que la balle quitte le terrain dans des cas critiques.
+		</div></p>
+	</div>
+
+	<hr id="9"/>
+	<div class="bloc" id="div9">
+		<div class="smallTitle">Dynamique</div>
+		<hr/>
+
+		<p><div class="text">
+			La vitesse verticale de la balle augmente de 5% de sa vitesse initiale à chaque fois qu'elle touche une barre.
+		</div></p>
+
+		<p><div class="text">
+			La vitesse horizontale de la balle augmente lorsqu'elle touche une raquette allant dans la même direction. Si la raquette va dans la direction opposée, la vitesse de la balle est réduite. Si la raquette est à l'arrêt, la vitesse de la balle reste inchangée.
+			<br/>
+			Ces deux vitesses restent comprises entre une valeur min et une valeur max;
+		</div></p>
+
+		<p><div class="text">
+			Les barres sont soumises à un mécanisme d'inertie. C'est cette valeur qui est modifiée dans les différents niveaux de l'IA. Plus l'IA est faible, plus l'inertie de sa barre est elevée.
+		</div></p>
+	</div>
+
+	<hr id="10"/>
+	<div class="bloc" id="div10">
+		<div class="smallTitle">Jokers</div>
+		<hr/>
+
+		<p><div class="text">
+			Les jokers disponibles sont :
+			<ul>
+				<li><b>soin</b> : soigne un bouclier au joueur,</li>
+				<li><b>dégats</b> : détruit un bouclier adverse,</li>
+				<li><b>soin total</b> : soigne tous les boucliers du joueur,</li>
+				<li><b>destruction</b> : détruit tous les boucliers de l'adversaire.</li>
+			</ul>
+		</div></p>
+
+		<p><div class="text">
+			Ils sont attribués en fonction du nombre de briques cassées.
+			<br/>
+			Quand un joueur touche la balle, on lance un compteur du nombre de briques touchées.
+			<br/>
+			Si un bouclier est détruit pendant ce compteur, on ajoute (ou on retire) deux points au compteur selon que le bouclier appartienne à l'adversaire ou au joueur.
+			<br/>
+			La valeur de ce compteur ne peut pas être négative.
+			<br/>
+			Ce compteur s'arrête quand l'adversaire touche la balle et un bonus est attribué en fonction de sa valeur :
+			<ul>
+				<li>au delà de 15 : choix 50% entre <b>soin total</b> et <b>destruction</b>,</li>
+				<li>entre 10 et 15 : choix 25% entre les 4 bonus,</li>
+				<li>entre 5 et 10 : choix  50% entre <b>soin</b> et <b>dégats</b>,</li>
+				<li>entre 5 et 0 : aucun bonus.</li>
+			</ul>
+		</div></p>
+	</div>
+
+	<hr id="11"/>
+	<div class="bloc" id="div11">
+		<div class="smallTitle">Intelligence artificielle de l'adversaire</div>
+		<hr/>
+
+		<p><div class="text">
+			Si l'adversaire est contrôlé par une IA, il jouera de la façon suivante :
+			<ul>
+				<li>si la balle est du côté de l'autre joueur ou trop haute : se recentrer,</li>
+				<li>si la balle est au dessus de la raquette : ne pas bouger,</li>
+				<li>si la balle est en dehors de la raquette : bouger vers la balle.</li>
+			</ul>
+			De plus, l'inertie de la barre est plus élevées pour les IA faibles.
+		</div></p>
+	</div>
+
+	<hr id="12"/>
+	<div class="bloc" id="div12">
+		<div class="smallTitle">Musique et sons</div>
+		<hr/>
+
+		<p><div class="text">
+			Les effets sonores du <b>Pong</b> d'origine sont joués lors des collisions.
+		</div></p>
+
+		<p><div class="text">
+			Une musique de fond, créée pour le jeu, est lancée à chaque début de partie. Elle se joue en boucle et se coupe à la fin de la partie.
+		</div></p>
+
+		<p><div class="text">
+			Les volumes des sons et de la musique peuvent être changés ou coupés avec les boutons en bas à droite de l'écran.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/sound.png"><img src="rapport/images/sound.png" alt="sound buttons" style="width: 168px;"></a>
+			<div class="text last" style="text-align: center;">Bouttons de contrôle du son et de la musique.</div>
+		</p>
+	</div>
+
+	<hr id="13"/>
+	<div class="bloc" id="div13">
+		<div class="smallTitle">Triche</div>
+		<hr/>
+
+		<p><div class="text">
+			Le mode <b>invincible</b> (<i>god mode</i>) empèche l'adversaire de marquer des points.
+			<br/>
+			Il s'active avec la touche <div class="key">I</div> pour le joueur vert et la combinaison <div class="key" style="padding: 0 2px 0 2px;">shift</div> + <div class="key">I</div> pour le joueur rouge.
+			<br/>
+			Quand ce mode est activé, la barre du joueur prend une couleur dorée.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/godmode.png"><img src="rapport/images/godmode.png" alt="god mode" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Le mode <b>invincible</b>.</div>
+		</p>
+
+		<p><div class="text">
+			Un joker peut être donné à un joueur avec la touche <div class="key">J</div>.
+			<br/>
+			De base, le bonus obtenu sera un petit bonus. La touche <div class="key" style="padding: 0 2px 0 2px;">alt</div> permet d'avoir un grand bonus".
+			<br/>
+			Comme pour le mode <b>invincible</b>, la touche <div class="key" style="padding: 0 2px 0 2px;">shift</div> permet de donner le bonus au joueur "rouge".
+		</div></p>
+
+		<p><div class="text">
+			En mode "<i>histoire</i>", un niveau peut être terminé en appuyant sur la touche <div class="key">K</div>. Le jeu propose alros le menu pour passer au niveau suivant, ou pour terminer la partie.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/cheat.png"><img src="rapport/images/cheat.png" alt="cheat next level" style="width: 600px;"></a>
+			<div class="text last" style="text-align: center;">Passage au niveau suivant.</div>
+		</p>
+	</div>
+
+	<hr id="14"/>
+	<div class="bloc" id="div14">
+		<div class="smallTitle">Les petits <b>+</b></div>
+		<hr/>
+
+		<p><div class="text">
+			Le public réagit à la partie (en regardant la balle et en célébrant les points marqués). Ce public est généré procéduralement (taiile, couleur, position, lunettes, etc...).
+		</div></p>
+
+		<p><div class="text">
+			La balle laisse derrière elle une trainée jaune-orange-rouge.
+		</div></p>
+
+		<p style="text-align: center;">
+			<a target="_blank" href="rapport/images/ingame.png"><img src="rapport/images/smallballs.png" alt="following smaller balls + public" style="width: 150px;"></a>
+			<div class="text last" style="text-align: center;">Le public regarde la balle et la trainée tricolore derrière la balle.</div>
+		</p>
+	</div>
+
+	<hr/>
+	<div class="title" id="title">PONG</div> <br/>
+
+	<hr/>
+	<p><div class="text" style="color: black; text-align: center;">
+		Nans TURBET - 2017
+	</div></p>
+
+	<div class="bottom-right">
+		<button class="button1" onclick="goTo('top');">Remonter en haut</button>
+	</div> 
+
+</body>
+</html>
