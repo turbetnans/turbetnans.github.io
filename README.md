@@ -2,6 +2,6 @@
 <head>
 </head>
 <body>
-	<a href="" style="text-decoration: none;">PONG</a>
+	<a href="/pong/pong3D.html" style="text-decoration: none;">PONG</a>
 </body>
 </html>
