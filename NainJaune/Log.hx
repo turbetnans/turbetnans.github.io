@@ -1,0 +1,1 @@
+class Log { static public inline function log(?msg) { haxe.Log.trace(msg==null?"":msg, null); } }
