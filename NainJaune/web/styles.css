@@ -1,0 +1,151 @@
+/*----------------------------------------------------------------------------*/
+body {
+    margin: 0; padding: 0;
+}
+/*----------------------------------------------------------------------------*/
+.column {
+    float: left;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/*----------------------------------------------------------------------------*/
+#output p {
+    margin: 10px 0px 10px 0px;
+}
+#output p:first-child {
+    margin-top: 0px;
+}
+#output p:last-child  {
+    padding-bottom: 20px;
+    margin-bottom: 0px;
+}
+
+/*----------------------------------------------------------------------------*/
+button.card {
+    width: 3em;
+    height: 2em;
+    color: black;
+}
+button.card.sweep {
+    width: 5em;
+    height: 2em;
+}
+button.card.red {
+    background-color: #bf7f7f;
+    border-color: #bf7f7f;
+    color: white;
+}
+button.card.black {
+    background-color: #7f7f7f;
+    border-color: #7f7f7f;
+    color: white;
+}
+button.card:disabled {
+    color: black;
+    background-color: #dfdfdf;
+    border-color: #bfbfbf;
+}
+button.sweep:disabled {
+    background-color: #dfdfdf;
+}
+button.card.red:disabled {
+    color: #bf7f7f;
+    border-color: #bf7f7f;
+}
+button.card.black:disabled {
+    color: #7f7f7f;
+    border-color: #7f7f7f;
+}
+
+/*----------------------------------------------------------------------------*/
+button.player {
+    min-width: 2em;
+    height: 2em;
+    border-radius: 1em;
+    padding-left: .5em;
+    padding-right: .5em;
+    border: solid 1px #bfbfbf;
+    border-left: solid .5em #bfbfbf;
+    border-right: solid .5em #bfbfbf;
+}
+button.player:disabled {
+    color: black;
+}
+button.player.highlight {
+    border-left-color: cyan;
+    border-right-color: cyan;
+}
+button.player.simple {
+    border: solid 1px #bfbfbf;
+    color: black;
+    background-color: #dfdfdf;
+}
+
+/*----------------------------------------------------------------------------*/
+button.value {
+    width: 3em;
+    height: 2em;
+    color: black;
+    background-color: #dfdfdf;
+    border-color: #bfbfbf;
+}
+button.money:after {
+    content: " $";
+}
+
+/*----------------------------------------------------------------------------*/
+button.go {
+    width: 12em;
+    height: 2em;
+    border-color: #7f7f7f;
+    border-width: 2px;
+}
+
+/*----------------------------------------------------------------------------*/
+button.add {
+    width: 2em;
+    height: 2em;
+    border-color: #7f7f7f;
+    border-width: 2px;
+}
+
+/*----------------------------------------------------------------------------*/
+button.skip {
+    width: 4em;
+    height: 2em;
+    border-color: #7f7f7f;
+}
+
+/*----------------------------------------------------------------------------*/
+span.back {
+    border: none;
+    padding: 0;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin: 0;
+    display: inline-block;
+    border-radius: 2px;
+}
+span.back.highlight {
+    background-color: cyan;
+}
+
+/*----------------------------------------------------------------------------*/
+span.spacer {
+    display: inline-block;
+    width: 12px;
+}
+span.spacer.small {
+    width: 2px;
+}
+span.spacer.medium {
+    width: 7px;
+}
+/*----------------------------------------------------------------------------*/
