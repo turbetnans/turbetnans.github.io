@@ -199,9 +199,9 @@ class Game extends FSM {
     }
     function entryRoundEnd():Void {
         if(firstTurn) {
-            messages.push(RoundOver(currentPlayer,round,"Opera"));
+            messages.push(RoundOver(round,currentPlayer,"Opera"));
         } else {
-            messages.push(RoundOver(currentPlayer,round));
+            messages.push(RoundOver(round,currentPlayer));
         }
 
         // collect sweep if opera

@@ -2311,9 +2311,9 @@ nainJaune_core_Game.prototype = $extend(fsm_FSM.prototype,{
 	}
 	,entryRoundEnd: function() {
 		if(this.firstTurn) {
-			this.messages.push(nainJaune_core_Message.RoundOver(this.currentPlayer,this.round,"Opera"));
+			this.messages.push(nainJaune_core_Message.RoundOver(this.round,this.currentPlayer,"Opera"));
 		} else {
-			this.messages.push(nainJaune_core_Message.RoundOver(this.currentPlayer,this.round));
+			this.messages.push(nainJaune_core_Message.RoundOver(this.round,this.currentPlayer));
 		}
 		if(this.firstTurn) {
 			var _g = 0;

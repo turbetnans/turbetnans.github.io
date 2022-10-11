@@ -166,6 +166,8 @@ span.back {
     margin: 0;
     display: inline-block;
     border-radius: 1em;
+    border-left: .1em solid #0000;
+    border-right: .1em solid #0000;
 }
 span.back.highlight {
     background-color: #0ffb;
