@@ -7,23 +7,27 @@
     </head>
     <body>
         <div class="row">
-            <div class="column" style="background-color: #bbb; width: 20%">
-                <div style="overflow-y: hidden; max-height: 80vh; height: 80vh; min-height: 80hv; padding: 0 5px;">
+            <div class="column" style="width: 20%">
+                <div class="cell players" style="background-color: #bbb;">
                     <hr>
                     JOUEURS
                     <hr>
                     <p id="players">
                         nothing here
                     </p>
+                    <hr>
                 </div>
-                <div style="background-color: #777; overflow-y: hidden; max-height: 20vh; height: 20vh; min-height: 20hv; padding: 0 5px;">
+                <div class="cell state" style="background-color: #777;">
                     <hr>
                     ETAT
                     <hr>
-                    <p id="state"> nothing here </p>
+                    <p id="state">
+                        nothing here
+                    </p>
+                    <hr>
                 </div>
             </div>
-            <div class="column" style="background-color: #3b3; width: 80%;">
+            <div class="column" style="width: 80%; background-color: #3b3; box-shadow: inset 0 0 30px;">
                 <!--
                     board
                     nex card / next player
@@ -32,9 +36,10 @@
 
                     player's cards
                 -->
-                <div id="display" style="overflow-y: hidden; max-height: 80vh; height: 80vh; min-height: 80hv; padding: 0 5px; box-shadow: inset 0 0 30px;">
+                <div id="display" class="cell field">
                 </div>
-                <div id="log" style="background-color: #bbb; overflow-y: scroll; max-height: 20vh; height: 20vh; min-height: 20hv; padding: 0 5px;">
+                <div class="cell log">
+                    <div id="log" style="background-color: #7777; overflow-y: scroll; margin: 0 auto; width: 90%; height: 80%; box-shadow: inset 0 0 15px; padding: 1em 1em;"> </div>
                 </div>
             </div>
         </div>
