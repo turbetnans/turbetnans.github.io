@@ -1,7 +1,12 @@
 /*----------------------------------------------------------------------------*/
 body {
-    margin: 0; padding: 0; font-size: 20px;
+    margin: 0; padding: 0;
 }
+* {
+    font-size: 16px;
+    font-family: Verdana;
+}
+
 /*----------------------------------------------------------------------------*/
 .column {
     float: left;
@@ -40,6 +45,14 @@ body {
 }
 
 /*----------------------------------------------------------------------------*/
+#log::-webkit-scrollbar {
+    display: none;
+}
+#log {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 #log p {
     margin: .5em 0;
 }
@@ -47,9 +60,10 @@ body {
     margin-top: 0;
 }
 #log p:last-child  {
-    padding-bottom: 1em;
+    padding-bottom: .5em;
     margin-bottom: 0;
 }
+
 #display p {
     margin: .5em;
 }
@@ -59,10 +73,12 @@ button {
     border-radius: 1em;
     padding: 0;
     margin: 0;
+    background-color: #ddd;
 }
 
+/*----------------------------------------------------------------------------*/
 button.card {
-    width: 3em;
+    width: 4em;
     height: 2em;
     color: black;
     border-radius: 0;
@@ -155,6 +171,9 @@ button.skip {
     width: 4em;
     height: 2em;
     border-color: #7f7f7f;
+}
+button:hover {
+    border-color: black;
 }
 
 /*----------------------------------------------------------------------------*/
