@@ -494,12 +494,11 @@ js_Boot.__string_rec = function(o,s) {
 	}
 };
 var nainJaune_client_Client = $hx_exports["nainJaune"]["client"]["Client"] = function() {
-	this.gameState = "";
 	this.playerId = nainJaune_core_Player.NULL_ID;
 	this.guests = null;
 	this.hostCo = null;
 	this.peer = null;
-	this.name = nainJaune_client_Client.someNames[Math.random() * nainJaune_client_Client.someNames.length | 0];
+	this.name = nainJaune_client_Client.names[Math.random() * nainJaune_client_Client.names.length | 0];
 	this.role = nainJaune_client_Role.None;
 	this.r = null;
 	this.g = null;
@@ -521,34 +520,46 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		this.initPeer();
 		var mainMenu = this.addState("Menu principal",function() {
 			_gthis.entryMainMenu();
+		},function() {
+			_gthis.exitState();
 		});
 		var localGame = this.addState("Partie locale",function() {
 			_gthis.entryLocalGame();
+		},function() {
+			_gthis.exitState();
 		});
 		var roomHost = this.addState("Hote du salon",function() {
 			_gthis.entryRoomHost();
+		},function() {
+			_gthis.exitState();
 		});
 		var roomWait = this.addState("Attente du salon",function() {
 			_gthis.entryRoomWait();
+		},function() {
+			_gthis.exitState();
 		});
 		var roomGuest = this.addState("Invite du salon",function() {
 			_gthis.entryRoomGuest();
+		},function() {
+			_gthis.exitState();
 		});
 		var gameRunning = this.addState("Partie en cours",function() {
 			_gthis.entryGameRunning();
+		},function() {
+			_gthis.exitState();
 		});
 		this.setInitial(mainMenu);
 		this.addTransition(mainMenu,localGame,"CreateLocal",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:74:","TR: salon local créé");
+			console.log("nainJaune/client/Client.hx:81:","TR: salon local créé");
 		});
 		this.addTransition(mainMenu,roomHost,"CreateRoom",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:78:","TR: salon créé");
+			console.log("nainJaune/client/Client.hx:85:","TR: salon créé");
 			_gthis.guests = [new nainJaune_client_Guest(null,_gthis.peer.id,_gthis.name)];
 		});
 		this.addTransition(mainMenu,roomWait,"JoinRoom",null,function() {
@@ -565,7 +576,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.connectToHost(args[0]);
-			console.log("nainJaune/client/Client.hx:86:","TR: demande envoyée");
+			console.log("nainJaune/client/Client.hx:93:","TR: demande envoyée");
 		});
 		this.addTransition(mainMenu,mainMenu,"JoinRoom",true,function() {
 			var $l=arguments.length;
@@ -576,7 +587,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:91:","no targetedHost");
+			console.log("nainJaune/client/Client.hx:98:","no targetedHost");
 		});
 		this.addTransition(mainMenu,mainMenu,"JoinRoom",true,function() {
 			var $l=arguments.length;
@@ -587,7 +598,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:95:","targetedHost = selfId");
+			console.log("nainJaune/client/Client.hx:102:","targetedHost = selfId");
 		});
 		this.addTransition(mainMenu,mainMenu,"JoinRoom",true,function() {
 			var $l=arguments.length;
@@ -598,39 +609,39 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:99:","hostCo not null");
+			console.log("nainJaune/client/Client.hx:106:","hostCo not null");
 		});
 		this.addTransition(roomWait,roomGuest,"JoinRoom",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:102:","TR: salon rejoint");
+			console.log("nainJaune/client/Client.hx:109:","TR: salon rejoint");
 		});
 		this.addTransition(localGame,mainMenu,"Return",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:107:","TR: salon local fermé");
+			console.log("nainJaune/client/Client.hx:114:","TR: salon local fermé");
 		});
 		this.addTransition(roomHost,mainMenu,"Return",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.closeRoom();
-			console.log("nainJaune/client/Client.hx:112:","TR: salon fermé");
+			console.log("nainJaune/client/Client.hx:119:","TR: salon fermé");
 		});
 		this.addTransition(roomWait,mainMenu,"Return",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:116:","TR: demande refusée");
+			console.log("nainJaune/client/Client.hx:123:","TR: demande refusée");
 		});
 		this.addTransition(roomGuest,mainMenu,"Return",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.quitRoom();
-			console.log("nainJaune/client/Client.hx:121:","TR: salon quitté");
+			console.log("nainJaune/client/Client.hx:128:","TR: salon quitté");
 		});
 		this.addTransition(gameRunning,mainMenu,"Return",null,function() {
 			var $l=arguments.length;
@@ -649,8 +660,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.r.clearOutput();
-			console.log("nainJaune/client/Client.hx:128:","TR: retour au menu");
+			console.log("nainJaune/client/Client.hx:134:","TR: retour au menu");
 		});
 		this.addTransition(localGame,gameRunning,"Launch",null,function() {
 			var $l=arguments.length;
@@ -661,8 +671,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.r.clearOutput();
-			console.log("nainJaune/client/Client.hx:137:","TR: partie locale lancée");
+			console.log("nainJaune/client/Client.hx:142:","TR: partie locale lancée");
 		});
 		this.addTransition(roomHost,gameRunning,"Launch",null,function() {
 			var $l=arguments.length;
@@ -673,15 +682,13 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.r.clearOutput();
-			console.log("nainJaune/client/Client.hx:144:","TR: partie lancée");
+			console.log("nainJaune/client/Client.hx:148:","TR: partie lancée");
 		});
 		this.addTransition(roomGuest,gameRunning,"Launch",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.r.clearOutput();
-			console.log("nainJaune/client/Client.hx:150:","TR: partie lancée par l'hôte");
+			console.log("nainJaune/client/Client.hx:153:","TR: partie lancée par l'hôte");
 		});
 		this.addTransition(roomHost,roomHost,"Update",null,null,function() {
 			var $l=arguments.length;
@@ -706,62 +713,48 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				_g.push(guest.id);
 			}
 			_gthis1.sendToAll(nainJaune_client_Message.GuestList(tmp,_g));
-			console.log("nainJaune/client/Client.hx:158:","TR: salon mis à jour");
+			console.log("nainJaune/client/Client.hx:161:","TR: salon mis à jour");
 		});
 		this.addTransition(roomGuest,roomGuest,"Update",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:162:","TR: salon mis à jour");
+			console.log("nainJaune/client/Client.hx:165:","TR: salon mis à jour");
 		});
 		this.addTransition(gameRunning,gameRunning,"Update",null,null,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			console.log("nainJaune/client/Client.hx:165:","TR: partie mise à jour");
+			console.log("nainJaune/client/Client.hx:168:","TR: partie mise à jour");
 		});
 		return true;
 	}
 	,entryMainMenu: function() {
 		this.role = nainJaune_client_Role.None;
-		this.r.clearElements();
 		this.r.printState();
-		this.r.printMenu();
 	}
 	,entryLocalGame: function() {
 		this.role = nainJaune_client_Role.Local;
-		this.r.clearElements();
 		this.r.printState();
-		this.r.printCreateLocal();
-		this.r.printReturn();
 	}
 	,entryRoomHost: function() {
 		this.role = nainJaune_client_Role.Host;
-		this.r.clearElements();
 		this.r.printState();
-		this.r.printHostId();
-		this.r.printConnectedPlayers(true);
-		this.r.printReturn();
 	}
 	,entryRoomWait: function() {
 		this.role = nainJaune_client_Role.Guest;
 		this.guests = [];
-		this.r.clearElements();
 		this.r.printState();
 	}
 	,entryRoomGuest: function() {
 		this.role = nainJaune_client_Role.Guest;
-		this.r.clearElements();
 		this.r.printState();
-		this.r.printConnectedPlayers();
-		this.r.printReturn();
 	}
 	,entryGameRunning: function() {
 		if(this.g == null) {
-			console.log("nainJaune/client/Client.hx:211:","err wtf no game");
+			console.log("nainJaune/client/Client.hx:201:","err wtf no game");
 			return;
 		}
-		this.gameState = this.g.states[this.g.currentState].name;
 		var message = null;
 		if(this.role._hx_index == 3) {
 			while(true) {
@@ -783,57 +776,13 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				}
 			}
 		}
-		this.r.clearElements();
 		this.r.printState(true);
-		switch(this.gameState) {
-		case "Debut de manche":
-			this.r.printBoard(this.g.board,this.g.nextSweep,true);
-			this.r.printPlayers(this.g.players,this.g.currentPlayer);
-			if(this.role._hx_index == 1 || this.role._hx_index == 2) {
-				this.r.printStartRound();
-			}
-			break;
-		case "Debut de partie":
-			this.r.printBoard(this.g.board,this.g.nextSweep,true);
-			this.r.printPlayers(this.g.players,this.g.currentPlayer);
-			if(this.role._hx_index == 1 || this.role._hx_index == 2) {
-				this.r.printStartGame();
-			}
-			break;
-		case "Debut de tour":
-			if(this.role._hx_index == 1) {
-				this.r.printBoard(this.g.board,this.g.nextSweep);
-				this.r.printPlayers(this.g.players,this.g.currentPlayer);
-				this.r.printLastCard(util_ArrayExt.last(this.g.cardsPlayed),this.g.players[this.g.lastPlayer]);
-				this.r.printNextCard(this.g.nextCard);
-				this.r.printPlayerHand(this.g.currentPlayer,this.g.nextCard,this.g.firstTurn);
-			} else {
-				this.r.printBoard(this.g.board,this.g.nextSweep);
-				this.r.printPlayers(this.g.players,this.g.currentPlayer);
-				this.r.printLastCard(util_ArrayExt.last(this.g.cardsPlayed),this.g.players[this.g.lastPlayer]);
-				this.r.printNextCard(this.g.nextCard);
-				if(this.playerId == this.g.currentPlayer) {
-					this.r.printPlayerHand(this.g.currentPlayer,this.g.nextCard,this.g.firstTurn);
-				}
-			}
-			break;
-		case "Fin de manche":
-			this.r.printBoard(this.g.board,this.g.nextSweep,true);
-			this.r.printPlayers(this.g.players,this.g.currentPlayer);
-			if(this.role._hx_index == 1 || this.role._hx_index == 2) {
-				this.r.printStopRound();
-			}
-			break;
-		case "Fin de partie":
-			this.r.printBoard(this.g.board,this.g.nextSweep,true);
-			this.r.printPlayers(this.g.players,this.g.currentPlayer);
-			if(this.role._hx_index == 1 || this.role._hx_index == 2) {
-				this.r.printStopGame();
-			}
-			break;
-		}
+	}
+	,exitState: function() {
+		this.r.clear();
 	}
 	,createGame: function(players,initialMoney) {
+		console.log("nainJaune/client/Client.hx:225:",players);
 		if(this.role._hx_index == 1) {
 			this.g = nainJaune_core_Game.create(players,initialMoney);
 		} else if(this.role._hx_index == 2) {
@@ -861,6 +810,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		}
 		if(this.g == null) {
 			this.r.printOutput("Erreur lors de la création de la partie.");
+			this.r.printOutput("<br>");
 			return;
 		}
 		if(this.role._hx_index == 2 || this.role._hx_index == 3) {
@@ -873,6 +823,8 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					return;
 				}
 			}
+		} else if(this.role._hx_index == 1) {
+			this.playerId = 0;
 		}
 	}
 	,startGame: function() {
@@ -922,13 +874,14 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		var _gthis = this;
 		this.peer = new Peer(null,{ debug : 2});
 		this.peer.on("open",function(id) {
-			console.log("nainJaune/client/Client.hx:345:","PEER OPEN " + (id == null ? "null" : Std.string(id)));
+			console.log("nainJaune/client/Client.hx:298:","PEER OPEN " + (id == null ? "null" : Std.string(id)));
 		});
 		this.peer.on("connection",function(c) {
 			var co = c;
-			console.log("nainJaune/client/Client.hx:350:","PEER CONNECTION " + co.peer);
+			console.log("nainJaune/client/Client.hx:303:","PEER CONNECTION " + co.peer);
 			if(_gthis.role != nainJaune_client_Role.Host) {
 				_gthis.r.printOutput("Connection from guest " + co.peer + " refused because not hosting");
+				_gthis.r.printOutput("<br>");
 				co.on("open",function(_) {
 					co.send(nainJaune_client_Message.CannotJoin("NoHost"));
 					haxe_Timer.delay(function() {
@@ -950,6 +903,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				}
 				if(_g.length != 0) {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because guest already here");
+					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("AlreadyJoined"));
 						haxe_Timer.delay(function() {
@@ -960,6 +914,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else if(_gthis.guests.length >= 8) {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because room full");
+					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("Full"));
 						haxe_Timer.delay(function() {
@@ -970,6 +925,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else if(_gthis.states[_gthis.currentState].name == "Partie en cours") {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because already playing");
+					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("AlreadyPlaying"));
 						haxe_Timer.delay(function() {
@@ -980,6 +936,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " accepted");
+					_gthis.r.printOutput("<br>");
 					_gthis.guests.push(new nainJaune_client_Guest(co,co.peer,co.label));
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.RoomJoin);
@@ -990,6 +947,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 					co.on("close",function(_) {
 						_gthis.r.printOutput("Connection closed with guest " + co.peer);
+						_gthis.r.printOutput("<br>");
 						var _g = 0;
 						var _g1 = _gthis.guests;
 						while(_g < _g1.length) {
@@ -1003,52 +961,58 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 						}
 					});
 					co.on("error",function(err) {
-						console.log("nainJaune/client/Client.hx:399:","HOST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
+						console.log("nainJaune/client/Client.hx:358:","HOST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
 						var _g = err.type;
 						_gthis.r.printOutput("error with guest " + (err == null ? "null" : Std.string(err)));
+						_gthis.r.printOutput("<br>");
 					});
 				}
 			}
 		});
 		this.peer.on("disconnected",function(_) {
-			console.log("nainJaune/client/Client.hx:408:","PEER DISCONNECTED");
+			console.log("nainJaune/client/Client.hx:368:","PEER DISCONNECTED");
 		});
 		this.peer.on("close",function(_) {
-			console.log("nainJaune/client/Client.hx:410:","PEER CLOSE");
+			console.log("nainJaune/client/Client.hx:370:","PEER CLOSE");
 		});
 		this.peer.on("error",function(err) {
-			console.log("nainJaune/client/Client.hx:413:","PEER ERROR " + (err == null ? "null" : Std.string(err)));
+			console.log("nainJaune/client/Client.hx:373:","PEER ERROR " + (err == null ? "null" : Std.string(err)));
 			if(err.type == "peer-unavailable") {
 				_gthis.hostCo = null;
 				_gthis.update("Return");
 			} else {
 				_gthis.r.printOutput("error with peer " + (err == null ? "null" : Std.string(err)));
+				_gthis.r.printOutput("<br>");
 			}
 		});
 	}
 	,connectToHost: function(id) {
 		var _gthis = this;
-		console.log("nainJaune/client/Client.hx:424:","ID: " + id + " " + this.peer.id);
+		console.log("nainJaune/client/Client.hx:385:","ID: " + id + " " + this.peer.id);
 		this.hostCo = this.peer.connect(id,{ label : this.name, metadata : null, serialization : "json", reliable : true});
 		this.hostCo.on("open",function(_) {
 			_gthis.r.printOutput("Connection to host " + _gthis.hostCo.peer + " established");
+			_gthis.r.printOutput("<br>");
 		});
 		this.hostCo.on("data",function(data) {
 			_gthis.processMessageGuest(data);
 		});
 		this.hostCo.on("close",function(_) {
 			_gthis.r.printOutput("Connection closed with host " + _gthis.hostCo.peer);
+			_gthis.r.printOutput("<br>");
 			_gthis.hostCo = null;
 			_gthis.update("Return");
 		});
 		this.hostCo.on("error",function(err) {
-			console.log("nainJaune/client/Client.hx:443:","GUEST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
+			console.log("nainJaune/client/Client.hx:406:","GUEST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
 			var _g = err.type;
 			_gthis.r.printOutput("error with host " + (err == null ? "null" : Std.string(err)));
+			_gthis.r.printOutput("<br>");
 		});
 	}
 	,closeRoom: function() {
 		this.r.printOutput("Room closed");
+		this.r.printOutput("<br>");
 		var _g = 0;
 		var _g1 = this.guests;
 		while(_g < _g1.length) {
@@ -1064,6 +1028,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					};
 				})(guest),500);
 				this.r.printOutput("Disconnect " + guest[0].id);
+				this.r.printOutput("<br>");
 			}
 		}
 	}
@@ -1095,17 +1060,20 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		var elem = "";
 		switch(message._hx_index) {
 		case 0:
-			elem += "[Tr] [Init] La partie est créée !";
+			this.r.printOutput("[Tr] [Init] La partie est créée !");
+			this.r.printOutput("<br>");
 			break;
 		case 1:
-			elem += "</p><hr><p>";
-			elem += "[St] La partie est prête à commencer !";
+			this.r.printOutput("<div class='line'></div>");
+			this.r.printOutput("[St] La partie est prête à commencer !");
 			break;
 		case 2:
 			var dealer = message.dealer;
 			elem += "[Tr] La partie commence ! ";
-			elem += this.r.formatPlayerName(this.g.players[dealer].name);
+			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " sera le premier donneur.";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 3:
 			var losers = message.losers;
@@ -1114,29 +1082,35 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var _g1 = losers.length;
 			while(_g < _g1) {
 				var i = _g++;
-				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[losers[i]].name);
+				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[losers[i]]);
 			}
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 4:
 			var winners = message.winners;
-			elem += "</p><hr><p>";
+			this.r.printOutput("<div class='line'></div>");
 			elem += "[St] [Fin] La partie est terminée ! Les gagnants sont ";
 			var _g = 0;
 			var _g1 = winners.length;
 			while(_g < _g1) {
 				var i = _g++;
-				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[i].name);
+				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[i]);
 			}
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 5:
 			var round = message.round;
 			var dealer = message.dealer;
-			elem += "</p><hr><p>";
+			this.r.printOutput("<div class='line'></div>");
 			elem += "[St] La manche ";
 			elem += this.r.formatValue(round);
 			elem += " est prête à commencer, ";
-			elem += this.r.formatPlayerName(this.g.players[dealer].name);
+			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " est le donneur !";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 6:
 			var round = message.round;
@@ -1146,8 +1120,10 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			elem += "[Tr] La manche ";
 			elem += this.r.formatValue(round);
 			elem += " commence, ";
-			elem += this.r.formatPlayerName(this.g.players[dealer].name);
+			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " a distribué les cartes !";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 7:
 			var round = message.round;
@@ -1158,85 +1134,102 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var player = message.player;
 			var type = message.type;
 			if(type == "Opera") {
-				elem += "</p><hr><p>";
+				this.r.printOutput("<div class='line'></div>");
 				elem += "[St] ";
-				elem += this.r.formatPlayerName(this.g.players[player].name);
+				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " réalise un Grand Opéra et remporte la manche ";
 				elem += this.r.formatValue(round);
 				elem += " !";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else if(type == null) {
-				elem += "</p><hr><p>";
+				this.r.printOutput("<div class='line'></div>");
 				elem += "[St] La manche ";
 				elem += this.r.formatValue(round);
 				elem += " a été remportée par ";
-				elem += this.r.formatPlayerName(this.g.players[player].name);
+				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " !";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else {
-				elem += "Message RoundOver -> " + Std.string(message);
+				this.r.printOutput("Message RoundOver -> " + Std.string(message));
+				this.r.printOutput("<br>");
 			}
 			break;
 		case 9:
 			var player = message.player;
 			var cards = message.cards;
-			elem += "</p><hr><p>";
+			this.r.printOutput("<div class='line'></div>");
 			elem += "[St] C'est à ";
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " de jouer, il lui reste ";
 			elem += this.r.formatValue(cards.length);
 			elem += " cartes en main.";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 10:
 			var player = message.player;
 			var sweep = message.sweep;
 			var value = message.value;
 			var type = message.type;
-			if(type == "Bet") {
-				elem += this.r.formatPlayerName(this.g.players[player].name);
-				elem += " a misé.";
-			} else if(type == "Repay") {
-				elem += this.r.formatPlayerName(this.g.players[player].name);
-				elem += " double la mise de ";
-				elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
-				elem += " pour ";
-				elem += this.r.formatMoney(value);
-				elem += ".";
-			} else {
-				elem += "Message PlayeBet -> " + Std.string(message);
+			if(type != "Bet") {
+				if(type == "Repay") {
+					elem += this.r.formatPlayerName(this.g.players[player]);
+					elem += " double la mise de ";
+					elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
+					elem += " pour ";
+					elem += this.r.formatMoney(value);
+					elem += ".";
+					this.r.printOutput(elem);
+					this.r.printOutput("<br>");
+				} else {
+					this.r.printOutput("Message PlayeBet -> " + Std.string(message));
+					this.r.printOutput("<br>");
+				}
 			}
 			break;
 		case 11:
 			var from = message.fromPlayer;
 			var to = message.toPlayer;
 			var value = message.value;
-			elem += this.r.formatPlayerName(this.g.players[from].name);
+			elem += this.r.formatPlayerName(this.g.players[from]);
 			elem += " paye ";
 			elem += this.r.formatMoney(value);
 			elem += " à ";
-			elem += this.r.formatPlayerName(this.g.players[to].name);
+			elem += this.r.formatPlayerName(this.g.players[to]);
 			elem += ".";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 12:
 			var player = message.player;
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " est ruiné.";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 13:
 			var player = message.player;
 			var rank = message.rank;
 			elem += "[Tr] ";
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " : Sans ";
 			elem += this.r.formatCardRank(nainJaune_core_Card.RANKS[rank]);
 			elem += ".";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 14:
 			var player = message.player;
 			var round = message.round;
 			elem += "[Tr] ";
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " termine la manche ";
 			elem += this.r.formatValue(round);
 			elem += ".";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 15:
 			var stock = message.stock;
@@ -1245,6 +1238,8 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += "Il y a ";
 				elem += this.r.formatValue(stock.length);
 				elem += " cartes dans le talon.";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else if(type == "End") {
 				elem += "Le talon était ";
 				var _g = 0;
@@ -1254,18 +1249,23 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatCard(stock[i]);
 				}
 				elem += ".";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else {
-				elem += "Message CardStock -> " + Std.string(message);
+				this.r.printOutput("Message CardStock -> " + Std.string(message));
+				this.r.printOutput("<br>");
 			}
 			break;
 		case 16:
 			var card = message.card;
 			var player = message.player;
 			elem += "[Tr] ";
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " vient de jouer ";
 			elem += this.r.formatCard(card);
 			elem += ".";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 17:
 			var sweep = message.sweep;
@@ -1273,56 +1273,66 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var value = message.value;
 			var type = message.type;
 			if(type == "Opera") {
-				elem += this.r.formatPlayerName(this.g.players[player].name);
+				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " remporte la mise de ";
 				elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
 				elem += " pour ";
 				elem += this.r.formatMoney(value);
 				elem += " gràce au Grand Opera.";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else if(type == null || type == "") {
-				elem += this.r.formatPlayerName(this.g.players[player].name);
+				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " remporte la mise de ";
 				elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
 				elem += " pour ";
 				elem += this.r.formatMoney(value);
 				elem += ".";
+				this.r.printOutput(elem);
+				this.r.printOutput("<br>");
 			} else {
-				elem += "Message SweepWin -> " + Std.string(message);
+				this.r.printOutput("Message SweepWin -> " + Std.string(message));
+				this.r.printOutput("<br>");
 			}
 			break;
 		case 18:
 			var sweep = message.sweep;
 			var player = message.player;
-			elem += this.r.formatPlayerName(this.g.players[player].name);
+			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " a oublié de récupérer ";
 			elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
 			elem += ".";
+			this.r.printOutput(elem);
+			this.r.printOutput("<br>");
 			break;
 		case 19:
 			var player = message.player;
 			var card = message.card;
 			var type = message.type;
-			elem += "Impossible de joueur la carte ! (" + type + ")";
+			this.r.printOutput("Impossible de joueur la carte ! (" + type + ")");
+			this.r.printOutput("<br>");
 			break;
 		case 20:
 			var player = message.player;
 			var card = message.card;
 			var type = message.type;
-			elem += "Impossible de prendre la mise ! (" + type + ")";
+			this.r.printOutput("Impossible de prendre la mise ! (" + type + ")");
+			this.r.printOutput("<br>");
 			break;
 		case 21:
 			var player = message.player;
 			var type = message.type;
-			elem += "Impossible de passer son tour ! (" + type + ")";
+			this.r.printOutput("Impossible de passer son tour ! (" + type + ")");
+			this.r.printOutput("<br>");
 			break;
 		case 22:
 			var player = message.player;
 			var round = message.round;
 			var type = message.type;
-			elem += "Impossible de terminer la manche ! (" + type + ")";
+			this.r.printOutput("Impossible de terminer la manche ! (" + type + ")");
+			this.r.printOutput("<br>");
 			break;
 		}
-		this.r.printOutput(elem);
 	}
 	,processGameMessageGuest: function(message) {
 		switch(message._hx_index) {
@@ -1403,6 +1413,7 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		switch(message._hx_index) {
 		case 0:
 			this.r.printOutput("Départ du joueur : " + sender);
+			this.r.printOutput("<br>");
 			var _g = 0;
 			var _g1 = this.guests;
 			while(_g < _g1.length) {
@@ -1432,9 +1443,9 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			this.update("Update");
 			break;
 		default:
-			elem += "Message Host -> " + Std.string(message);
+			this.r.printOutput("Message Host -> " + Std.string(message));
+			this.r.printOutput("<br>");
 		}
-		this.r.printOutput(elem);
 	}
 	,processMessageGuest: function(message) {
 		if(this.role._hx_index != 3) {
@@ -1444,16 +1455,19 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		switch(message._hx_index) {
 		case 2:
 			this.r.printOutput("Salon rejoint !");
+			this.r.printOutput("<br>");
 			this.update("JoinRoom");
 			break;
 		case 3:
 			var reason = message.reason;
 			this.r.printOutput("Salon fermé ! " + reason);
+			this.r.printOutput("<br>");
 			this.update("Return");
 			break;
 		case 4:
 			var money = message.money;
 			this.r.printOutput("L'hôte commence la partie !");
+			this.r.printOutput("<br>");
 			this.createGame(null,money);
 			this.startGame();
 			this.update("Launch");
@@ -1479,17 +1493,19 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		case 7:
 			var reason = message.reason;
 			this.r.printOutput("Impossible de rejoindre le salon : " + reason);
+			this.r.printOutput("<br>");
 			this.update("Return");
 			break;
 		case 8:
 			var reason = message.reason;
 			this.r.printOutput("Action impossible : " + reason);
+			this.r.printOutput("<br>");
 			this.update("Update");
 			break;
 		default:
-			elem += "Message Guest -> " + Std.string(message);
+			this.r.printOutput("Message Guest -> " + Std.string(message));
+			this.r.printOutput("<br>");
 		}
-		this.r.printOutput(elem);
 	}
 	,fixGameMessage: function(message) {
 		switch(message._hx_index) {
@@ -1592,25 +1608,14 @@ var nainJaune_client_WebRenderer = $hx_exports["nainJaune"]["client"]["WebRender
 };
 nainJaune_client_WebRenderer.__name__ = true;
 nainJaune_client_WebRenderer.prototype = {
-	printElements: function(str,allign) {
-		if(allign == null) {
-			allign = "left";
-		}
-		if(allign != "right" && allign != "center" && allign != "left") {
-			allign = "left";
-		}
-		if(str != "") {
-			window.document.getElementById("display").innerHTML += "<p style='text-align: " + allign + ";'>" + str + "</p>";
-		}
-	}
-	,clearElements: function() {
-		window.document.getElementById("display").innerHTML = "";
-	}
-	,printOutput: function(str) {
-		if(str == "") {
+	printOutput: function(str) {
+		if(str == "<br>" || str == "<hr>") {
+			window.document.getElementById("log").innerHTML += str;
+		} else if(str != "") {
+			window.document.getElementById("log").innerHTML += "<span>" + str + "</span>";
+		} else {
 			return;
 		}
-		window.document.getElementById("log").innerHTML += "<p>" + str + "</p>";
 		window.document.getElementById("log").scrollTop = window.document.getElementById("log").scrollHeight;
 	}
 	,clearOutput: function() {
@@ -1621,7 +1626,7 @@ nainJaune_client_WebRenderer.prototype = {
 			inGame = false;
 		}
 		if(inGame) {
-			var tmp = Std.string(this.c.states[this.c.currentState]) + "<br>" + this.c.gameState + " | " + this.c.g.round + "<br>" + this.c.name + " | ";
+			var tmp = Std.string(this.c.states[this.c.currentState]) + "<br>" + this.c.g.states[this.c.g.currentState].name + " | " + this.c.g.round + "<br>" + this.c.name + " | ";
 			var tmp1 = Std.string(this.c.role);
 			window.document.getElementById("state").innerHTML = tmp + tmp1;
 		} else {
@@ -1629,15 +1634,121 @@ nainJaune_client_WebRenderer.prototype = {
 			var tmp1 = Std.string(this.c.role);
 			window.document.getElementById("state").innerHTML = tmp + tmp1;
 		}
+		switch(this.c.states[this.c.currentState].name) {
+		case "Attente du salon":
+			break;
+		case "Hote du salon":
+			window.document.getElementById("menuRoom").style.display = "";
+			window.document.getElementById("idHost").style.display = "";
+			window.document.getElementById("buttonCreate").style.display = "";
+			var _g = 0;
+			while(_g < 8) {
+				var i = _g++;
+				window.document.getElementById("p" + i).value = i < this.c.guests.length ? this.c.guests[i].name : "nope";
+				window.document.getElementById("p" + i).disabled = true;
+			}
+			break;
+		case "Invite du salon":
+			window.document.getElementById("menuRoom").style.display = "";
+			var _g = 0;
+			while(_g < 8) {
+				var i = _g++;
+				window.document.getElementById("p" + i).value = i < this.c.guests.length ? this.c.guests[i].name : "nope";
+				window.document.getElementById("p" + i).disabled = true;
+			}
+			break;
+		case "Menu principal":
+			window.document.getElementById("menuMain").style.display = "";
+			window.document.getElementById("name").value = this.c.name;
+			break;
+		case "Partie en cours":
+			switch(this.c.g.states[this.c.g.currentState].name) {
+			case "Debut de manche":
+				this.printBoard(this.c.g.board,this.c.g.nextSweep,true);
+				this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+				if(this.c.role._hx_index == 1 || this.c.role._hx_index == 2) {
+					this.printStartRound();
+				}
+				break;
+			case "Debut de partie":
+				this.printBoard(this.c.g.board,this.c.g.nextSweep,true);
+				this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+				if(this.c.role._hx_index == 1 || this.c.role._hx_index == 2) {
+					this.printStartGame();
+				}
+				break;
+			case "Debut de tour":
+				if(this.c.role._hx_index == 1) {
+					this.printBoard(this.c.g.board,this.c.g.nextSweep);
+					this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+					this.printLastCard(util_ArrayExt.last(this.c.g.cardsPlayed),this.c.g.players[this.c.g.lastPlayer]);
+					this.printNextCard(this.c.g.nextCard);
+					this.printPlayerHand(this.c.g.currentPlayer,this.c.g.nextCard,this.c.g.firstTurn);
+				} else {
+					this.printBoard(this.c.g.board,this.c.g.nextSweep);
+					this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+					this.printLastCard(util_ArrayExt.last(this.c.g.cardsPlayed),this.c.g.players[this.c.g.lastPlayer]);
+					this.printNextCard(this.c.g.nextCard);
+					if(this.c.playerId == this.c.g.currentPlayer) {
+						this.printPlayerHand(this.c.g.currentPlayer,this.c.g.nextCard,this.c.g.firstTurn);
+					}
+				}
+				break;
+			case "Fin de manche":
+				this.printBoard(this.c.g.board,this.c.g.nextSweep,true);
+				this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+				if(this.c.role._hx_index == 1 || this.c.role._hx_index == 2) {
+					this.printStopRound();
+				}
+				break;
+			case "Fin de partie":
+				this.printBoard(this.c.g.board,this.c.g.nextSweep,true);
+				this.printPlayers(this.c.g.players,this.c.g.currentPlayer);
+				if(this.c.role._hx_index == 1 || this.c.role._hx_index == 2) {
+					this.printStopGame();
+				}
+				break;
+			}
+			break;
+		case "Partie locale":
+			window.document.getElementById("menuRoom").style.display = "";
+			window.document.getElementById("buttonCreate").style.display = "";
+			var _g = 0;
+			while(_g < 8) {
+				var i = _g++;
+				var tmp = window.document;
+				var tmp1 = i == 0 && this.c.name.length > 0 ? this.c.name : nainJaune_client_Client.names[Math.random() * nainJaune_client_Client.names.length | 0];
+				tmp.getElementById("p" + i).value = tmp1;
+				window.document.getElementById("p" + i).disabled = false;
+			}
+			break;
+		}
 	}
-	,formatPlayerName: function(name) {
-		return "<button class='player simple' disabled>" + name + "</button>";
+	,clear: function() {
+		window.document.getElementById("menuMain").style.display = "none";
+		window.document.getElementById("menuRoom").style.display = "none";
+		window.document.getElementById("idHost").style.display = "none";
+		window.document.getElementById("buttonCreate").style.display = "none";
+		window.document.getElementById("board").style.display = "none";
+		window.document.getElementById("next").style.display = "none";
+		window.document.getElementById("last").style.display = "none";
+		window.document.getElementById("all").style.display = "none";
+		window.document.getElementById("hand").style.display = "none";
+		window.document.getElementById("buttonLaunch").style.display = "none";
+		window.document.getElementById("buttonStart").style.display = "none";
+		window.document.getElementById("buttonStop").style.display = "none";
+		window.document.getElementById("buttonEnd").style.display = "none";
+	}
+	,formatPlayerName: function(player) {
+		return "<button class='player simple" + (player.id == this.c.playerId ? " you" : "") + "' disabled>" + player.name + "</button>";
 	}
 	,formatPlayer: function(player,isCurrent) {
 		if(isCurrent == null) {
 			isCurrent = false;
 		}
-		return "<button class='player " + (isCurrent ? " highlight' " : "' ") + "disabled>" + Std.string(player) + "</button>";
+		var tmp = player.id == this.c.playerId ? "you " : " ";
+		var tmp1 = player.id == this.c.playerId ? "<b>" + Std.string(player) + "</b>" : player.toString();
+		return "<button class='player " + tmp + (isCurrent ? "highlight' " : "' ") + "disabled>" + tmp1 + "</button>";
 	}
 	,formatCardRank: function(rank) {
 		return "<button class='card' disabled >" + rank + "</button>";
@@ -1665,79 +1776,17 @@ nainJaune_client_WebRenderer.prototype = {
 	,formatMoney: function(value) {
 		return "<button class='value money' disabled>" + value + "</button>";
 	}
-	,printMenu: function() {
-		this.printNameSelection();
-		this.printElements("<button class='go' onclick='Main.createLocal()'>Local</button>","center");
-		this.printElements("<button class='go' onclick='Main.createRoom()'>Créer</button>","center");
-		this.printElements("<button class='go' onclick='Main.joinRoom(this.nextSibling.nextSibling.value);'>Rejoindre</button>" + "<br><input type='text' size='32' placeholder='enter host id'/>","center");
-	}
-	,printReturn: function() {
-		this.printElements("<button class='go' onclick='Main.returnMenu()'>Retour au menu</button>","center");
-	}
-	,printNameSelection: function() {
-		var elem = "Entrez votre nom : ";
-		elem += "<input type='text' maxlength='10' size='12' placeholder='Entrez un nom...' value='" + this.c.name + "'";
-		elem += "onchange='Main.c.name=this.value;'/>";
-		this.printElements(elem,"center");
-	}
-	,printCreateLocal: function() {
-		this.printElements("Entrez les noms d'au moins 3 joueurs :");
-		var elem = "";
-		var _g = 0;
-		while(_g < 8) {
-			var i = _g++;
-			elem += (i != 0 ? "<span class='spacer small'></span>" : "") + "<input type='text' maxlength='10' size='12' placeholder='Entrez un nom...' value='" + (i == 0 && this.c.name.length > 0 ? this.c.name : nainJaune_client_Client.someNames[Math.random() * nainJaune_client_Client.someNames.length | 0]) + "'/>";
-		}
-		this.printElements(elem,"center");
-		this.printElements("<button class='go' onclick='" + "Main.create([...document.getElementsByTagName(\"input\")].filter(elem=>elem.value!=\"\").map(elem=>elem.value));" + "Main.start();'>Créer la partie</button>","center");
-	}
-	,printConnectedPlayers: function(host) {
-		if(host == null) {
-			host = false;
-		}
-		this.printElements("Joueurs connectés :");
-		var elem = "";
-		elem += "<input type='text' disabled size='12' placeholder='personne' value='" + (0 < this.c.guests.length ? this.c.guests[0].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (1 < this.c.guests.length ? this.c.guests[1].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (2 < this.c.guests.length ? this.c.guests[2].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (3 < this.c.guests.length ? this.c.guests[3].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (4 < this.c.guests.length ? this.c.guests[4].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (5 < this.c.guests.length ? this.c.guests[5].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (6 < this.c.guests.length ? this.c.guests[6].name : "nope") + "'/>";
-		elem += "<span class='spacer small'></span>" + "<input type='text' disabled size='12' placeholder='personne' value='" + (7 < this.c.guests.length ? this.c.guests[7].name : "nope") + "'/>";
-		this.printElements(elem,"center");
-		if(host) {
-			this.printElements("<button class='go' onclick='Main.create();Main.start();'>Créer la partie</button>","center");
-		}
-	}
-	,printHostId: function(host) {
-		if(host == null) {
-			host = false;
-		}
-		var elem = "<span id='peerId'>" + this.c.peer.id + "</span>";
-		elem += "<button class=\"go\" onclick=\"";
-		elem += "var r=document.createRange();";
-		elem += "r.selectNode(document.getElementById('peerId'));";
-		elem += "window.getSelection().removeAllRanges();";
-		elem += "window.getSelection().addRange(r);";
-		elem += "document.execCommand('copy');";
-		elem += "window.getSelection().removeAllRanges();";
-		elem += "this.innerHTML='Copié !';";
-		elem += "setTimeout(()=>{this.innerHTML='Copier vote ID.';},1000);";
-		elem += "\">Copier vote ID.</button>";
-		this.printElements(elem,"center");
-	}
 	,printStartGame: function() {
-		this.printElements("<button class='go' onclick='Main.go()'>Lancer la partie</button>","center");
+		window.document.getElementById("buttonLaunch").style.display = "";
 	}
 	,printStartRound: function() {
-		this.printElements("<button class='go' onclick='Main.go()'>Démarer la manche</button>","center");
+		window.document.getElementById("buttonStart").style.display = "";
 	}
 	,printStopRound: function() {
-		this.printElements("<button class='go' onclick='Main.go()'>Terminer la manche</button>","center");
+		window.document.getElementById("buttonStop").style.display = "";
 	}
 	,printStopGame: function() {
-		this.printElements("<button class='go' onclick='Main.start()'>Relancer une partie</button>" + "<span class='spacer'></span>" + "<button class='go' onclick='Main.stop()'>Terminer la partie</button>","center");
+		window.document.getElementById("buttonEnd").style.display = "";
 	}
 	,printBoard: function(values,next,disableAll) {
 		if(disableAll == null) {
@@ -1750,7 +1799,8 @@ nainJaune_client_WebRenderer.prototype = {
 			var i = _g++;
 			elem += "<span class='spacer medium'></span>" + "<span class='back " + (!disableAll && next == i ? "highlight" : "") + "'>" + this.formatSweep(i,values[i],values[i] == 0 || disableAll) + "</span>";
 		}
-		this.printElements("Board:" + elem);
+		window.document.getElementById("board").style.display = "";
+		window.document.getElementById("board").innerHTML = "<p style='text-align: left;'>" + "Board:" + elem + "</p>";
 	}
 	,printPlayers: function(players,currentPlayer) {
 		var elem = "";
@@ -1767,16 +1817,18 @@ nainJaune_client_WebRenderer.prototype = {
 	}
 	,printNextCard: function(rank) {
 		var elem = "<span class='spacer'></span>" + this.formatCardRank(rank == nainJaune_core_Card.ANY ? "Ø" : nainJaune_core_Card.RANKS[rank]);
-		this.printElements("Next card:" + elem);
+		window.document.getElementById("next").style.display = "";
+		window.document.getElementById("next").innerHTML = "<p style='text-align: left;'>" + "Next card:" + elem + "</p>";
 	}
 	,printLastCard: function(card,player) {
 		var elem = "<span class='spacer'></span>";
 		if(card == null) {
 			elem += this.formatCardRank("Ø");
 		} else {
-			elem += this.formatCard(card) + " by " + this.formatPlayerName(player.name);
+			elem += this.formatCard(card) + " by " + this.formatPlayerName(player);
 		}
-		this.printElements("Last card played:" + elem);
+		window.document.getElementById("last").style.display = "";
+		window.document.getElementById("last").innerHTML = "<p style='text-align: left;'>" + "Last card:" + elem + "</p>";
 	}
 	,printPlayerHand: function(player,nextRank,firstTurn) {
 		var elem = "";
@@ -1810,10 +1862,8 @@ nainJaune_client_WebRenderer.prototype = {
 		} else {
 			elem = "<span class='spacer'></span>" + "<span class='back highlight'>" + "<button class='skip' onclick='Main.fin()'>Fin</button>" + "</span>";
 		}
-		this.printElements("Cards:" + elem);
-	}
-	,printCheats: function() {
-		this.printElements("<button class='skip' onclick='Main.jouer(null)'>J Null</button>" + "<span class='spacer medium'></span>" + "<button class='skip' onclick='Main.jouer(Main.c.g.deck.cards[0])'>J Wrong</button>" + "<span class='spacer medium'></span>" + "<button class='skip' onclick='Main.prendre(null)'>P Null</button>" + "<span class='spacer medium'></span>" + "<button class='skip' onclick='Main.prendre(Main.c.g.deck.cards[0])'>P Wrong</button>" + "<span class='spacer medium'></span>" + "<button class='skip' onclick='Main.passer()'>Passer</button>" + "<span class='spacer medium'></span>" + "<button class='skip' onclick='Main.fin()'>Fin</button>","right");
+		window.document.getElementById("hand").style.display = "";
+		window.document.getElementById("hand").innerHTML = "<p style='text-align: left;'>" + "Hand:" + elem + "</p>";
 	}
 };
 var nainJaune_core_Card = function(rank,suit) {
@@ -2604,7 +2654,7 @@ fsm__$FSM_Transition.NULL_ID = -1;
 fsm__$FSM_State.NULL_ID = -1;
 fsm_FSM.NULL_STATE_ID = fsm__$FSM_State.NULL_ID;
 fsm_FSM.NULLTRANSITION_ID = fsm__$FSM_Transition.NULL_ID;
-nainJaune_client_Client.someNames = ["Red","Leaf","Luth","Célesta","Brice","Flora","Louka","Aurore","Ludwig","Ludvina","Mélis","Echo","Kalem","Serena","Elio","Selene","Victor","Gloria","Aurel","Lucia"];
+nainJaune_client_Client.names = ["Red","Leaf","Luth","Célesta","Brice","Flora","Louka","Aurore","Ludwig","Ludvina","Mélis","Echo","Kalem","Serena","Elio","Selene","Victor","Gloria","Aurel","Lucia","Florian","Juliana","Nathan","Sandrine","Lunick","Solana","Primo","Clara","Sully","Ethelle","Jamie","River","Marc","Mint","Lucas","Anna","Scottie","Bettie"];
 nainJaune_core_Card.ANY = -1;
 nainJaune_core_Card.SUITS = ["Coeur","Carreau","Trefle","Pique"];
 nainJaune_core_Card.SYMBOLS = ["♥","♦","♣","♠","A"];

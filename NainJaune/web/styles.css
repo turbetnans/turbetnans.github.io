@@ -7,12 +7,26 @@ body {
     font-family: Verdana;
 }
 
+.line {
+    border:1px solid #0007;
+    margin: .5em 0;
+}
+
 /*----------------------------------------------------------------------------*/
 .column {
     float: left;
     min-height: 100vh;
     max-height: 100vh;
     overflow: hidden;
+    background-color: #111;
+}
+.column.left {
+    box-shadow: inset 0 -.5em 1em -.5em black;
+}
+.column.right {
+    width: 80%;
+    background-color: forestgreen;
+    box-shadow: inset 0 0 30px;
 }
 .row:after {
     content: "";
@@ -21,19 +35,23 @@ body {
 }
 .cell {
     overflow-y: hidden;
-    padding: 0 5px;
+    padding: 0 .5em;
+}
+
+.cell.title {
+    background-color: #bbb;
+    box-shadow: inset 0 -.5em 1em -.5em black;
 }
 .cell.players {
-    max-height: 75vh;
-    height: 75vh;
-    min-height: 75vh;
+    background-color: #777;
+    box-shadow: inset 0 -.5em 1em -.5em black;
 }
 .cell.state {
-    max-height: 25vh;
-    height: 25vh;
-    min-height: 25vh;
+    background-color: #333;
+    box-shadow: inset 0 -.5em 1em -.5em black;
 }
-.cell.field {
+
+.cell.top {
     max-height: 67vh;
     height: 67vh;
     min-height: 67vh;
@@ -44,7 +62,31 @@ body {
     min-height: 33vh;
 }
 
+#top p {
+    margin: .5em;
+}
+
 /*----------------------------------------------------------------------------*/
+.arrow {
+    position: absolute;
+    right: 5%;
+    cursor: pointer;
+}
+.arrow.up {
+    top: .5em;
+}
+.arrow.down {
+    bottom: 10%;
+}
+#log {
+    background-color: #7777;
+    overflow-y: scroll;
+    margin: 0 auto;
+    width: 90%;
+    height: 80%;
+    box-shadow: inset 0 0 15px;
+    padding: 1em 1em;
+}
 #log::-webkit-scrollbar {
     display: none;
 }
@@ -64,16 +106,17 @@ body {
     margin-bottom: 0;
 }
 
-#display p {
-    margin: .5em;
-}
-
 /*----------------------------------------------------------------------------*/
 button {
     border-radius: 1em;
     padding: 0;
     margin: 0;
     background-color: #ddd;
+    transition: border .25s;
+}
+button:enabled:hover {
+    transition: border 0s;
+    font-weight: bold;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -102,7 +145,7 @@ button.card:disabled {
     background-color: #dfdfdf;
     border-color: #bfbfbf;
 }
-button.sweep:disabled {
+button.card.sweep:disabled {
     background-color: #dfdfdf;
 }
 button.card.red:disabled {
@@ -113,6 +156,9 @@ button.card.black:disabled {
     color: #7f7f7f;
     border-color: #7f7f7f;
 }
+button.card:enabled:hover {
+    border-color: darkred;
+}
 
 /*----------------------------------------------------------------------------*/
 button.player {
@@ -121,9 +167,9 @@ button.player {
     border-radius: 1em;
     padding-left: .5em;
     padding-right: .5em;
-    border: solid 1px #bfbfbf;
-    border-left: solid .5em #bfbfbf;
-    border-right: solid .5em #bfbfbf;
+    border: solid .1em #777;
+    border-left: solid .5em #777;
+    border-right: solid .5em #777;
 }
 button.player:disabled {
     color: black;
@@ -133,9 +179,13 @@ button.player.highlight {
     border-right-color: cyan;
 }
 button.player.simple {
-    border: solid 1px #bfbfbf;
+    border: solid .1em #bfbfbf;
     color: black;
     background-color: #dfdfdf;
+}
+button.player.you {
+    color: darkgreen;
+    font-weight: bold;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -155,7 +205,10 @@ button.go {
     width: 12em;
     height: 2em;
     border-color: #7f7f7f;
-    border-width: 2px;
+    border-width: .2em;
+}
+button.go:enabled:hover {
+    border-color: darkred;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -163,7 +216,10 @@ button.add {
     width: 2em;
     height: 2em;
     border-color: #7f7f7f;
-    border-width: 2px;
+    border-width: .2em;
+}
+button.add:enabled:hover {
+    border-color: darkred;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -172,8 +228,8 @@ button.skip {
     height: 2em;
     border-color: #7f7f7f;
 }
-button:hover {
-    border-color: black;
+button.skip:enabled:hover {
+    border-color: darkred;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -195,12 +251,12 @@ span.back.highlight {
 /*----------------------------------------------------------------------------*/
 span.spacer {
     display: inline-block;
-    width: 12px;
+    width: 1em;
 }
 span.spacer.small {
-    width: 2px;
+    width: .2em;
 }
 span.spacer.medium {
-    width: 7px;
+    width: .5em;
 }
 /*----------------------------------------------------------------------------*/

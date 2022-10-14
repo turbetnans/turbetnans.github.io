@@ -21,16 +21,14 @@ class Client extends FSM {
     public var r(default,null):WebRenderer = null;
 
     public var role(default,null):Role = None;
-    public var name(default,null):String = someNames[Std.int(Math.random()*someNames.length)];
+    public var name(default,null):String = names[Std.int(Math.random()*names.length)];
     public var peer(default,null):Peer = null;
     public var hostCo(default,null):DataConnection = null;
     public var guests(default,null):Array<Guest> = null;
     public var playerId(default,null):PlayerId = Player.NULL_ID;
-    public var gameState(default,null):String = "";
-    //public var gameMessages:Array<GameMessage> = [];
     
-    static public var someNames:Array<String> = [
-        "Red","Leaf",
+    static public var names:Array<String> = [
+        "Red","Leaf",   
         "Luth","Célesta",
         "Brice","Flora",
         "Louka","Aurore",
@@ -39,7 +37,16 @@ class Client extends FSM {
         "Kalem","Serena",
         "Elio","Selene",
         "Victor","Gloria",
-        "Aurel","Lucia"
+        "Aurel","Lucia",
+        "Florian","Juliana",
+        "Nathan","Sandrine",
+        "Lunick","Solana",
+        "Primo","Clara",
+        "Sully","Ethelle",
+        "Jamie","River",
+        "Marc","Mint",
+        "Lucas", "Anna",
+        "Scottie","Bettie"
     ];
 
     // Create client
@@ -59,12 +66,12 @@ class Client extends FSM {
         initPeer();
 
         // STATES
-        var mainMenu:StateId = addState("Menu principal",()->entryMainMenu());
-        var localGame:StateId = addState("Partie locale",()->entryLocalGame());
-        var roomHost:StateId = addState("Hote du salon",()->entryRoomHost());
-        var roomWait:StateId = addState("Attente du salon",()->entryRoomWait());
-        var roomGuest:StateId = addState("Invite du salon",()->entryRoomGuest());
-        var gameRunning:StateId = addState("Partie en cours",()->entryGameRunning());
+        var mainMenu:StateId = addState("Menu principal",()->entryMainMenu(),()->exitState());
+        var localGame:StateId = addState("Partie locale",()->entryLocalGame(),()->exitState());
+        var roomHost:StateId = addState("Hote du salon",()->entryRoomHost(),()->exitState());
+        var roomWait:StateId = addState("Attente du salon",()->entryRoomWait(),()->exitState());
+        var roomGuest:StateId = addState("Invite du salon",()->entryRoomGuest(),()->exitState());
+        var gameRunning:StateId = addState("Partie en cours",()->entryGameRunning(),()->exitState());
 
         // INITIAL STATE
         setInitial(mainMenu);
@@ -124,7 +131,6 @@ class Client extends FSM {
         addTransition(gameRunning,mainMenu,Return,
             (_)->( !g.isRunning || role.match(Guest) ),
             (_)->{
-                r.clearOutput();
                 trace("TR: retour au menu");
             }
         );
@@ -133,20 +139,17 @@ class Client extends FSM {
         addTransition(localGame,gameRunning,Launch,
             (_)->(g!=null),
             (_)->{
-                r.clearOutput();
                 trace("TR: partie locale lancée");
             }
         );
         addTransition(roomHost,gameRunning,Launch,
             (_)->(g!=null),
             (_)->{
-                r.clearOutput();
                 trace("TR: partie lancée");
             }
         );
         addTransition(roomGuest,gameRunning,Launch,null,
             (_)->{
-                r.clearOutput();
                 trace("TR: partie lancée par l'hôte");
             }
         );
@@ -171,50 +174,33 @@ class Client extends FSM {
     // state entrys/exits
     function entryMainMenu() {
         role = None;
-        r.clearElements();
         r.printState();
-        r.printMenu();
         
     }
     function entryLocalGame() {
         role = Local;
-        r.clearElements();
         r.printState();
-        r.printCreateLocal();
-        r.printReturn();
         
     }
     function entryRoomHost() {
         role = Host;
-        r.clearElements();
         r.printState();
-        r.printHostId();
-        r.printConnectedPlayers(true);
-        r.printReturn();
         
     }
     function entryRoomWait() {
         role = Guest;
         guests = [];
-        r.clearElements();
         r.printState();
     }
     function entryRoomGuest() {
         role = Guest;
-        r.clearElements();
         r.printState();
-        r.printConnectedPlayers();
-        r.printReturn();
     }
     function entryGameRunning() {
         if(g==null) {
             trace("err wtf no game");
             return;
         }
-
-        // State
-        gameState = g.states[g.currentState].name;
-
         // Messages
         var message:GameMessage = null;
         if(role.match(Guest)) {
@@ -228,51 +214,15 @@ class Client extends FSM {
                     sendToAll(GameUpdate(message));
             }
         }
-
-        // Game state
-        r.clearElements();
         r.printState(true);
-        switch(gameState){
-            case "Debut de partie":
-                r.printBoard(g.board,g.nextSweep,true);
-                r.printPlayers(g.players,g.currentPlayer);
-                if( role.match(Local) || role.match(Host) )
-                    r.printStartGame();
-            case "Debut de manche":
-                r.printBoard(g.board,g.nextSweep,true);
-                r.printPlayers(g.players,g.currentPlayer);
-                if( role.match(Local) || role.match(Host) )
-                    r.printStartRound();
-            case "Debut de tour":
-                if(role.match(Local)) {
-                    r.printBoard(g.board,g.nextSweep);
-                    r.printPlayers(g.players,g.currentPlayer);
-                    r.printLastCard(g.cardsPlayed.last(),g.players[g.lastPlayer]);
-                    r.printNextCard(g.nextCard);
-                    r.printPlayerHand(g.currentPlayer,g.nextCard,g.firstTurn);
-                } else {
-                    r.printBoard(g.board,g.nextSweep);
-                    r.printPlayers(g.players,g.currentPlayer);
-                    r.printLastCard(g.cardsPlayed.last(),g.players[g.lastPlayer]);
-                    r.printNextCard(g.nextCard);
-                    if(playerId==g.currentPlayer)
-                        r.printPlayerHand(g.currentPlayer,g.nextCard,g.firstTurn);
-                }
-            case "Fin de manche":
-                r.printBoard(g.board,g.nextSweep,true);
-                r.printPlayers(g.players,g.currentPlayer);
-                if( role.match(Local) || role.match(Host) )
-                    r.printStopRound();
-            case "Fin de partie":
-                r.printBoard(g.board,g.nextSweep,true);
-                r.printPlayers(g.players,g.currentPlayer);
-                if( role.match(Local) || role.match(Host) )
-                    r.printStopGame();
-        }
+    }
+    function exitState() {
+        r.clear();
     }
 
     // Game controls
     public function createGame(?players:Array<String>,initialMoney:Int) {
+        trace(players);
         if(role.match(Local)) {
             g = Game.create(players,initialMoney);
 
@@ -288,6 +238,7 @@ class Client extends FSM {
         
         if(g==null) {
             r.printOutput("Erreur lors de la création de la partie.");
+            r.printOutput("<br>");
             return;
         }
         
@@ -297,6 +248,8 @@ class Client extends FSM {
                     playerId = i;
                     return;
                 }
+        } else if(role.match(Local)) {
+            playerId = 0;
         }
     }
     public function startGame() {
@@ -350,30 +303,35 @@ class Client extends FSM {
             trace("PEER CONNECTION "+co.peer);
             if(role!=Host) {
                 r.printOutput("Connection from guest "+co.peer+" refused because not hosting");
+                r.printOutput("<br>");
                 co.on("open", (_)->{
                     co.send(CannotJoin("NoHost"));
                     Timer.delay(()->{if(co!=null) co.close();}, 500);
                 });
             } else if( [for(guest in guests) if(guest.id==co.peer)true].length!=0 ) {
                 r.printOutput("Connection from guest "+co.peer+" refused because guest already here");
+                r.printOutput("<br>");
                 co.on("open", (_)->{
                     co.send(CannotJoin("AlreadyJoined"));
                     Timer.delay(()->{if(co!=null) co.close();}, 500);
                 });
             } else if(guests.length>=8) {
                 r.printOutput("Connection from guest "+co.peer+" refused because room full");
+                r.printOutput("<br>");
                 co.on("open", (_)->{
                     co.send(CannotJoin("Full"));
                     Timer.delay(()->{if(co!=null) co.close();}, 500);
                 });
             } else if(states[currentState].name=="Partie en cours") {
                 r.printOutput("Connection from guest "+co.peer+" refused because already playing");
+                r.printOutput("<br>");
                 co.on("open", (_)->{
                     co.send(CannotJoin("AlreadyPlaying"));
                     Timer.delay(()->{if(co!=null) co.close();}, 500);
                 });
             } else {
                 r.printOutput("Connection from guest "+co.peer+" accepted");
+                r.printOutput("<br>");
                 // save connection
                 guests.push(new Guest(co,co.peer,co.label));
                 // notify guest
@@ -388,6 +346,7 @@ class Client extends FSM {
                 // connection closed
                 co.on("close", (_)->{
                     r.printOutput("Connection closed with guest "+co.peer);
+                    r.printOutput("<br>");
                     for(guest in guests) if(guest.id==co.peer) {
                         guests.remove(guest);
                         update(Update);
@@ -400,6 +359,7 @@ class Client extends FSM {
                     switch((err:Error).type){
                         default:
                             r.printOutput("error with guest "+err);
+                            r.printOutput("<br>");
                     }
                 });
             }
@@ -417,6 +377,7 @@ class Client extends FSM {
                     update(Return);
                 default:
                     r.printOutput("error with peer "+err);
+                    r.printOutput("<br>");
             }
         });
     }
@@ -427,6 +388,7 @@ class Client extends FSM {
         // on connection established
         hostCo.on("open", (_)->{
             r.printOutput("Connection to host "+hostCo.peer+" established");
+            r.printOutput("<br>");
         });
         // on data reception
         hostCo.on("data", (data)->{
@@ -435,6 +397,7 @@ class Client extends FSM {
         // connection closed
         hostCo.on("close", (_)->{
             r.printOutput("Connection closed with host "+hostCo.peer);
+            r.printOutput("<br>");
             hostCo = null;
             update(Return);
         });
@@ -444,15 +407,18 @@ class Client extends FSM {
             switch((err:Error).type){
                 default:
                     r.printOutput("error with host "+err);
+                    r.printOutput("<br>");
             }
         });
     }
     function closeRoom() {
         r.printOutput("Room closed");
+        r.printOutput("<br>");
         for(guest in guests) if(guest.id!=peer.id){
             guest.co.send(RoomClose("Closed"));
             Timer.delay(()->{if(guest.co!=null) guest.co.close();}, 500);
             r.printOutput("Disconnect "+guest.id);
+            r.printOutput("<br>");
         }
     }
     function quitRoom() {
@@ -473,161 +439,209 @@ class Client extends FSM {
         var elem:String = "";
         switch(message) {
             case GameInit:
-                elem += "[Tr] [Init] La partie est créée !";
+                r.printOutput("[Tr] [Init] La partie est créée !");
+                r.printOutput("<br>");
             case GameReady:
-                elem += "</p><hr><p>";
-                elem += "[St] La partie est prête à commencer !";
+                r.printOutput("<div class='line'></div>");
+                r.printOutput("[St] La partie est prête à commencer !");
             case GameStart(dealer):
                 elem += "[Tr] La partie commence ! ";
-                elem += r.formatPlayerName(g.players[dealer].name);
+                elem += r.formatPlayerName(g.players[dealer]);
                 elem += " sera le premier donneur.";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case GameEnd(losers):
                 elem += "[Tr] La partie se termine, certains joueurs ne peuvent pas payer : ";
                 for(i in 0...losers.length)
                     elem += (i!=0? "<span class='spacer medium'></span>": "")+
-                        r.formatPlayerName(g.players[losers[i]].name);
+                        r.formatPlayerName(g.players[losers[i]]);
+                r.printOutput(elem);
+                r.printOutput("<br>");
 
             case GameOver(winners):
-                elem += "</p><hr><p>";
+                r.printOutput("<div class='line'></div>");
                 elem += "[St] [Fin] La partie est terminée ! Les gagnants sont ";
                 for(i in 0...winners.length)
                     elem += (i!=0? "<span class='spacer medium'></span>": "")+
-                        r.formatPlayerName(g.players[i].name);
+                        r.formatPlayerName(g.players[i]);
+                r.printOutput(elem);
+                r.printOutput("<br>");
                 
             case RoundReady(round,dealer):
-                elem += "</p><hr><p>";
+                r.printOutput("<div class='line'></div>");
                 elem += "[St] La manche ";
                 elem += r.formatValue(round);
                 elem += " est prête à commencer, ";
-                elem += r.formatPlayerName(g.players[dealer].name);
+                elem += r.formatPlayerName(g.players[dealer]);
                 elem += " est le donneur !";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case RoundStart(round,dealer,hands,stock): 
                 elem += "[Tr] La manche ";
                 elem += r.formatValue(round);
                 elem += " commence, ";
-                elem += r.formatPlayerName(g.players[dealer].name);
+                elem += r.formatPlayerName(g.players[dealer]);
                 elem += " a distribué les cartes !";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case RoundEnd(round):
                 elem += "[Tr] Passage à la manche suivante !";
             case RoundOver(round,player,type):
                 if(type=="Opera") {
-                    elem += "</p><hr><p>";
+                    r.printOutput("<div class='line'></div>");
                     elem += "[St] ";
-                    elem += r.formatPlayerName(g.players[player].name);
+                    elem += r.formatPlayerName(g.players[player]);
                     elem += " réalise un Grand Opéra et remporte la manche ";
                     elem += r.formatValue(round);
                     elem += " !";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else if(type==null) {
-                    elem += "</p><hr><p>";
+                    r.printOutput("<div class='line'></div>");
                     elem += "[St] La manche ";
                     elem += r.formatValue(round);
                     elem += " a été remportée par ";
-                    elem += r.formatPlayerName(g.players[player].name);
+                    elem += r.formatPlayerName(g.players[player]);
                     elem += " !";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else {
-                    elem += "Message RoundOver -> "+message;
+                    r.printOutput("Message RoundOver -> "+message);
+                    r.printOutput("<br>");
                 }
             
             case TurnStart(player,cards):
-                elem += "</p><hr><p>";
+                r.printOutput("<div class='line'></div>");
                 elem += "[St] C'est à ";
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " de jouer, il lui reste ";
                 elem += r.formatValue(cards.length);
                 elem += " cartes en main.";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             
             case CardPlay(card,player):
                 elem += "[Tr] ";
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " vient de jouer ";
                 elem += r.formatCard(card);
                 elem += ".";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case CardStock(stock,type):
                 if(type=="Start") {
                     elem += "Il y a ";
                     elem += r.formatValue(stock.length);
                     elem += " cartes dans le talon.";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else if(type=="End") {
                     elem += "Le talon était ";
                     for(i in 0...stock.length)
                         elem += (i!=0? "<span class='spacer medium'></span>": "")+
                             r.formatCard(stock[i]);
                     elem += ".";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else {
-                    elem += "Message CardStock -> "+message;
+                    r.printOutput("Message CardStock -> "+message);
+                    r.printOutput("<br>");
                 }
                 
             case SweepWin(sweep,player,value,type):
                 if(type=="Opera") {
-                    elem += r.formatPlayerName(g.players[player].name);
+                    elem += r.formatPlayerName(g.players[player]);
                     elem += " remporte la mise de ";
                     elem += r.formatCard(Game.sweeps[sweep]);
                     elem += " pour ";
                     elem += r.formatMoney(value);
                     elem += " gràce au Grand Opera.";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else if( type==null||type=="" ) {
-                    elem += r.formatPlayerName(g.players[player].name);
+                    elem += r.formatPlayerName(g.players[player]);
                     elem += " remporte la mise de ";
                     elem += r.formatCard(Game.sweeps[sweep]);
                     elem += " pour ";
                     elem += r.formatMoney(value);
                     elem += ".";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else {
-                    elem += "Message SweepWin -> "+message;
+                    r.printOutput("Message SweepWin -> "+message);
+                    r.printOutput("<br>");
                 }
             case SweepMiss(sweep,player):
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " a oublié de récupérer ";
                 elem += r.formatCard(Game.sweeps[sweep]);
                 elem += ".";
+                r.printOutput(elem);
+                r.printOutput("<br>");
 
             case PlayerPass(player,rank):
                 elem += "[Tr] ";
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " : Sans ";
                 elem += r.formatCardRank(Card.RANKS[rank]);
                 elem += ".";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case PlayerEnd(player,round):
                 elem += "[Tr] ";
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " termine la manche ";
                 elem += r.formatValue(round);
                 elem += ".";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case PlayerBet(player,sweep,value,type):
                 if(type=="Bet") {
-                    elem += r.formatPlayerName(g.players[player].name);
-                    elem += " a misé.";
+                    // elem += r.formatPlayerName(g.players[player].name);
+                    // elem += " a misé.";
+                    // r.printOutput(elem);
+                    // r.printOutput("<br>");
                 } else if(type=="Repay") {
-                    elem += r.formatPlayerName(g.players[player].name);
+                    elem += r.formatPlayerName(g.players[player]);
                     elem += " double la mise de ";
                     elem += r.formatCard(Game.sweeps[sweep]);
                     elem += " pour ";
                     elem += r.formatMoney(value);
                     elem += ".";
+                    r.printOutput(elem);
+                    r.printOutput("<br>");
                 } else {
-                    elem += "Message PlayeBet -> "+message;
+                    r.printOutput("Message PlayeBet -> "+message);
+                    r.printOutput("<br>");
                 }
             case PlayerPay(from,to,value):
-                elem += r.formatPlayerName(g.players[from].name);
+                elem += r.formatPlayerName(g.players[from]);
                 elem += " paye ";
                 elem += r.formatMoney(value);
                 elem += " à ";
-                elem += r.formatPlayerName(g.players[to].name);
+                elem += r.formatPlayerName(g.players[to]);
                 elem += ".";
+                r.printOutput(elem);
+                r.printOutput("<br>");
             case PlayerBankruptcy(player):
-                elem += r.formatPlayerName(g.players[player].name);
+                elem += r.formatPlayerName(g.players[player]);
                 elem += " est ruiné.";
+                r.printOutput(elem);
+                r.printOutput("<br>");
 
             case CannotPlay(player,card,type):
-                elem += "Impossible de joueur la carte ! ("+type+")";
+                r.printOutput("Impossible de joueur la carte ! ("+type+")");
+                r.printOutput("<br>");
             case CannotWin(player,card,type):
-                elem += "Impossible de prendre la mise ! ("+type+")";
+                r.printOutput("Impossible de prendre la mise ! ("+type+")");
+                r.printOutput("<br>");
             case CannotPass(player,type):
-                elem += "Impossible de passer son tour ! ("+type+")";
+                r.printOutput("Impossible de passer son tour ! ("+type+")");
+                r.printOutput("<br>");
             case CannotEnd(player,round,type):
-                elem += "Impossible de terminer la manche ! ("+type+")";
+                r.printOutput("Impossible de terminer la manche ! ("+type+")");
+                r.printOutput("<br>");
         }
-        r.printOutput(elem);
     }
     function processGameMessageGuest(message:GameMessage) {
         switch(message) {
@@ -673,6 +687,7 @@ class Client extends FSM {
             // Host
             case GuestQuit:
                 r.printOutput("Départ du joueur : "+sender);
+                r.printOutput("<br>");
                 for(guest in guests) if(guest.id==sender) {
                     guests.remove(guest);
                     update(Update);
@@ -688,9 +703,9 @@ class Client extends FSM {
                 g.update(event,player,Card.clone(card));
                 update(Update);
             default :
-                elem += "Message Host -> "+message;
+                r.printOutput("Message Host -> "+message);
+                r.printOutput("<br>");
         }
-        r.printOutput(elem);
     }
     function processMessageGuest(message:Message) {
         if(!role.match(Guest))
@@ -700,15 +715,19 @@ class Client extends FSM {
             // Guest
             case RoomJoin:
                 r.printOutput("Salon rejoint !");
+                r.printOutput("<br>");
                 update(JoinRoom);
             case CannotJoin(reason):
                 r.printOutput("Impossible de rejoindre le salon : "+reason);
+                r.printOutput("<br>");
                 update(Return);
             case RoomClose(reason):
                 r.printOutput("Salon fermé ! "+reason);
+                r.printOutput("<br>");
                 update(Return);
             case RoomLaunch(money):
                 r.printOutput("L'hôte commence la partie !");
+                r.printOutput("<br>");
                 createGame(money);
                 startGame();
                 update(Launch);
@@ -721,12 +740,13 @@ class Client extends FSM {
                 update(Update);
             case CannotAct(reason):
                 r.printOutput("Action impossible : "+reason);
+                r.printOutput("<br>");
                 update(Update);
             
             default :
-                elem += "Message Guest -> "+message;
+                r.printOutput("Message Guest -> "+message);
+                r.printOutput("<br>");
         }
-        r.printOutput(elem);
     }
     function fixGameMessage(message:GameMessage):GameMessage {
         return switch(message){

@@ -1,5 +1,6 @@
 package nainJaune.client;
 
+import js.html.InputElement;
 import haxe.Log;
 import js.Browser;
 import nainJaune.core.Game;
@@ -17,38 +18,126 @@ class WebRenderer{
     var c:Client;
 
     // Base functions
-    public function printElements(str:String, ?allign:String="left") {
-        if(allign!="right" && allign!="center" && allign!="left")
-            allign="left";
-        if(str!="") Browser.document.getElementById("display").innerHTML += "<p style='text-align: "+allign+";'>"+str+"</p>";
-    }
-    public function clearElements() {
-        Browser.document.getElementById("display").innerHTML = "";
-    }
     public function printOutput(str:String) {
-        if(str=="")
-            return;
-        Browser.document.getElementById("log").innerHTML += "<p>"+str+"</p>";
+        if(str=="<br>"||str=="<hr>")
+            Browser.document.getElementById("log").innerHTML += str;
+        else if(str!="")
+            Browser.document.getElementById("log").innerHTML += "<span>"+str+"</span>";
+        else return;
         Browser.document.getElementById("log").scrollTop = Browser.document.getElementById("log").scrollHeight;
     }
     public function clearOutput() {
         Browser.document.getElementById("log").innerHTML = "";
     }
     public function printState(inGame:Bool=false) {
+        // display state
         if(inGame) {
-            Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.gameState+" | "+c.g.round+"<br>"+c.name+" | "+c.role;
+            Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.g.states[c.g.currentState].name+" | "+c.g.round+"<br>"+c.name+" | "+c.role;
         } else {
             Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.name+" | "+c.role;
         }
+
+        // display main area
+        switch(c.states[c.currentState].name) {
+            case "Menu principal":
+                Browser.document.getElementById("menuMain").style.display = "";
+                (cast Browser.document.getElementById("name"):InputElement).value = c.name;
+
+            case "Partie locale":
+                Browser.document.getElementById("menuRoom").style.display = "";
+                Browser.document.getElementById("buttonCreate").style.display = "";
+                for(i in 0...8) {
+                    (cast Browser.document.getElementById("p"+i):InputElement).value =
+                        (i==0&&c.name.length>0? c.name: Client.names[Std.int(Math.random()*Client.names.length)]);
+                    (cast Browser.document.getElementById("p"+i):InputElement).disabled = false;
+                }
+
+            case "Hote du salon":
+                Browser.document.getElementById("menuRoom").style.display = "";
+                Browser.document.getElementById("idHost").style.display = "";
+                Browser.document.getElementById("buttonCreate").style.display = "";
+                for(i in 0...8) {
+                    (cast Browser.document.getElementById("p"+i):InputElement).value =
+                        (i<c.guests.length? c.guests[i].name: "nope");
+                    (cast Browser.document.getElementById("p"+i):InputElement).disabled = true;
+                }
+
+            case "Attente du salon":
+                // ToDo
+
+            case "Invite du salon":
+                Browser.document.getElementById("menuRoom").style.display = "";
+                for(i in 0...8) {
+                    (cast Browser.document.getElementById("p"+i):InputElement).value =
+                        (i<c.guests.length? c.guests[i].name: "nope");
+                    (cast Browser.document.getElementById("p"+i):InputElement).disabled = true;
+                }
+                
+            case "Partie en cours":
+                switch(c.g.states[c.g.currentState].name) {
+                    case "Debut de partie":
+                        printBoard(c.g.board,c.g.nextSweep,true);
+                        printPlayers(c.g.players,c.g.currentPlayer);
+                        if( c.role.match(Local) || c.role.match(Host) )
+                            printStartGame();
+                    case "Debut de manche":
+                        printBoard(c.g.board,c.g.nextSweep,true);
+                        printPlayers(c.g.players,c.g.currentPlayer);
+                        if( c.role.match(Local) || c.role.match(Host) )
+                            printStartRound();
+                    case "Debut de tour":
+                        if(c.role.match(Local)) {
+                            printBoard(c.g.board,c.g.nextSweep);
+                            printPlayers(c.g.players,c.g.currentPlayer);
+                            printLastCard(c.g.cardsPlayed.last(),c.g.players[c.g.lastPlayer]);
+                            printNextCard(c.g.nextCard);
+                            printPlayerHand(c.g.currentPlayer,c.g.nextCard,c.g.firstTurn);
+                        } else {
+                            printBoard(c.g.board,c.g.nextSweep);
+                            printPlayers(c.g.players,c.g.currentPlayer);
+                            printLastCard(c.g.cardsPlayed.last(),c.g.players[c.g.lastPlayer]);
+                            printNextCard(c.g.nextCard);
+                            if(c.playerId==c.g.currentPlayer)
+                                printPlayerHand(c.g.currentPlayer,c.g.nextCard,c.g.firstTurn);
+                        }
+                    case "Fin de manche":
+                        printBoard(c.g.board,c.g.nextSweep,true);
+                        printPlayers(c.g.players,c.g.currentPlayer);
+                        if( c.role.match(Local) || c.role.match(Host) )
+                            printStopRound();
+                    case "Fin de partie":
+                        printBoard(c.g.board,c.g.nextSweep,true);
+                        printPlayers(c.g.players,c.g.currentPlayer);
+                        if( c.role.match(Local) || c.role.match(Host) )
+                            printStopGame();
+                }
+        }
+    }
+    public function clear() {
+        Browser.document.getElementById("menuMain").style.display = "none";
+
+        Browser.document.getElementById("menuRoom").style.display = "none";
+        Browser.document.getElementById("idHost").style.display = "none";
+        Browser.document.getElementById("buttonCreate").style.display = "none";
+        
+        Browser.document.getElementById("board").style.display = "none";
+        Browser.document.getElementById("next").style.display = "none";
+        Browser.document.getElementById("last").style.display = "none";
+        Browser.document.getElementById("all").style.display = "none";
+        Browser.document.getElementById("hand").style.display = "none";
+        Browser.document.getElementById("buttonLaunch").style.display = "none";
+        Browser.document.getElementById("buttonStart").style.display = "none";
+        Browser.document.getElementById("buttonStop").style.display = "none";
+        Browser.document.getElementById("buttonEnd").style.display = "none";
     }
 
     // Element formating
-    public function formatPlayerName(?name:String):String {
-        return "<button class='player simple' disabled>"+name+"</button>";
+    public function formatPlayerName(player:Player):String {
+        return "<button class='player simple"+(player.id==c.playerId? " you":"")+"' disabled>"+player.name+"</button>";
     }
     public function formatPlayer(player:Player, ?isCurrent:Bool=false):String {
-        return "<button class='player "+(isCurrent? " highlight' ":"' ")+
-                "disabled>"+ player+"</button>";
+        return "<button class='player "+(player.id==c.playerId? "you ":" ")+(isCurrent? "highlight' ":"' ")+
+                "disabled>"+(player.id==c.playerId? "<b>"+player+"</b>": player.toString())+"</button>";
     }
     public function formatCardRank(rank:String):String {
         return "<button class='card' disabled >"+rank+"</button>";
@@ -83,87 +172,19 @@ class WebRenderer{
     public function formatMoney(value:Int):String {
         return "<button class='value money' disabled>"+value+"</button>";
     }
-
-    // Menus
-    public function printMenu() {
-        printNameSelection();
-        printElements("<button class='go' onclick='Main.createLocal()'>Local</button>","center");
-        printElements("<button class='go' onclick='Main.createRoom()'>Créer</button>","center");
-        printElements("<button class='go' onclick='Main.joinRoom(this.nextSibling.nextSibling.value);'>Rejoindre</button>"+
-            "<br><input type='text' size='32' placeholder='enter host id'/>",
-            "center");
-    }
-    public function printReturn() {
-        printElements("<button class='go' onclick='Main.returnMenu()'>Retour au menu</button>","center");
-    }
-    
-    // Name
-    public function printNameSelection() {
-        var elem:String = "Entrez votre nom : ";
-        elem += "<input type='text' maxlength='10' size='12' placeholder='Entrez un nom...' value='"+c.name+"'";
-        elem += "onchange='Main.c.name=this.value;'/>";
-        printElements(elem,"center");
-    }
-
-    // Local room
-    public function printCreateLocal() {
-        printElements("Entrez les noms d'au moins 3 joueurs :");
-        var elem:String = "";
-        for(i in 0...8)
-            elem += (i!=0? "<span class='spacer small'></span>": "")+
-                "<input type='text' maxlength='10' size='12' placeholder='Entrez un nom...' value='"+
-                (i==0&&c.name.length>0? c.name: Client.someNames[Std.int(Math.random()*Client.someNames.length)])+
-                "'/>";
-        printElements(elem,"center");
-        printElements("<button class='go' onclick='"+
-            "Main.create([...document.getElementsByTagName(\"input\")].filter(elem=>elem.value!=\"\").map(elem=>elem.value));"+
-            "Main.start();'>Créer la partie</button>",
-            "center");
-    }
-
-    // Online room
-    public function printConnectedPlayers(?host:Bool=false) {
-        printElements("Joueurs connectés :");
-        var elem:String = "";
-        for(i in 0...8) {
-            elem += (i!=0? "<span class='spacer small'></span>": "")+
-                "<input type='text' disabled size='12' placeholder='personne' value='"+
-                (i<c.guests.length? c.guests[i].name: "nope")+
-                "'/>";
-        }
-        printElements(elem,"center");
-        // if(host) printElements("<input type='number' min=15 value=200 onchange='if(this.value<15) this.value=15;'","center");
-        if(host) printElements("<button class='go' onclick='Main.create();Main.start();'>Créer la partie</button>","center");
-    }
-    public function printHostId(?host:Bool=false) {
-        var elem:String = "<span id='peerId'>"+c.peer.id+"</span>";
-        elem += "<button class=\"go\" onclick=\"";
-        elem += "var r=document.createRange();";
-        elem += "r.selectNode(document.getElementById('peerId'));";
-        elem += "window.getSelection().removeAllRanges();";
-        elem += "window.getSelection().addRange(r);";
-        elem += "document.execCommand('copy');";
-        elem += "window.getSelection().removeAllRanges();";
-        elem += "this.innerHTML='Copié !';";
-        elem += "setTimeout(()=>{this.innerHTML='Copier vote ID.';},1000);";
-        elem += "\">Copier vote ID.</button>";
-        printElements(elem,"center");
-    }
     
     // Ingame elements
     public function printStartGame() {
-        printElements("<button class='go' onclick='Main.go()'>Lancer la partie</button>","center");
+        Browser.document.getElementById("buttonLaunch").style.display = "";
     }
     public function printStartRound() {
-        printElements("<button class='go' onclick='Main.go()'>Démarer la manche</button>","center");
+        Browser.document.getElementById("buttonStart").style.display = "";
     }
     public function printStopRound() {
-        printElements("<button class='go' onclick='Main.go()'>Terminer la manche</button>","center");
+        Browser.document.getElementById("buttonStop").style.display = "";
     }
     public function printStopGame() {
-        printElements("<button class='go' onclick='Main.start()'>Relancer une partie</button>"+
-            "<span class='spacer'></span>"+
-            "<button class='go' onclick='Main.stop()'>Terminer la partie</button>","center");
+        Browser.document.getElementById("buttonEnd").style.display = "";
     }
     public function printBoard(values:Array<Int>, next:Int, ?disableAll:Bool=false) {
         var elem:String = "";
@@ -173,7 +194,8 @@ class WebRenderer{
                 formatSweep(i,values[i],values[i]==0||disableAll)+
                 "</span>";
         }
-        printElements("Board:"+elem);
+        Browser.document.getElementById("board").style.display = "";
+        Browser.document.getElementById("board").innerHTML = "<p style='text-align: left;'>"+"Board:"+elem+"</p>";
     }
     public function printPlayers(players:Array<Player>, currentPlayer:Int) {
         var elem:String = "";
@@ -186,17 +208,18 @@ class WebRenderer{
     }
     public function printNextCard(rank:Int) {
         var elem:String = "<span class='spacer'></span>"+formatCardRank(rank==Card.ANY? "Ø": Card.RANKS[rank]);
-        printElements("Next card:"+elem);
+        Browser.document.getElementById("next").style.display = "";
+        Browser.document.getElementById("next").innerHTML = "<p style='text-align: left;'>"+"Next card:"+elem+"</p>";
     }
     public function printLastCard(card:Card, ?player:Player) {
         var elem:String = "<span class='spacer'></span>";
         if(card==null) {
             elem += formatCardRank("Ø");
         } else {
-            elem += formatCard(card)+" by "+formatPlayerName(player.name);
+            elem += formatCard(card)+" by "+formatPlayerName(player);
         }
-
-        printElements("Last card played:"+elem);
+        Browser.document.getElementById("last").style.display = "";
+        Browser.document.getElementById("last").innerHTML = "<p style='text-align: left;'>"+"Last card:"+elem+"</p>";
     }
     public function printPlayerHand(player:Int, nextRank:Int, firstTurn:Bool) {
         var elem:String = "";
@@ -225,24 +248,10 @@ class WebRenderer{
                 "<button class='skip' onclick='Main.fin()'>Fin</button>"+
                 "</span>";
         }
-        printElements("Cards:"+elem);
+        Browser.document.getElementById("hand").style.display = "";
+        Browser.document.getElementById("hand").innerHTML = "<p style='text-align: left;'>"+"Hand:"+elem+"</p>";
     }
-    
-    // Cheats
-    public function printCheats() {
-        printElements("<button class='skip' onclick='Main.jouer(null)'>J Null</button>"+
-            "<span class='spacer medium'></span>"+
-            "<button class='skip' onclick='Main.jouer(Main.c.g.deck.cards[0])'>J Wrong</button>"+
-            "<span class='spacer medium'></span>"+
-            "<button class='skip' onclick='Main.prendre(null)'>P Null</button>"+
-            "<span class='spacer medium'></span>"+
-            "<button class='skip' onclick='Main.prendre(Main.c.g.deck.cards[0])'>P Wrong</button>"+
-            "<span class='spacer medium'></span>"+
-            "<button class='skip' onclick='Main.passer()'>Passer</button>"+
-            "<span class='spacer medium'></span>"+
-            "<button class='skip' onclick='Main.fin()'>Fin</button>",
-        "right");
-    }
+
 }
 #else
 class WebRenderer{

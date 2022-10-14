@@ -7,39 +7,143 @@
     </head>
     <body>
         <div class="row">
-            <div class="column" style="width: 20%">
-                <div class="cell players" style="background-color: #bbb;">
-                    <hr>
+            <div class="column left" style="width: 20%">
+                <div class="cell title">
+                    <div class="line"></div>
+                    JEU DU NAIN JAUNE
+                    <div class="line"></div>
+                    <p>
+                        (c) Nans 2020-2022
+                    </p>
+                    <div class="line"></div>
+                </div>
+                <div class="cell players">
+                    <div class="line"></div>
                     JOUEURS
-                    <hr>
+                    <div class="line"></div>
                     <p id="players">
                         nothing here
                     </p>
-                    <hr>
+                    <div class="line"></div>
                 </div>
-                <div class="cell state" style="background-color: #777;">
-                    <hr>
+                <div class="cell state">
+                    <div class="line"></div>
                     ETAT
-                    <hr>
+                    <div class="line"></div>
                     <p id="state">
                         nothing here
                     </p>
-                    <hr>
+                    <div class="line"></div>
                 </div>
             </div>
-            <div class="column" style="width: 80%; background-color: #3b3; box-shadow: inset 0 0 30px;">
-                <!--
-                    board
-                    nex card / next player
-                    last card / last player
-                    all cards
+            <div class="column right">
+                <div id="top" class="cell top" style="text-align: center;">
 
-                    player's cards
-                -->
-                <div id="display" class="cell field">
+                    <div class="cell" id="menuMain" style="display: none;">
+                        <p>
+                            <span>Entrez votre nom :</span>
+                            <input id='name' type='text' maxlength='10' size='12' placeholder='Entrez un nom...' onchange='Main.c.name=this.value;'/>
+                        </p>
+                        <p><button class='go' onclick='Main.createLocal()'>Local</button></p>
+                        <p><button class='go' onclick='Main.createRoom()'>Créer</button></p>
+                        <p><button class='go' onclick='Main.joinRoom(document.getElementById("hostId").value);'>
+                            Rejoindre
+                        </button><br>
+                        <input id='hostId' type='text' size='40' placeholder='enter host id'/></p>
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell" id="menuRoom" style="display: none;">
+                        <p id="idHost">
+                            <span id='peerId'>connexion en cours</span>
+                            <button class="go" onclick="
+                                    var r=document.createRange();
+                                    r.selectNode(document.getElementById('peerId'));
+                                    window.getSelection().removeAllRanges();
+                                    window.getSelection().addRange(r);
+                                    document.execCommand('copy');
+                                    window.getSelection().removeAllRanges();
+                                    this.innerHTML='Copié !';
+                                    setTimeout(()=>{this.innerHTML='Copier vote ID.';},1000);">
+                                Copier vote ID.
+                            </button>
+                        </p>
+                        <p>Joueurs (au moins 3 nécessaires pour jouer) :</p>
+                        <p>
+                            <input id="p0" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p1" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p2" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p3" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                        </p>
+                        <p>
+                            <input id="p4" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p5" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p6" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                            <span class='spacer small'></span>
+                            <input id="p7" type='text' maxlength='10' size='12' placeholder='Entrez un nom...'/>
+                        </p>
+                        <p><button id="buttonCreate" class='go' onclick='
+                                Main.create([...document.getElementById("menuRoom").getElementsByTagName("input")].filter(elem=>elem.value!="").map(elem=>elem.value));
+                                Main.start();'>
+                            Créer la partie
+                        </button></p>
+                        <p><button class='go' onclick='Main.returnMenu()'>Retour au menu</button></p>
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell board" id="board" style="display: none;">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell next" id="next" style="display: none;">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell last" id="last" style="display: none;">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell all" id="all" style="display: none;">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell hand" id="hand" style="display: none;">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="cell buttons" id="buttons">
+                        <p id="buttonLaunch" style="display: none;">
+                            <button class='go' onclick='Main.go()'>Lancer la partie</button>
+                        </p>
+                        <p id="buttonStart" style="display: none;">
+                            <button class='go' onclick='Main.go()'>Démarer la manche</button>
+                        </p>
+                        <p id="buttonStop" style="display: none;">
+                            <button class='go' onclick='Main.go()'>Terminer la manche</button>
+                        </p>
+                        <p id="buttonEnd" style="display: none;">
+                            <button class='go' onclick='Main.start()'>Relancer une partie</button>
+                            <span class='spacer'></span>
+                            <button class='go' onclick='Main.stop()'>Terminer la partie</button>
+                        </p>
+                    </div>
                 </div>
-                <div class="cell log">
-                    <div id="log" style="background-color: #7777; overflow-y: scroll; margin: 0 auto; width: 90%; height: 80%; box-shadow: inset 0 0 15px; padding: 1em 1em;"> </div>
+                <div class="cell log" style="position: relative;">
+                    <div class="arrow up" style="display: none;" id="logUp" onclick="
+                        document.getElementById('log').scrollTop=0;
+                    ">&#9650;</div>
+                    <div class="arrow down" style="display: none;" id="logDown" onclick="
+                        document.getElementById('log').scrollTop=document.getElementById('log').scrollHeight-document.getElementById('log').clientHeight;
+                    ">&#9660;</div>
+                    <div id="log" onscroll="
+                        document.getElementById('logUp').style.display=(this.scrollTop==0)? 'none': '';
+                        document.getElementById('logDown').style.display=(this.scrollTop+this.clientHeight==this.scrollHeight)? 'none': '';
+                    "></div>
                 </div>
             </div>
         </div>
