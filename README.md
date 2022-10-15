@@ -3,6 +3,9 @@
 </head>
 <body>
 	<p>
+	Quelques projets réalisé en études ou en temps libre :
+	</p>
+	<p>
 	<a href="/pong/pong3D.html" style="text-decoration: none;">PONG</a>
 	<br>
 	réalisé en 2017 lors d'un projet de Master en Informatique
