@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------------*/
 body {
     margin: 0; padding: 0;
+    background-color: forestgreen;
 }
 * {
     font-size: 16px;
@@ -18,15 +19,22 @@ body {
     min-height: 100vh;
     max-height: 100vh;
     overflow: hidden;
-    background-color: #111;
 }
 .column.left {
+    background-color: #7777;
     box-shadow: inset 0 -.5em 1em -.5em black;
+    width: 20%;
+    display: flex;
+    flex-direction: column;
 }
 .column.right {
-    width: 80%;
-    background-color: forestgreen;
+    background-color: #7777;
+    box-shadow: inset 0 -.5em 1em -.5em black;
+    width: 20%;
+}
+.column.center {
     box-shadow: inset 0 0 30px;
+    width: 60%;
 }
 .row:after {
     content: "";
@@ -39,27 +47,41 @@ body {
 }
 
 .cell.title {
-    background-color: #bbb;
     box-shadow: inset 0 -.5em 1em -.5em black;
 }
 .cell.players {
-    background-color: #777;
     box-shadow: inset 0 -.5em 1em -.5em black;
 }
 .cell.state {
-    background-color: #333;
     box-shadow: inset 0 -.5em 1em -.5em black;
+}
+.cell.copyright {
+    box-shadow: inset 0 -.5em 1em -.5em black;
+    text-align: right;
+    flex-grow: 1;
+    display: flex;
+}
+
+.cell.title .label, .cell.players .label, .cell.state .label {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+.cell.copyright div {
+    align-self: flex-end;
 }
 
 .cell.top {
-    max-height: 67vh;
-    height: 67vh;
-    min-height: 67vh;
+    max-height: 100vh;
+    height: 100vh;
+    min-height: 100vh;
 }
+
 .cell.log {
-    max-height: 33vh;
-    height: 33vh;
-    min-height: 33vh;
+    max-height: 100vh;
+    height: 100vh;
+    min-height: 100vh;
+    padding: 0;
 }
 
 #top p {
@@ -69,23 +91,18 @@ body {
 /*----------------------------------------------------------------------------*/
 .arrow {
     position: absolute;
-    right: 5%;
+    right: 1em;
     cursor: pointer;
 }
 .arrow.up {
     top: .5em;
 }
 .arrow.down {
-    bottom: 10%;
+    bottom: 1em;
 }
 #log {
-    background-color: #7777;
-    overflow-y: scroll;
-    margin: 0 auto;
-    width: 90%;
-    height: 80%;
-    box-shadow: inset 0 0 15px;
-    padding: 1em 1em;
+    height: 100%;
+    overflow: scroll;
 }
 #log::-webkit-scrollbar {
     display: none;
@@ -96,13 +113,14 @@ body {
 }
 
 #log p {
-    margin: .5em 0;
+    margin: .5em 1em;
+    line-height: 2em;
 }
 #log p:first-child {
-    margin-top: 0;
+    margin-top: 1em;
 }
 #log p:last-child  {
-    padding-bottom: .5em;
+    padding-bottom: 2em;
     margin-bottom: 0;
 }
 
@@ -127,7 +145,7 @@ button.card {
     border-radius: 0;
 }
 button.card.sweep {
-    width: 5em;
+    width: 6em;
     height: 2em;
 }
 button.card.red {
@@ -167,16 +185,14 @@ button.player {
     border-radius: 1em;
     padding-left: .5em;
     padding-right: .5em;
-    border: solid .1em #777;
-    border-left: solid .5em #777;
-    border-right: solid .5em #777;
 }
 button.player:disabled {
     color: black;
 }
 button.player.highlight {
-    border-left-color: cyan;
-    border-right-color: cyan;
+    border-left: solid .5em cyan;
+    border-right: solid .5em cyan;
+    margin-left: 1em;
 }
 button.player.simple {
     border: solid .1em #bfbfbf;

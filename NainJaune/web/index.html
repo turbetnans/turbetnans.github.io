@@ -7,36 +7,35 @@
     </head>
     <body>
         <div class="row">
-            <div class="column left" style="width: 20%">
+            <div class="column left">
                 <div class="cell title">
                     <div class="line"></div>
-                    JEU DU NAIN JAUNE
-                    <div class="line"></div>
-                    <p>
-                        (c) Nans 2020-2022
-                    </p>
+                    <p class="label">JEU DU NAIN JAUNE</p>
                     <div class="line"></div>
                 </div>
                 <div class="cell players">
                     <div class="line"></div>
-                    JOUEURS
+                    <p class="label">JOUEURS</p>
                     <div class="line"></div>
-                    <p id="players">
-                        nothing here
-                    </p>
+                    <p id="players">nothing here</p>
                     <div class="line"></div>
                 </div>
                 <div class="cell state">
                     <div class="line"></div>
-                    ETAT
+                    <p class="label">ETAT</p>
                     <div class="line"></div>
-                    <p id="state">
-                        nothing here
-                    </p>
+                    <p id="state">nothing here</p>
                     <div class="line"></div>
                 </div>
+                <div class="cell copyright">
+                    <div style="width: 100%">
+                        <div class="line"></div>
+                        <p class="label">(c) N.T. 2020-2022</p>
+                        <div class="line"></div>
+                    </div>
+                </div>
             </div>
-            <div class="column right">
+            <div class="column center">
                 <div id="top" class="cell top" style="text-align: center;">
 
                     <div class="cell" id="menuMain" style="display: none;">
@@ -133,17 +132,21 @@
                         </p>
                     </div>
                 </div>
-                <div class="cell log" style="position: relative;">
+            </div>
+            <div class="column right" style="position: relative;">
+                <div class="cell log">
                     <div class="arrow up" style="display: none;" id="logUp" onclick="
-                        document.getElementById('log').scrollTop=0;
-                    ">&#9650;</div>
+                            document.getElementById('log').scrollTop=0;">
+                        &#9650;
+                    </div>
                     <div class="arrow down" style="display: none;" id="logDown" onclick="
-                        document.getElementById('log').scrollTop=document.getElementById('log').scrollHeight-document.getElementById('log').clientHeight;
-                    ">&#9660;</div>
+                            document.getElementById('log').scrollTop=document.getElementById('log').scrollHeight-document.getElementById('log').clientHeight;">
+                        &#9660;
+                    </div>
                     <div id="log" onscroll="
                         document.getElementById('logUp').style.display=(this.scrollTop==0)? 'none': '';
-                        document.getElementById('logDown').style.display=(this.scrollTop+this.clientHeight==this.scrollHeight)? 'none': '';
-                    "></div>
+                        document.getElementById('logDown').style.display=(this.scrollTop+this.clientHeight==this.scrollHeight)? 'none': '';">
+                    </div>
                 </div>
             </div>
         </div>

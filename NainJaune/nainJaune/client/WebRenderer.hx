@@ -22,7 +22,7 @@ class WebRenderer{
         if(str=="<br>"||str=="<hr>")
             Browser.document.getElementById("log").innerHTML += str;
         else if(str!="")
-            Browser.document.getElementById("log").innerHTML += "<span>"+str+"</span>";
+            Browser.document.getElementById("log").innerHTML += "<p>"+str+"</p>";
         else return;
         Browser.document.getElementById("log").scrollTop = Browser.document.getElementById("log").scrollHeight;
     }
@@ -32,7 +32,7 @@ class WebRenderer{
     public function printState(inGame:Bool=false) {
         // display state
         if(inGame) {
-            Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.g.states[c.g.currentState].name+" | "+c.g.round+"<br>"+c.name+" | "+c.role;
+            Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.g.states[c.g.currentState]+"<br>"+c.g.round+"<br>"+c.name+" | "+c.role;
         } else {
             Browser.document.getElementById("state").innerHTML = c.states[c.currentState]+"<br>"+c.name+" | "+c.role;
         }
@@ -137,7 +137,7 @@ class WebRenderer{
     }
     public function formatPlayer(player:Player, ?isCurrent:Bool=false):String {
         return "<button class='player "+(player.id==c.playerId? "you ":" ")+(isCurrent? "highlight' ":"' ")+
-                "disabled>"+(player.id==c.playerId? "<b>"+player+"</b>": player.toString())+"</button>";
+                "disabled>"+player+(c.g.dealer==player.id? "<b>(D)</b>":"")+"</button>";
     }
     public function formatCardRank(rank:String):String {
         return "<button class='card' disabled >"+rank+"</button>";
@@ -174,6 +174,9 @@ class WebRenderer{
     }
     
     // Ingame elements
+    public function printId(id:String) {
+        Browser.document.getElementById("peerId").innerHTML = id;
+    }
     public function printStartGame() {
         Browser.document.getElementById("buttonLaunch").style.display = "";
     }

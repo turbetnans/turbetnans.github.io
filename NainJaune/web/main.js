@@ -810,7 +810,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		}
 		if(this.g == null) {
 			this.r.printOutput("Erreur lors de la création de la partie.");
-			this.r.printOutput("<br>");
 			return;
 		}
 		if(this.role._hx_index == 2 || this.role._hx_index == 3) {
@@ -874,14 +873,14 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		var _gthis = this;
 		this.peer = new Peer(null,{ debug : 2});
 		this.peer.on("open",function(id) {
-			console.log("nainJaune/client/Client.hx:298:","PEER OPEN " + (id == null ? "null" : Std.string(id)));
+			console.log("nainJaune/client/Client.hx:297:","PEER OPEN " + (id == null ? "null" : Std.string(id)));
+			_gthis.r.printId(id);
 		});
 		this.peer.on("connection",function(c) {
 			var co = c;
 			console.log("nainJaune/client/Client.hx:303:","PEER CONNECTION " + co.peer);
 			if(_gthis.role != nainJaune_client_Role.Host) {
 				_gthis.r.printOutput("Connection from guest " + co.peer + " refused because not hosting");
-				_gthis.r.printOutput("<br>");
 				co.on("open",function(_) {
 					co.send(nainJaune_client_Message.CannotJoin("NoHost"));
 					haxe_Timer.delay(function() {
@@ -903,7 +902,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				}
 				if(_g.length != 0) {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because guest already here");
-					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("AlreadyJoined"));
 						haxe_Timer.delay(function() {
@@ -914,7 +912,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else if(_gthis.guests.length >= 8) {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because room full");
-					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("Full"));
 						haxe_Timer.delay(function() {
@@ -925,7 +922,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else if(_gthis.states[_gthis.currentState].name == "Partie en cours") {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " refused because already playing");
-					_gthis.r.printOutput("<br>");
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.CannotJoin("AlreadyPlaying"));
 						haxe_Timer.delay(function() {
@@ -936,7 +932,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 				} else {
 					_gthis.r.printOutput("Connection from guest " + co.peer + " accepted");
-					_gthis.r.printOutput("<br>");
 					_gthis.guests.push(new nainJaune_client_Guest(co,co.peer,co.label));
 					co.on("open",function(_) {
 						co.send(nainJaune_client_Message.RoomJoin);
@@ -947,7 +942,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					});
 					co.on("close",function(_) {
 						_gthis.r.printOutput("Connection closed with guest " + co.peer);
-						_gthis.r.printOutput("<br>");
 						var _g = 0;
 						var _g1 = _gthis.guests;
 						while(_g < _g1.length) {
@@ -961,58 +955,52 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 						}
 					});
 					co.on("error",function(err) {
-						console.log("nainJaune/client/Client.hx:358:","HOST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
+						console.log("nainJaune/client/Client.hx:352:","HOST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
 						var _g = err.type;
 						_gthis.r.printOutput("error with guest " + (err == null ? "null" : Std.string(err)));
-						_gthis.r.printOutput("<br>");
 					});
 				}
 			}
 		});
 		this.peer.on("disconnected",function(_) {
-			console.log("nainJaune/client/Client.hx:368:","PEER DISCONNECTED");
+			console.log("nainJaune/client/Client.hx:361:","PEER DISCONNECTED");
 		});
 		this.peer.on("close",function(_) {
-			console.log("nainJaune/client/Client.hx:370:","PEER CLOSE");
+			console.log("nainJaune/client/Client.hx:363:","PEER CLOSE");
 		});
 		this.peer.on("error",function(err) {
-			console.log("nainJaune/client/Client.hx:373:","PEER ERROR " + (err == null ? "null" : Std.string(err)));
+			console.log("nainJaune/client/Client.hx:366:","PEER ERROR " + (err == null ? "null" : Std.string(err)));
 			if(err.type == "peer-unavailable") {
 				_gthis.hostCo = null;
 				_gthis.update("Return");
 			} else {
 				_gthis.r.printOutput("error with peer " + (err == null ? "null" : Std.string(err)));
-				_gthis.r.printOutput("<br>");
 			}
 		});
 	}
 	,connectToHost: function(id) {
 		var _gthis = this;
-		console.log("nainJaune/client/Client.hx:385:","ID: " + id + " " + this.peer.id);
+		console.log("nainJaune/client/Client.hx:377:","ID: " + id + " " + this.peer.id);
 		this.hostCo = this.peer.connect(id,{ label : this.name, metadata : null, serialization : "json", reliable : true});
 		this.hostCo.on("open",function(_) {
 			_gthis.r.printOutput("Connection to host " + _gthis.hostCo.peer + " established");
-			_gthis.r.printOutput("<br>");
 		});
 		this.hostCo.on("data",function(data) {
 			_gthis.processMessageGuest(data);
 		});
 		this.hostCo.on("close",function(_) {
 			_gthis.r.printOutput("Connection closed with host " + _gthis.hostCo.peer);
-			_gthis.r.printOutput("<br>");
 			_gthis.hostCo = null;
 			_gthis.update("Return");
 		});
 		this.hostCo.on("error",function(err) {
-			console.log("nainJaune/client/Client.hx:406:","GUEST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
+			console.log("nainJaune/client/Client.hx:396:","GUEST CONNECTION ERROR " + (err == null ? "null" : Std.string(err)));
 			var _g = err.type;
 			_gthis.r.printOutput("error with host " + (err == null ? "null" : Std.string(err)));
-			_gthis.r.printOutput("<br>");
 		});
 	}
 	,closeRoom: function() {
 		this.r.printOutput("Room closed");
-		this.r.printOutput("<br>");
 		var _g = 0;
 		var _g1 = this.guests;
 		while(_g < _g1.length) {
@@ -1028,7 +1016,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					};
 				})(guest),500);
 				this.r.printOutput("Disconnect " + guest[0].id);
-				this.r.printOutput("<br>");
 			}
 		}
 	}
@@ -1060,24 +1047,22 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		var elem = "";
 		switch(message._hx_index) {
 		case 0:
-			this.r.printOutput("[Tr] [Init] La partie est créée !");
-			this.r.printOutput("<br>");
+			this.r.printOutput("La partie est créée !");
 			break;
 		case 1:
 			this.r.printOutput("<div class='line'></div>");
-			this.r.printOutput("[St] La partie est prête à commencer !");
+			this.r.printOutput("La partie est prête à commencer !");
 			break;
 		case 2:
 			var dealer = message.dealer;
-			elem += "[Tr] La partie commence ! ";
+			elem += "La partie commence ! ";
 			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " sera le premier donneur.";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 3:
 			var losers = message.losers;
-			elem += "[Tr] La partie se termine, certains joueurs ne peuvent pas payer : ";
+			elem += "La partie se termine, certains joueurs ne peuvent pas payer : ";
 			var _g = 0;
 			var _g1 = losers.length;
 			while(_g < _g1) {
@@ -1085,12 +1070,11 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[losers[i]]);
 			}
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 4:
 			var winners = message.winners;
 			this.r.printOutput("<div class='line'></div>");
-			elem += "[St] [Fin] La partie est terminée ! Les gagnants sont ";
+			elem += "La partie est terminée ! Les gagnants sont ";
 			var _g = 0;
 			var _g1 = winners.length;
 			while(_g < _g1) {
@@ -1098,36 +1082,33 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += (i != 0 ? "<span class='spacer medium'></span>" : "") + this.r.formatPlayerName(this.g.players[i]);
 			}
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 5:
 			var round = message.round;
 			var dealer = message.dealer;
 			this.r.printOutput("<div class='line'></div>");
-			elem += "[St] La manche ";
+			elem += "La manche ";
 			elem += this.r.formatValue(round);
 			elem += " est prête à commencer, ";
 			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " est le donneur !";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 6:
 			var round = message.round;
 			var dealer = message.dealer;
 			var hands = message.hands;
 			var stock = message.stock;
-			elem += "[Tr] La manche ";
+			elem += "La manche ";
 			elem += this.r.formatValue(round);
 			elem += " commence, ";
 			elem += this.r.formatPlayerName(this.g.players[dealer]);
 			elem += " a distribué les cartes !";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 7:
 			var round = message.round;
-			elem += "[Tr] Passage à la manche suivante !";
+			elem += "Passage à la manche suivante !";
 			break;
 		case 8:
 			var round = message.round;
@@ -1135,38 +1116,34 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			var type = message.type;
 			if(type == "Opera") {
 				this.r.printOutput("<div class='line'></div>");
-				elem += "[St] ";
+				elem += "";
 				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " réalise un Grand Opéra et remporte la manche ";
 				elem += this.r.formatValue(round);
 				elem += " !";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else if(type == null) {
 				this.r.printOutput("<div class='line'></div>");
-				elem += "[St] La manche ";
+				elem += "La manche ";
 				elem += this.r.formatValue(round);
 				elem += " a été remportée par ";
 				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " !";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else {
 				this.r.printOutput("Message RoundOver -> " + Std.string(message));
-				this.r.printOutput("<br>");
 			}
 			break;
 		case 9:
 			var player = message.player;
 			var cards = message.cards;
 			this.r.printOutput("<div class='line'></div>");
-			elem += "[St] C'est à ";
+			elem += "C'est à ";
 			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " de jouer, il lui reste ";
 			elem += this.r.formatValue(cards.length);
 			elem += " cartes en main.";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 10:
 			var player = message.player;
@@ -1182,10 +1159,8 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 					elem += this.r.formatMoney(value);
 					elem += ".";
 					this.r.printOutput(elem);
-					this.r.printOutput("<br>");
 				} else {
 					this.r.printOutput("Message PlayeBet -> " + Std.string(message));
-					this.r.printOutput("<br>");
 				}
 			}
 			break;
@@ -1200,36 +1175,32 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			elem += this.r.formatPlayerName(this.g.players[to]);
 			elem += ".";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 12:
 			var player = message.player;
 			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " est ruiné.";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 13:
 			var player = message.player;
 			var rank = message.rank;
-			elem += "[Tr] ";
+			elem += "";
 			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " : Sans ";
 			elem += this.r.formatCardRank(nainJaune_core_Card.RANKS[rank]);
 			elem += ".";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 14:
 			var player = message.player;
 			var round = message.round;
-			elem += "[Tr] ";
+			elem += "";
 			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " termine la manche ";
 			elem += this.r.formatValue(round);
 			elem += ".";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 15:
 			var stock = message.stock;
@@ -1239,7 +1210,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += this.r.formatValue(stock.length);
 				elem += " cartes dans le talon.";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else if(type == "End") {
 				elem += "Le talon était ";
 				var _g = 0;
@@ -1250,22 +1220,19 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				}
 				elem += ".";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else {
 				this.r.printOutput("Message CardStock -> " + Std.string(message));
-				this.r.printOutput("<br>");
 			}
 			break;
 		case 16:
 			var card = message.card;
 			var player = message.player;
-			elem += "[Tr] ";
+			elem += "";
 			elem += this.r.formatPlayerName(this.g.players[player]);
 			elem += " vient de jouer ";
 			elem += this.r.formatCard(card);
 			elem += ".";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 17:
 			var sweep = message.sweep;
@@ -1280,7 +1247,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += this.r.formatMoney(value);
 				elem += " gràce au Grand Opera.";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else if(type == null || type == "") {
 				elem += this.r.formatPlayerName(this.g.players[player]);
 				elem += " remporte la mise de ";
@@ -1289,10 +1255,8 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 				elem += this.r.formatMoney(value);
 				elem += ".";
 				this.r.printOutput(elem);
-				this.r.printOutput("<br>");
 			} else {
 				this.r.printOutput("Message SweepWin -> " + Std.string(message));
-				this.r.printOutput("<br>");
 			}
 			break;
 		case 18:
@@ -1303,34 +1267,29 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			elem += this.r.formatCard(nainJaune_core_Game.sweeps[sweep]);
 			elem += ".";
 			this.r.printOutput(elem);
-			this.r.printOutput("<br>");
 			break;
 		case 19:
 			var player = message.player;
 			var card = message.card;
 			var type = message.type;
 			this.r.printOutput("Impossible de joueur la carte ! (" + type + ")");
-			this.r.printOutput("<br>");
 			break;
 		case 20:
 			var player = message.player;
 			var card = message.card;
 			var type = message.type;
 			this.r.printOutput("Impossible de prendre la mise ! (" + type + ")");
-			this.r.printOutput("<br>");
 			break;
 		case 21:
 			var player = message.player;
 			var type = message.type;
 			this.r.printOutput("Impossible de passer son tour ! (" + type + ")");
-			this.r.printOutput("<br>");
 			break;
 		case 22:
 			var player = message.player;
 			var round = message.round;
 			var type = message.type;
 			this.r.printOutput("Impossible de terminer la manche ! (" + type + ")");
-			this.r.printOutput("<br>");
 			break;
 		}
 	}
@@ -1413,7 +1372,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		switch(message._hx_index) {
 		case 0:
 			this.r.printOutput("Départ du joueur : " + sender);
-			this.r.printOutput("<br>");
 			var _g = 0;
 			var _g1 = this.guests;
 			while(_g < _g1.length) {
@@ -1444,7 +1402,6 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 			break;
 		default:
 			this.r.printOutput("Message Host -> " + Std.string(message));
-			this.r.printOutput("<br>");
 		}
 	}
 	,processMessageGuest: function(message) {
@@ -1455,19 +1412,16 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		switch(message._hx_index) {
 		case 2:
 			this.r.printOutput("Salon rejoint !");
-			this.r.printOutput("<br>");
 			this.update("JoinRoom");
 			break;
 		case 3:
 			var reason = message.reason;
 			this.r.printOutput("Salon fermé ! " + reason);
-			this.r.printOutput("<br>");
 			this.update("Return");
 			break;
 		case 4:
 			var money = message.money;
 			this.r.printOutput("L'hôte commence la partie !");
-			this.r.printOutput("<br>");
 			this.createGame(null,money);
 			this.startGame();
 			this.update("Launch");
@@ -1493,18 +1447,15 @@ nainJaune_client_Client.prototype = $extend(fsm_FSM.prototype,{
 		case 7:
 			var reason = message.reason;
 			this.r.printOutput("Impossible de rejoindre le salon : " + reason);
-			this.r.printOutput("<br>");
 			this.update("Return");
 			break;
 		case 8:
 			var reason = message.reason;
 			this.r.printOutput("Action impossible : " + reason);
-			this.r.printOutput("<br>");
 			this.update("Update");
 			break;
 		default:
 			this.r.printOutput("Message Guest -> " + Std.string(message));
-			this.r.printOutput("<br>");
 		}
 	}
 	,fixGameMessage: function(message) {
@@ -1612,7 +1563,7 @@ nainJaune_client_WebRenderer.prototype = {
 		if(str == "<br>" || str == "<hr>") {
 			window.document.getElementById("log").innerHTML += str;
 		} else if(str != "") {
-			window.document.getElementById("log").innerHTML += "<span>" + str + "</span>";
+			window.document.getElementById("log").innerHTML += "<p>" + str + "</p>";
 		} else {
 			return;
 		}
@@ -1626,7 +1577,7 @@ nainJaune_client_WebRenderer.prototype = {
 			inGame = false;
 		}
 		if(inGame) {
-			var tmp = Std.string(this.c.states[this.c.currentState]) + "<br>" + this.c.g.states[this.c.g.currentState].name + " | " + this.c.g.round + "<br>" + this.c.name + " | ";
+			var tmp = Std.string(this.c.states[this.c.currentState]) + "<br>" + Std.string(this.c.g.states[this.c.g.currentState]) + "<br>" + this.c.g.round + "<br>" + this.c.name + " | ";
 			var tmp1 = Std.string(this.c.role);
 			window.document.getElementById("state").innerHTML = tmp + tmp1;
 		} else {
@@ -1746,9 +1697,7 @@ nainJaune_client_WebRenderer.prototype = {
 		if(isCurrent == null) {
 			isCurrent = false;
 		}
-		var tmp = player.id == this.c.playerId ? "you " : " ";
-		var tmp1 = player.id == this.c.playerId ? "<b>" + Std.string(player) + "</b>" : player.toString();
-		return "<button class='player " + tmp + (isCurrent ? "highlight' " : "' ") + "disabled>" + tmp1 + "</button>";
+		return "<button class='player " + (player.id == this.c.playerId ? "you " : " ") + (isCurrent ? "highlight' " : "' ") + "disabled>" + Std.string(player) + (this.c.g.dealer == player.id ? "<b>(D)</b>" : "") + "</button>";
 	}
 	,formatCardRank: function(rank) {
 		return "<button class='card' disabled >" + rank + "</button>";
@@ -1775,6 +1724,9 @@ nainJaune_client_WebRenderer.prototype = {
 	}
 	,formatMoney: function(value) {
 		return "<button class='value money' disabled>" + value + "</button>";
+	}
+	,printId: function(id) {
+		window.document.getElementById("peerId").innerHTML = id;
 	}
 	,printStartGame: function() {
 		window.document.getElementById("buttonLaunch").style.display = "";
