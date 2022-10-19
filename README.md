@@ -19,5 +19,12 @@
 	<br>
 	en Haxe
 	</p>
+	<p>
+	<a href="/TicTacToe/web/index.html" style="text-decoration: none;">Morpion</a>
+	<br>
+	réalisé en 2022 en projet d'apprentissage de React pour Haxe
+	<br>
+	en Haxe
+	</p>
 </body>
 </html>
