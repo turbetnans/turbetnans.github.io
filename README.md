@@ -15,7 +15,7 @@
 	<p>
 	<a href="/NainJaune/web/index.html" style="text-decoration: none;">Nain Jaune</a>
 	<br>
-	réalisé entre 2020 et 2022 en tant que projet perso
+	réalisé entre 2020 et 2022 en tant que projet perso (wip)
 	<br>
 	en Haxe
 	</p>
