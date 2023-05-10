@@ -16,7 +16,7 @@ class PlayerList extends ReactComponent {
         var players:Array<ReactElement> = [];
 
         for(id in 0...game.players.length) {
-            if(id==Math.round(game.players.length/2))
+            if(id==Math.round(game.players.length/2) && game.players.length>5)
                 players.push(jsx(<br key={id}/>));
             players.push(jsx(
                 <Player key={'player$id'} game={game} id={id} clickHandeler={props.clickHandeler} local={props.local} localId={props.id}/>

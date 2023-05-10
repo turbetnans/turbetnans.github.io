@@ -29,13 +29,13 @@ class FascistBoard extends ReactComponent {
             return jsx(<div id='fascist-board'><br/></div>);
         for(i in 1...Game.FASCIST_BOARDS[game.fascistBoard].length)
             policies.push(jsx(
-                <span key={'fascistpolicy$i'} style={{margin: '.5em', fontWeight: i<=game.fascistPoliciesPassed? 'bold': ''}}>
-                    {'${format(Game.FASCIST_BOARDS[game.fascistBoard][i])} '}
+                <span key={'fascistpolicy$i'} className={i<=game.fascistPoliciesPassed? 'passed': ''}>
+                    {'${format(Game.FASCIST_BOARDS[game.fascistBoard][i])}'}
                 </span>
             ));
         
         return jsx(
-            <div id='fascist-board'>
+            <div id='fascist-board' className='board'>
                 {policies}
             </div>
         );

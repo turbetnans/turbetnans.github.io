@@ -13,6 +13,15 @@ class Log extends ReactComponent {
         super(props);
     }
 
+    var size:Int = 0;
+
+    private function formatPolicy(policy:Policy) {
+        return switch(policy){
+            case FASCIST_POLICY: "Fasciste";
+            case LIBERAL_POLICY: "Liberal";
+        };
+    }
+
     override function componentDidUpdate(prevProps:Dynamic, prevState:Dynamic) {
         Browser.document.getElementById('log').scrollTop = Browser.document.getElementById('log').scrollHeight;
     }
@@ -23,13 +32,13 @@ class Log extends ReactComponent {
         var history:Array<Message>=props.history;
 
         for(i in 0...history.length) {
-            var className = (history[i].match(STATE(_))? "state": "event");
+            var className = (history[i].match(STATE(_))? "state": "event") +" "+ (i>size? "new": "");
             switch(history[i]){
                 case STATE(CHANCELOR_NOMINATION):
                     logs.push(jsx(<hr key='l$i'/>));
 
                 case STATE(POLICY_REVEAL):
-                    logs.push(jsx(<p key='l$i' className={className}>{'Le décret adopté est : '+game.playedPolicies.last()+'.'}</p>));
+                    logs.push(jsx(<p key='l$i' className={className}>{'Le décret adopté est : '+formatPolicy(game.playedPolicies.last())+'.'}</p>));
 
                 case STATE(state):
                     
@@ -48,7 +57,7 @@ class Log extends ReactComponent {
                     logs.push(jsx(<p key='l$i' className={className}>{'Les votes sont révélés.'}</p>));
                 
                 case EVENT(CHAOS, _, _):
-                    logs.push(jsx(<p key='l$i' className={className}>{'Le pays sombre dans le chaos et adopte le décret : '+game.playedPolicies.last()+'.'}</p>));
+                    logs.push(jsx(<p key='l$i' className={className}>{'Le pays sombre dans le chaos et adopte le décret : '+formatPolicy(game.playedPolicies.last())+'.'}</p>));
 
                 case EVENT(DISCARD, president, policy):
                     logs.push(jsx(<p key='l$i' className={className}>{'Le president ${game.players[president].name} a défaussé un décret.'}</p>));
@@ -82,12 +91,11 @@ class Log extends ReactComponent {
                     
                 case DECK(_):
                     logs.push(jsx(<p key='l$i' className={className}>{'La pioche est re-mélangée.'}</p>));
-
-                case ERROR(error):
-                    logs.push(jsx(<p key='l$i' className={className}>{'Error : $error'}</p>));
                 
             }
         }
+
+        size = history.length-1;
 
         return jsx(
             <div id='log'>

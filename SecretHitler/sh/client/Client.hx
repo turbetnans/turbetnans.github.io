@@ -41,6 +41,7 @@ class Client extends ReactComponent<PropsType,StateType> {
             history:[]
         };
     }
+
     override function componentDidMount() {
         peer = new Peer({debug:2});
         peer.on("open", peerId->setState({state:MENU, peer:peerId}));
@@ -92,11 +93,17 @@ class Client extends ReactComponent<PropsType,StateType> {
     public var peer:Peer;
 
     function create() {
+        if(state.name=="") {
+            return;
+        }
         setState({state:ROOM, role:HOST, guests:state.guests.concat([new Guest(state.name, null, 0)])});
     }
 
     function join() {
         var hostId:String = (cast Browser.document.getElementById('hostId'):InputElement).value;
+        if(hostId=="" || hostId==state.peer || state.name=="") {
+            return;
+        }
         state.host = peer.connect(hostId,{label:state.name,metadata:null,serialization:'json',reliable:true});
         state.host.on("open", _->trace('host co open'));
         state.host.on("data", data->processHostMessage((data:HostMessage)));
@@ -105,15 +112,26 @@ class Client extends ReactComponent<PropsType,StateType> {
         setState({state:LOADING, role:GUEST});
     }
 
+    function generateRandomName() {
+        setState({name: Player.NAMES[Std.random(Player.NAMES.length)]});
+    }
+
     function start(nbPlayers:Int, role:Role) {
         if(nbPlayers<5||nbPlayers>10)
             return;
         game = Game.create(nbPlayers, [for(g in state.guests) g.name]);
         game.fsm.start();
         if(state.role==Role.HOST) {
-            for(guest in state.guests)
-                if(guest.co!=null)
+            for(guest in state.guests) {
+                if(guest.co!=null) {
                     guest.co.send(HostMessage.LAUNCH(guest.id));
+                }
+            }
+            var message:Message = null;
+            while( (message=game.messages.shift())!=null ) {
+                state.history.push(message);
+                sendToAllGuests(UPDATE(message));
+            }
             setState({state:GAME, role:role, playerId:0});
         } else {
             setState({state:GAME, role:role});
@@ -121,8 +139,21 @@ class Client extends ReactComponent<PropsType,StateType> {
         update();
     }
 
+    function back() {
+        switch(state.role) {
+            case HOST:
+                sendToAllGuests(CLOSE);
+                state.guests = [];
+            case GUEST:
+                state.host.send(QUIT);
+            default:
+        }
+        setState({state: MENU});
+    }
+
     function update(?event:Event, ?source:PlayerId, ?target:Int) {
         var message:Message = null;
+        var error:Error = null;
         switch(state.role) {
             case GUEST:
                 state.host.send(PLAY(event, source, target));
@@ -132,20 +163,26 @@ class Client extends ReactComponent<PropsType,StateType> {
                     state.history.push(message);
                     sendToAllGuests(UPDATE(message));
                 }
+                while( (error=game.errors.shift())!=null ) {
+                    trace(error);
+                }
             case LOCAL:
                 game.update(event, source, target);
                 while( (message=game.messages.shift())!=null ) {
                     state.history.push(message);
+                }
+                while( (error=game.errors.shift())!=null ) {
+                    trace(error);
                 }
             case NONE:
         }
         setState({});
     }
 
-    function processGuestMessage(message:GuestMessage,sender:String) {
+    function processGuestMessage(guestMessage:GuestMessage,sender:String) {
         if(state.role!=Role.HOST)
             return;
-        switch(message) {
+        switch(guestMessage) {
             case QUIT:
                 for(guest in state.guests) {
                     if(guest.co!=null&&guest.co.peer==sender) {
@@ -161,7 +198,6 @@ class Client extends ReactComponent<PropsType,StateType> {
         }
     }
     function processHostMessage(hostMessage:HostMessage) {
-        var message:Message = null;
         if(state.role!=Role.GUEST)
             return;
         switch(hostMessage) {
@@ -189,17 +225,13 @@ class Client extends ReactComponent<PropsType,StateType> {
                     case DECK(cards):
                         game.drawPile = cards;
                     case STATE(state):
-                        trace(state);
                     case EVENT(event,source,target):
                         game.update(event, source, target);
-                    case ERROR(error):
-                        trace(error);
                 }
+                var message:Message = null;
                 while( (message=game.messages.shift())!=null ) {
                     state.history.push(message);
                 }
-            default:
-                trace("default");
         }
         setState({});
     }
@@ -214,24 +246,32 @@ class Client extends ReactComponent<PropsType,StateType> {
         setState({name: event.target.value});
     }
 
-    function clickHandeler(source:PlayerId, event:Event, ?target:Int) {
-        update(event, source, target);
+    function renderTitle():ReactElement {
+        return jsx(
+            <span>{'Can you find and stop the... SECRET HITLER'}</span>
+        );
+    }
+
+    function renderCredits():ReactElement {
+        return jsx(
+            <span>{'https://www.secrethitler.com/ | https://turbetnans.github.io/'}</span>
+        );
     }
 
     function renderMenu():ReactElement {
         return jsx(
             <div id="client">
+                <div id="background"/>
                 <div className='header'>
-                    <span style={{textColor:"silver"}}>{'Can you find and stop the... SECRET HITLER'}</span>
+                    {renderTitle()}
                     <div id='top'><span>{"Menu Principal"}</span></div>
-                    <div id='liberal-board'><br/></div>
-                    <div id='fascist-board'><br/></div>
                 </div>
                 <div id="menu">
                     <span id='id'>{state.peer}</span><br/>
-                    <input id='name' type='text' placeholder='Entrez votre nom' onChange={changeName}/>
+                    <input id='name' type='text' placeholder='Entrez votre nom' onChange={changeName} value={state.name}/>
+                    <i className="bi bi-dice-6-fill" onClick={_->generateRandomName()}></i>
                     <br/>
-                    <button onClick={_->start(5, LOCAL)}>{'Créer partie locale'}</button>
+                    <button onClick={_->start(5, Role.LOCAL)}>{'Créer partie locale'}</button>
                     <br/>
                     <button onClick={_->create()}>{'Créer partie en ligne'}</button>
                     <br/>
@@ -241,8 +281,8 @@ class Client extends ReactComponent<PropsType,StateType> {
                     <br/>
                 </div>
                 <div className='footer'>
-                    <div id='bottom'><br/></div>
-                    <span style={{textColor:"silver"}}>{'https://www.secrethitler.com/'}</span>
+                    <div id='bottom'><span>{"Menu Principal"}</span></div>
+                    {renderCredits()}
                 </div>
             </div>
         );
@@ -252,28 +292,27 @@ class Client extends ReactComponent<PropsType,StateType> {
         var players:Array<ReactElement> = [];
         for(i in 0...state.guests.length) {
             players.push(jsx(
-                <input key={'g$i'} type='text' disabled={true} value={state.guests[i].id+" "+state.guests[i].name}/>
+                <input key={'g$i'} type='text' disabled={true} value={state.guests[i].name}/>
             ));
         }
         return jsx(
             <div id="client">
-            <div className='header'>
-                <span style={{textColor:"silver"}}>{'Can you find and stop the... SECRET HITLER'}</span>
-                <div id='top'><span>{"Salon"}</span></div>
-                <div id='liberal-board'><br/></div>
-                <div id='fascist-board'><br/></div>
-            </div>
-            <div id="room">
-                <span id='id'>{state.peer}</span><br/>
-                <span>{state.host==null? 'Hote du salon': 'Invite'}</span><br/>
-                {players}
-                <br/>
-                <button onClick={_->start(state.guests.length, HOST)} hidden={state.role!=Role.HOST} >{'Lancer partie en ligne'}</button><br/>
-            </div>
-            <div className='footer'>
-                <div id='bottom'><br/></div>
-                <span style={{textColor:"silver"}}>{'https://www.secrethitler.com/'}</span>
-            </div>
+                <div id="background"/>
+                <div className='header'>
+                    {renderTitle()}
+                    <div id='top'><span>{"Salon"}</span></div>
+                </div>
+                <div id="room">
+                    <span id='id'>{state.peer}</span><br/>
+                    {players}
+                    <br/>
+                    <button onClick={_->start(state.guests.length, HOST)} hidden={state.role!=Role.HOST}>{'Lancer partie en ligne'}</button><br/>
+                    <button onClick={_->back()}>{'Retour'}</button><br/>
+                </div>
+                <div className='footer'>
+                    <div id='bottom'><span>{"Salon"}</span></div>
+                    {renderCredits()}
+                </div>
             </div>
         );
     }
@@ -281,18 +320,19 @@ class Client extends ReactComponent<PropsType,StateType> {
     function renderGame():ReactElement {
         return jsx(
             <div id="client">
+                <div id="background"/>
                 <div className='header'>
-                    <span style={{textColor:"silver"}}>{'Can you find and stop the... SECRET HITLER'}</span>
+                    {renderTitle()}
                     <TopBoard game={game}/>
                     <LiberalBoard game={game}/>
                     <FascistBoard game={game}/>
-                    <PlayerList game={game} clickHandeler={clickHandeler} local={state.role==Role.LOCAL} id={state.playerId}/>
-                    <Buttons game={game} clickHandeler={clickHandeler} local={state.role==Role.LOCAL} id={state.playerId}/>
+                    <PlayerList game={game} clickHandeler={update} local={state.role==Role.LOCAL} id={state.playerId}/>
+                    <Buttons game={game} clickHandeler={update} local={state.role==Role.LOCAL} id={state.playerId}/>
                 </div>
                 <Log game={game} history={state.history}/>
                 <div className='footer'>
                     <BottomBoard game={game}/>
-                    <span style={{textColor:"silver"}}>{'https://www.secrethitler.com/'}</span>
+                    {renderCredits()}
                 </div>
             </div>
         );
@@ -300,7 +340,7 @@ class Client extends ReactComponent<PropsType,StateType> {
 
     override function render():ReactElement {
         return switch(state.state) {
-            case LOADING: jsx(<div id="client">loading</div>);
+            case LOADING: jsx(<div id="client">{'chargement'}</div>);
             case MENU: renderMenu();
             case ROOM: renderRoom();
             case GAME: renderGame();

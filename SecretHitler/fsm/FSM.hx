@@ -15,7 +15,7 @@ class FSM {
     public var isRunning(get,null):Bool;
     inline function get_isRunning():Bool { return currentState!=State.NULL_ID; }
     public var isFinished(get,null):Bool;
-    inline function get_isFinished():Bool { return currentState!=State.NULL_ID&&states[currentState].isFinal; }
+    inline function get_isFinished():Bool { return get_isRunning() && states[currentState].isFinal; }
 
     public function new() {
         states = new Array<State>();
@@ -154,7 +154,6 @@ class FSM {
 
         for(t in states[currentState].transitions) {
             var transition:Transition = transitions[t];
-            trace(transitions[t]);
             if( transition!=null && transition.event==event ) {
                 if(transition.guard(...args)) {
                     if(!transition.isInternal)
@@ -165,10 +164,8 @@ class FSM {
                         states[currentState].onEntry();
                     return true;
                 }
-                trace("guard false");
             }
         }
-        trace("no event");
         return false;
     }
 }

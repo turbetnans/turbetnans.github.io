@@ -62,6 +62,7 @@ class Game {
 
     // Messages
     public var messages:Array<Message> = [];
+    public var errors:Array<Error> = [];
 
     // FSM
     public var fsm:FSM = null;
@@ -125,19 +126,52 @@ class Game {
             args->args[0]==president && checkEligibility(args[1]) && players[(args[1]:Int)].status==ALIVE,
             args->onNominate(args[1])
         );
+        fsm.addTransition(chancelorNomination, chancelorNomination, NOMINATE, true,
+            args->!checkEligibility(args[1]),
+            _->errors.push(Error.IS_NOT_ELIGIBLE)
+        );
+        fsm.addTransition(chancelorNomination, chancelorNomination, NOMINATE, true,
+            args->args[0]==president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
+        fsm.addTransition(chancelorNomination, chancelorNomination, NOMINATE, true,
+            args->players[(args[1]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
+        );
 
         fsm.addTransition(governmentVote, governmentVote, JA, true,
-            args->votes.get(args[0])==null && players[(args[0]:Int)].status==ALIVE,
+            args->!votes.exists(args[0]) && players[(args[0]:Int)].status==ALIVE,
             args->onVote(args[0], JA)
         );
+        fsm.addTransition(governmentVote, governmentVote, JA, true,
+            args->votes.exists(args[0]),
+            _->errors.push(Error.HAS_VOTED)
+        );
+        fsm.addTransition(governmentVote, governmentVote, JA, true,
+            args->players[(args[0]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
+        );
+
         fsm.addTransition(governmentVote, governmentVote, NEIN, true,
-            args->votes.get(args[0])==null && players[(args[0]:Int)].status==ALIVE,
+            args->!votes.exists(args[0]) && players[(args[0]:Int)].status==ALIVE,
             args->onVote(args[0], NEIN)
+        );
+        fsm.addTransition(governmentVote, governmentVote, NEIN, true,
+            args->votes.exists(args[0]),
+            _->errors.push(Error.HAS_VOTED)
+        );
+        fsm.addTransition(governmentVote, governmentVote, NEIN, true,
+            args->players[(args[0]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
         );
 
         fsm.addTransition(governmentVote, voteCounting, REVEAL, false,
             args->Lambda.count(votes)==players.filter(p->p.status==ALIVE).length,
             _->onVoteEnded()
+        );
+        fsm.addTransition(governmentVote, governmentVote, REVEAL, true,
+            args->Lambda.count(votes)<players.filter(p->p.status==ALIVE).length,
+            _->errors.push(Error.HAS_NOT_VOTED)
         );
 
         fsm.addTransition(voteCounting, fascistVictory, CHAOS, false,
@@ -152,6 +186,11 @@ class Game {
             _->voteResult==NEIN && electionTracker==2,
             _->onChaos()
         );
+        fsm.addTransition(voteCounting, voteCounting, CHAOS, true,
+            _->voteResult==JA || electionTracker<2,
+            _->errors.push(Error.IS_NOT_CHAOS)
+        );
+
         fsm.addTransition(voteCounting, chancelorNomination, NEXT, false,
             _->voteResult==NEIN && electionTracker<2,
             _->onFailedVote()
@@ -164,20 +203,39 @@ class Game {
             _->voteResult==JA && (players[chancelor].role!=HITLER || fascistPoliciesPassed<3),
             _->onSuccessfulVote()
         );
+        fsm.addTransition(voteCounting, voteCounting, NEXT, true,
+            _->voteResult==NEIN && electionTracker==2,
+            _->errors.push(Error.IS_CHAOS)
+        );
 
         // LEGISLATIVE SESSION
         fsm.addTransition(presidentSession, chancelorSession, DISCARD, false,
-            args->args[0]==president && args[1]!=null && (args[1]:Int)>=0 && (args[1]:Int)<3,
+            args->args[0]==president && (args[1]:Int)>=0 && (args[1]:Int)<3,
             args->onPolicyDiscarded(args[1])
         );
+        fsm.addTransition(presidentSession, presidentSession, NEXT, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
+
         fsm.addTransition(chancelorSession, policyReveal, SELECT, false,
-            args->args[0]==chancelor && args[1]!=null && (args[1]:Int)>=0 && (args[1]:Int)<2,
+            args->args[0]==chancelor && (args[1]:Int)>=0 && (args[1]:Int)<2,
             args->onPolicySelected(args[1])
         );
+        fsm.addTransition(chancelorSession, chancelorSession, NEXT, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_CHANCELOR)
+        );
+
         fsm.addTransition(chancelorSession, vetoProposition, VETO, false,
             args->args[0]==chancelor && fascistPoliciesPassed==5 && !vetoUsed,
             _->onVetoProposed()
         );
+        fsm.addTransition(chancelorSession, chancelorSession, VETO, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_CHANCELOR)
+        );
+
         fsm.addTransition(vetoProposition, fascistVictory, CHAOS, false,
             args->args[0]==president && electionTracker==2 && fascistPoliciesPassed==5 && drawPile.last()==FASCIST_POLICY,
             _->onChaos()
@@ -192,11 +250,11 @@ class Game {
         );
         fsm.addTransition(vetoProposition, chancelorNomination, ACCEPT, false,
             args->args[0]==president && electionTracker<2,
-            _->onVetoRejected()
+            _->onVetoAccepted()
         );
         fsm.addTransition(vetoProposition, chancelorSession, DECLINE, false,
             args->args[0]==president,
-            _->onVetoAccepted()
+            _->onVetoRejected()
         );
 
         // EXECUTIVE ACTION
@@ -210,8 +268,20 @@ class Game {
             _->onPolicyRevealed()
         );
         fsm.addTransition(loyaltyInvestigation, loyaltyInvestigationResult, INVESTIGATE, false,
-            args->args[0]==president && args[1]!=null && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
+            args->args[0]==president && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
             args->onInvestigate(args[1])
+        );
+        fsm.addTransition(loyaltyInvestigation, loyaltyInvestigation, INVESTIGATE, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
+        fsm.addTransition(loyaltyInvestigation, loyaltyInvestigation, INVESTIGATE, true,
+            args->args[1]==president,
+            _->errors.push(Error.IS_SELF)
+        );
+        fsm.addTransition(loyaltyInvestigation, loyaltyInvestigation, INVESTIGATE, true,
+            args->players[(args[1]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
         );
         fsm.addTransition(loyaltyInvestigationResult, chancelorNomination, NEXT, false,
             _->true,
@@ -223,8 +293,20 @@ class Game {
             _->onPolicyRevealed()
         );
         fsm.addTransition(specialElection, specialElectionResult, CHOOSE, false,
-            args->args[0]==president && args[1]!=null && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
+            args->args[0]==president && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
             args->onChoose(args[1])
+        );
+        fsm.addTransition(specialElection, specialElection, CHOOSE, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
+        fsm.addTransition(specialElection, specialElection, CHOOSE, true,
+            args->args[1]==president,
+            _->errors.push(Error.IS_SELF)
+        );
+        fsm.addTransition(specialElection, specialElection, CHOOSE, true,
+            args->players[(args[1]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
         );
         fsm.addTransition(specialElectionResult, chancelorNomination, NEXT, false,
             _->true,
@@ -239,6 +321,10 @@ class Game {
             args->args[0]==president,
             args->onPeek()
         );
+        fsm.addTransition(policyPeek, policyPeek, PEEK, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
         fsm.addTransition(policyPeekResult, chancelorNomination, NEXT, false,
             _->true,
             args->nextPresident()
@@ -249,8 +335,20 @@ class Game {
             _->onPolicyRevealed()
         );
         fsm.addTransition(execution, executionResult, EXECUTE, false,
-            args->args[0]==president && args[1]!=null && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
+            args->args[0]==president && args[1]!=president && players[(args[1]:Int)].status==ALIVE,
             args->onExecute(args[1])
+        );
+        fsm.addTransition(execution, execution, EXECUTE, true,
+            args->args[0]!=president,
+            _->errors.push(Error.IS_NOT_PRESIDENT)
+        );
+        fsm.addTransition(execution, execution, EXECUTE, true,
+            args->args[1]==president,
+            _->errors.push(Error.IS_SELF)
+        );
+        fsm.addTransition(execution, execution, EXECUTE, true,
+            args->players[(args[1]:Int)].status==DEAD,
+            _->errors.push(Error.IS_DEAD)
         );
         fsm.addTransition(executionResult, chancelorNomination, NEXT, false,
             _->players.filter(p->p.role==HITLER && p.status==DEAD).length==0,
@@ -273,7 +371,9 @@ class Game {
 
     // Update game
     public function update(event:String, ...args:Any) {
-        if(fsm.update(event, ...args)) {
+        messages = [];
+        errors = [];
+        if(fsm.update(event, ...args) && errors.length==0) {
             messages.push(Message.EVENT(event, args[0], args[1]));
             messages.push(Message.STATE(fsm.states[fsm.currentState].name));
         }
@@ -436,7 +536,6 @@ class Game {
         presidentForced = true;
     }
     function onPeek() {
-        trace("president looks at the top 3 policies");
     }
     function onExecute(target:PlayerId) {
         players[target].status = DEAD;
@@ -456,7 +555,7 @@ class Game {
         // message
         messages.push(DECK(drawPile));
     }
-    function checkEligibility(id:Int):Bool {
+    public function checkEligibility(id:Int):Bool {
         // can't vote for one of the last chancelors since reset, previous president or current president
         if(players.filter(p->p.status==ALIVE).length>5)
             return id!=lastChancelor && id!=lastPresident && id!=president && id!=null && id>=0 && id<players.length && players[id].status==ALIVE;
@@ -532,7 +631,21 @@ enum Message {
     EVENT(event:Event, source:Int, target:Int);
     INIT(cards:Array<Policy>, firstPresident:PlayerId, roles:Array<Role>);
     DECK(cards:Array<Policy>);
-    ERROR(error:Error);
+}
+// GAME ERRORS
+enum Error {
+    IS_NOT_ELIGIBLE;
+    IS_NOT_PRESIDENT;
+    IS_NOT_CHANCELOR;
+    IS_DEAD;
+    HAS_VOTED;
+    HAS_NOT_VOTED;
+    IS_CHAOS;
+    IS_NOT_CHAOS;
+    IS_SELF;
+    CAN_NOT_VETO;
+    IS_VICTORIOUS;
+    IS_NOT_VICTORIOUS;
 }
 
 // PLAYER
@@ -602,8 +715,4 @@ enum abstract Power(String) from String to String {
 enum abstract Policy(String) from String to String {
     var LIBERAL_POLICY;
     var FASCIST_POLICY;
-}
-
-// ERRORS
-enum abstract Error(String) from String to String {
 }

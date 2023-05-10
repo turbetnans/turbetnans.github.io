@@ -274,7 +274,6 @@ fsm_FSM.prototype = {
 			var t = _g1[_g];
 			++_g;
 			var transition = this.transitions[t];
-			console.log("fsm/FSM.hx:157:",this.transitions[t]);
 			if(transition != null && transition.event == event) {
 				if(($_=transition,$_.guard.apply($_,args))) {
 					if(!transition.isInternal) {
@@ -287,10 +286,8 @@ fsm_FSM.prototype = {
 					}
 					return true;
 				}
-				console.log("fsm/FSM.hx:168:","guard false");
 			}
 		}
-		console.log("fsm/FSM.hx:171:","no event");
 		return false;
 	}
 };
@@ -551,7 +548,7 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 						_gthis.processGuestMessage(data,co.peer);
 					});
 					co.on("close",function(_) {
-						console.log("sh/client/Client.hx:70:","co close");
+						console.log("sh/client/Client.hx:71:","co close");
 						var _g = 0;
 						var _g1 = _gthis.state.guests;
 						while(_g < _g1.length) {
@@ -576,19 +573,19 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 						}
 					});
 					co.on("error",function(err) {
-						console.log("sh/client/Client.hx:81:","co error " + err);
+						console.log("sh/client/Client.hx:82:","co error " + Std.string(err));
 					});
 				}
 			}
 		});
 		this.peer.on("disconnected",function(_) {
-			console.log("sh/client/Client.hx:84:","peer disconnected");
+			console.log("sh/client/Client.hx:85:","peer disconnected");
 		});
 		this.peer.on("close",function(_) {
-			console.log("sh/client/Client.hx:85:","peer close");
+			console.log("sh/client/Client.hx:86:","peer close");
 		});
 		this.peer.on("error",function(err) {
-			console.log("sh/client/Client.hx:86:","peer error " + err);
+			console.log("sh/client/Client.hx:87:","peer error " + Std.string(err));
 		});
 	}
 	,componentDidUpdate: function(prevProps,prevState) {
@@ -596,25 +593,34 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 	,componentWillUnmount: function() {
 	}
 	,create: function() {
+		if(this.state.name == "") {
+			return;
+		}
 		this.setState({ state : "ROOM", role : "HOST", guests : this.state.guests.concat([new sh_client_Guest(this.state.name,null,0)])});
 	}
 	,join: function() {
 		var _gthis = this;
 		var hostId = window.document.getElementById("hostId").value;
+		if(hostId == "" || hostId == this.state.peer || this.state.name == "") {
+			return;
+		}
 		this.state.host = this.peer.connect(hostId,{ label : this.state.name, metadata : null, serialization : "json", reliable : true});
 		this.state.host.on("open",function(_) {
-			console.log("sh/client/Client.hx:101:","host co open");
+			console.log("sh/client/Client.hx:108:","host co open");
 		});
 		this.state.host.on("data",function(data) {
 			_gthis.processHostMessage(data);
 		});
 		this.state.host.on("close",function(_) {
-			console.log("sh/client/Client.hx:103:","host co close");
+			console.log("sh/client/Client.hx:110:","host co close");
 		});
 		this.state.host.on("error",function(err) {
-			console.log("sh/client/Client.hx:104:","host co error " + err);
+			console.log("sh/client/Client.hx:111:","host co error " + Std.string(err));
 		});
 		this.setState({ state : "LOADING", role : "GUEST"});
+	}
+	,generateRandomName: function() {
+		this.setState({ name : sh_core_Player.NAMES[Std.random(sh_core_Player.NAMES.length)]});
 	}
 	,start: function(nbPlayers,role) {
 		if(nbPlayers < 5 || nbPlayers > 10) {
@@ -640,14 +646,37 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 					guest.co.send(sh_client_HostMessage.LAUNCH(guest.id));
 				}
 			}
+			var message = null;
+			while(true) {
+				message = this.game.messages.shift();
+				if(!(message != null)) {
+					break;
+				}
+				this.state.history.push(message);
+				this.sendToAllGuests(sh_client_HostMessage.UPDATE(message));
+			}
 			this.setState({ state : "GAME", role : role, playerId : 0});
 		} else {
 			this.setState({ state : "GAME", role : role});
 		}
 		this.update();
 	}
+	,back: function() {
+		switch(this.state.role) {
+		case "GUEST":
+			this.state.host.send(sh_client_GuestMessage.QUIT);
+			break;
+		case "HOST":
+			this.sendToAllGuests(sh_client_HostMessage.CLOSE);
+			this.state.guests = [];
+			break;
+		default:
+		}
+		this.setState({ state : "MENU"});
+	}
 	,update: function(event,source,target) {
 		var message = null;
+		var error = null;
 		switch(this.state.role) {
 		case "GUEST":
 			this.state.host.send(sh_client_GuestMessage.PLAY(event,source,target));
@@ -662,6 +691,13 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 				this.state.history.push(message);
 				this.sendToAllGuests(sh_client_HostMessage.UPDATE(message));
 			}
+			while(true) {
+				error = this.game.errors.shift();
+				if(!(error != null)) {
+					break;
+				}
+				console.log("sh/client/Client.hx:167:",error);
+			}
 			break;
 		case "LOCAL":
 			this.game.update(event,source,target);
@@ -672,18 +708,25 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 				}
 				this.state.history.push(message);
 			}
+			while(true) {
+				error = this.game.errors.shift();
+				if(!(error != null)) {
+					break;
+				}
+				console.log("sh/client/Client.hx:175:",error);
+			}
 			break;
 		case "NONE":
 			break;
 		}
 		this.setState({ });
 	}
-	,processGuestMessage: function(message,sender) {
+	,processGuestMessage: function(guestMessage,sender) {
 		var _gthis = this;
 		if(this.state.role != "HOST") {
 			return;
 		}
-		switch(message._hx_index) {
+		switch(guestMessage._hx_index) {
 		case 0:
 			var _g = 0;
 			var _g1 = this.state.guests;
@@ -709,15 +752,14 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 			}
 			break;
 		case 1:
-			var event = message.event;
-			var source = message.source;
-			var target = message.target;
+			var event = guestMessage.event;
+			var source = guestMessage.source;
+			var target = guestMessage.target;
 			this.update(event,source,target);
 			break;
 		}
 	}
 	,processHostMessage: function(hostMessage) {
-		var message = null;
 		if(this.state.role != "GUEST") {
 			return;
 		}
@@ -750,7 +792,6 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 			switch(gameMessage._hx_index) {
 			case 0:
 				var state = gameMessage.state;
-				console.log("sh/client/Client.hx:192:",state);
 				break;
 			case 1:
 				var event = gameMessage.event;
@@ -776,11 +817,8 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 				var cards = gameMessage.cards;
 				this.game.drawPile = cards;
 				break;
-			case 4:
-				var error = gameMessage.error;
-				console.log("sh/client/Client.hx:196:",error);
-				break;
 			}
+			var message = null;
 			while(true) {
 				message = this.game.messages.shift();
 				if(!(message != null)) {
@@ -791,7 +829,7 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 			break;
 		case 5:
 			var reason = hostMessage.reason;
-			console.log("sh/client/Client.hx:171:",reason);
+			console.log("sh/client/Client.hx:207:",reason);
 			this.setState({ state : "MENU", role : "NONE"});
 			break;
 		}
@@ -811,40 +849,45 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 	,changeName: function(event) {
 		this.setState({ name : event.target.value});
 	}
-	,clickHandeler: function(source,event,target) {
-		this.update(event,source,target);
+	,renderTitle: function() {
+		return React.createElement(react_ReactType.fromString("span"),{ },"Can you find and stop the... SECRET HITLER");
+	}
+	,renderCredits: function() {
+		return React.createElement(react_ReactType.fromString("span"),{ },"https://www.secrethitler.com/ | https://turbetnans.github.io/");
 	}
 	,renderMenu: function() {
 		var _gthis = this;
 		var tmp = react_ReactType.fromString("div");
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"Can you find and stop the... SECRET HITLER");
-		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ id : "top"},React.createElement(react_ReactType.fromString("span"),{ },"Menu Principal"));
-		var tmp4 = React.createElement(react_ReactType.fromString("div"),{ id : "liberal-board"},React.createElement(react_ReactType.fromString("br"),{ }));
-		var tmp5 = react_ReactType.fromString("div");
-		var tmp6 = React.createElement(tmp1,{ className : "header"},tmp2,tmp3,tmp4,React.createElement(tmp5,{ id : "fascist-board"},React.createElement(react_ReactType.fromString("br"),{ })));
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("span"),{ id : "id"},this.state.peer);
-		var tmp3 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp4 = React.createElement(react_ReactType.fromString("input"),{ id : "name", type : "text", placeholder : "Entrez votre nom", onChange : $bind(this,this.changeName)});
-		var tmp5 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp7 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
-			_gthis.start(5,"LOCAL");
-		}},"Créer partie locale");
+		var tmp1 = React.createElement(react_ReactType.fromString("div"),{ id : "background"});
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = this.renderTitle();
+		var tmp4 = react_ReactType.fromString("div");
+		var tmp5 = React.createElement(tmp2,{ className : "header"},tmp3,React.createElement(tmp4,{ id : "top"},React.createElement(react_ReactType.fromString("span"),{ },"Menu Principal")));
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = React.createElement(react_ReactType.fromString("span"),{ id : "id"},this.state.peer);
+		var tmp4 = React.createElement(react_ReactType.fromString("br"),{ });
+		var tmp6 = React.createElement(react_ReactType.fromString("input"),{ id : "name", type : "text", placeholder : "Entrez votre nom", onChange : $bind(this,this.changeName), value : this.state.name});
+		var tmp7 = React.createElement(react_ReactType.fromString("i"),{ className : "bi bi-dice-6-fill", onClick : function(_) {
+			_gthis.generateRandomName();
+		}});
 		var tmp8 = React.createElement(react_ReactType.fromString("br"),{ });
 		var tmp9 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
-			_gthis.create();
-		}},"Créer partie en ligne");
+			_gthis.start(5,"LOCAL");
+		}},"Créer partie locale");
 		var tmp10 = React.createElement(react_ReactType.fromString("br"),{ });
 		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
+			_gthis.create();
+		}},"Créer partie en ligne");
+		var tmp12 = React.createElement(react_ReactType.fromString("br"),{ });
+		var tmp13 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
 			_gthis.join();
 		}},"Rejoindre partie en ligne");
-		var tmp12 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp13 = React.createElement(react_ReactType.fromString("input"),{ id : "hostId", type : "text", placeholder : "Entrez l'ID de l'hote"});
-		var tmp14 = React.createElement(tmp1,{ id : "menu"},tmp2,tmp3,tmp4,tmp5,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13,React.createElement(react_ReactType.fromString("br"),{ }));
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("br"),{ }));
-		return React.createElement(tmp,{ id : "client"},tmp6,tmp14,React.createElement(tmp1,{ className : "footer"},tmp2,React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"https://www.secrethitler.com/")));
+		var tmp14 = React.createElement(react_ReactType.fromString("br"),{ });
+		var tmp15 = React.createElement(react_ReactType.fromString("input"),{ id : "hostId", type : "text", placeholder : "Entrez l'ID de l'hote"});
+		var tmp16 = React.createElement(tmp2,{ id : "menu"},tmp3,tmp4,tmp6,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13,tmp14,tmp15,React.createElement(react_ReactType.fromString("br"),{ }));
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("span"),{ },"Menu Principal"));
+		return React.createElement(tmp,{ id : "client"},tmp1,tmp5,tmp16,React.createElement(tmp2,{ className : "footer"},tmp3,this.renderCredits()));
 	}
 	,renderRoom: function() {
 		var _gthis = this;
@@ -853,56 +896,56 @@ sh_client_Client.prototype = $extend(React.Component.prototype,{
 		var _g1 = this.state.guests.length;
 		while(_g < _g1) {
 			var i = _g++;
-			var tmp = this.state.guests[i].id + " " + this.state.guests[i].name;
-			players.push(React.createElement(react_ReactType.fromString("input"),{ key : "g" + i, type : "text", disabled : true, value : tmp}));
+			players.push(React.createElement(react_ReactType.fromString("input"),{ key : "g" + i, type : "text", disabled : true, value : this.state.guests[i].name}));
 		}
 		var tmp = react_ReactType.fromString("div");
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"Can you find and stop the... SECRET HITLER");
-		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ id : "top"},React.createElement(react_ReactType.fromString("span"),{ },"Salon"));
-		var tmp4 = React.createElement(react_ReactType.fromString("div"),{ id : "liberal-board"},React.createElement(react_ReactType.fromString("br"),{ }));
-		var tmp5 = react_ReactType.fromString("div");
-		var tmp6 = React.createElement(tmp1,{ className : "header"},tmp2,tmp3,tmp4,React.createElement(tmp5,{ id : "fascist-board"},React.createElement(react_ReactType.fromString("br"),{ })));
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("span"),{ id : "id"},this.state.peer);
-		var tmp3 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp4 = this.state.host == null ? "Hote du salon" : "Invite";
-		var tmp5 = React.createElement(react_ReactType.fromString("span"),{ },tmp4);
+		var tmp1 = React.createElement(react_ReactType.fromString("div"),{ id : "background"});
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = this.renderTitle();
+		var tmp4 = react_ReactType.fromString("div");
+		var tmp5 = React.createElement(tmp2,{ className : "header"},tmp3,React.createElement(tmp4,{ id : "top"},React.createElement(react_ReactType.fromString("span"),{ },"Salon")));
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = React.createElement(react_ReactType.fromString("span"),{ id : "id"},this.state.peer);
 		var tmp4 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp7 = React.createElement(react_ReactType.fromString("br"),{ });
-		var tmp8 = this.state.role != "HOST";
-		var tmp9 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
+		var tmp6 = React.createElement(react_ReactType.fromString("br"),{ });
+		var tmp7 = this.state.role != "HOST";
+		var tmp8 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
 			_gthis.start(_gthis.state.guests.length,"HOST");
-		}, hidden : tmp8},"Lancer partie en ligne");
-		var tmp8 = React.createElement(tmp1,{ id : "room"},tmp2,tmp3,tmp5,tmp4,players,tmp7,tmp9,React.createElement(react_ReactType.fromString("br"),{ }));
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("br"),{ }));
-		return React.createElement(tmp,{ id : "client"},tmp6,tmp8,React.createElement(tmp1,{ className : "footer"},tmp2,React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"https://www.secrethitler.com/")));
+		}, hidden : tmp7},"Lancer partie en ligne");
+		var tmp7 = React.createElement(react_ReactType.fromString("br"),{ });
+		var tmp9 = React.createElement(react_ReactType.fromString("button"),{ onClick : function(_) {
+			_gthis.back();
+		}},"Retour");
+		var tmp10 = React.createElement(tmp2,{ id : "room"},tmp3,tmp4,players,tmp6,tmp8,tmp7,tmp9,React.createElement(react_ReactType.fromString("br"),{ }));
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("span"),{ },"Salon"));
+		return React.createElement(tmp,{ id : "client"},tmp1,tmp5,tmp10,React.createElement(tmp2,{ className : "footer"},tmp3,this.renderCredits()));
 	}
 	,renderGame: function() {
 		var tmp = react_ReactType.fromString("div");
-		var tmp1 = react_ReactType.fromString("div");
-		var tmp2 = React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"Can you find and stop the... SECRET HITLER");
-		var tmp3 = React.createElement(react_ReactType.fromComp(sh_client_components_TopBoard),{ game : this.game});
-		var tmp4 = React.createElement(react_ReactType.fromComp(sh_client_components_LiberalBoard),{ game : this.game});
-		var tmp5 = React.createElement(react_ReactType.fromComp(sh_client_components_FascistBoard),{ game : this.game});
-		var tmp6 = this.game;
-		var tmp7 = this.state.role == "LOCAL";
-		var tmp8 = React.createElement(react_ReactType.fromComp(sh_client_components_PlayerList),{ game : tmp6, clickHandeler : $bind(this,this.clickHandeler), local : tmp7, id : this.state.playerId});
-		var tmp6 = this.game;
-		var tmp7 = this.state.role == "LOCAL";
-		var tmp9 = React.createElement(tmp1,{ className : "header"},tmp2,tmp3,tmp4,tmp5,tmp8,React.createElement(react_ReactType.fromComp(sh_client_components_Buttons),{ game : tmp6, clickHandeler : $bind(this,this.clickHandeler), local : tmp7, id : this.state.playerId}));
-		var tmp1 = React.createElement(react_ReactType.fromComp(sh_client_components_Log),{ game : this.game, history : this.state.history});
+		var tmp1 = React.createElement(react_ReactType.fromString("div"),{ id : "background"});
 		var tmp2 = react_ReactType.fromString("div");
-		var tmp3 = React.createElement(react_ReactType.fromComp(sh_client_components_BottomBoard),{ game : this.game});
-		return React.createElement(tmp,{ id : "client"},tmp9,tmp1,React.createElement(tmp2,{ className : "footer"},tmp3,React.createElement(react_ReactType.fromString("span"),{ style : { textColor : "silver"}},"https://www.secrethitler.com/")));
+		var tmp3 = this.renderTitle();
+		var tmp4 = React.createElement(react_ReactType.fromComp(sh_client_components_TopBoard),{ game : this.game});
+		var tmp5 = React.createElement(react_ReactType.fromComp(sh_client_components_LiberalBoard),{ game : this.game});
+		var tmp6 = React.createElement(react_ReactType.fromComp(sh_client_components_FascistBoard),{ game : this.game});
+		var tmp7 = this.game;
+		var tmp8 = this.state.role == "LOCAL";
+		var tmp9 = React.createElement(react_ReactType.fromComp(sh_client_components_PlayerList),{ game : tmp7, clickHandeler : $bind(this,this.update), local : tmp8, id : this.state.playerId});
+		var tmp7 = this.game;
+		var tmp8 = this.state.role == "LOCAL";
+		var tmp10 = React.createElement(tmp2,{ className : "header"},tmp3,tmp4,tmp5,tmp6,tmp9,React.createElement(react_ReactType.fromComp(sh_client_components_Buttons),{ game : tmp7, clickHandeler : $bind(this,this.update), local : tmp8, id : this.state.playerId}));
+		var tmp2 = React.createElement(react_ReactType.fromComp(sh_client_components_Log),{ game : this.game, history : this.state.history});
+		var tmp3 = react_ReactType.fromString("div");
+		var tmp4 = React.createElement(react_ReactType.fromComp(sh_client_components_BottomBoard),{ game : this.game});
+		return React.createElement(tmp,{ id : "client"},tmp1,tmp10,tmp2,React.createElement(tmp3,{ className : "footer"},tmp4,this.renderCredits()));
 	}
 	,render: function() {
 		switch(this.state.state) {
 		case "GAME":
 			return this.renderGame();
 		case "LOADING":
-			return React.createElement(react_ReactType.fromString("div"),{ id : "client"},"loading");
+			return React.createElement(react_ReactType.fromString("div"),{ id : "client"},"chargement");
 		case "MENU":
 			return this.renderMenu();
 		case "ROOM":
@@ -948,19 +991,67 @@ sh_client_components_BottomBoard.__super__ = React.Component;
 sh_client_components_BottomBoard.prototype = $extend(React.Component.prototype,{
 	render: function() {
 		var game = this.props.game;
-		if(game == null) {
-			return React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("br"),{ }));
-		} else {
-			var tmp = react_ReactType.fromString("div");
-			var tmp1 = "Election tracker : " + game.electionTracker;
-			var tmp2 = React.createElement(react_ReactType.fromString("span"),{ },tmp1 + "/3");
-			var tmp1 = React.createElement(react_ReactType.fromString("span"),{ }," | ");
-			var tmp3 = "Draw pile : " + game.drawPile.length;
-			var tmp4 = React.createElement(react_ReactType.fromString("span"),{ },tmp3 + "/17");
-			var tmp3 = React.createElement(react_ReactType.fromString("span"),{ }," | ");
-			var tmp5 = "Discard pile : " + game.discardPile.length;
-			return React.createElement(tmp,{ id : "bottom"},tmp2,tmp1,tmp4,tmp3,React.createElement(react_ReactType.fromString("span"),{ },tmp5 + "/17"));
+		var content;
+		switch(game.getState()) {
+		case "CHANCELOR_NOMINATION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va nommer son chancelier.");
+			break;
+		case "CHANCELOR_SESSION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le chancelier choisi le décret à adpter.");
+			break;
+		case "EXECUTION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va choisir le joueur a éxécuter.");
+			break;
+		case "EXECUTION_RESULT":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président a choisi le joueur a éxécuter.");
+			break;
+		case "FASCISTS_REVEAL":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les fascistes se découvrent.");
+			break;
+		case "FASCIST_VICTORY":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Victoire des fascistes !");
+			break;
+		case "GAME_START":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"La partie commence !");
+			break;
+		case "GOVERNMENT_VOTE":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les joueurs votent pour le gouvernement proposé.");
+			break;
+		case "LIBERAL_VICTORY":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Victoire des libéraux !");
+			break;
+		case "LOYALTY_INVESTIGATION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va enquêter sur un joueur.");
+			break;
+		case "LOYALTY_INVESTIGATION_RESULT":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président reçoit le résultat de l'enquête.");
+			break;
+		case "POLICY_PEEK":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le présdent va espionner les trois prochains décrets.");
+			break;
+		case "POLICY_PEEK_RESULT":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le présdent a espionné les trois prochains décrets.");
+			break;
+		case "POLICY_REVEAL":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le décret choisi est révélé.");
+			break;
+		case "PRESIDENT_SESSION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président choisi un décret à défausser.");
+			break;
+		case "SPECIAL_ELECTION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va choisir son successeur.");
+			break;
+		case "SPECIAL_ELECTION_RESULT":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président a choisi son successeur.");
+			break;
+		case "VETO_PROPOSITION":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Lechancelier demande le véto.");
+			break;
+		case "VOTE_COUNTING":
+			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les votes sont comptés.");
+			break;
 		}
+		return React.createElement(react_ReactType.fromString("div"),{ id : "bottom"},React.createElement(react_ReactType.fromString("span"),{ },content));
 	}
 });
 var sh_client_components_Buttons = $hx_exports["sh"]["client"]["components"]["Buttons"] = function(props) {
@@ -969,7 +1060,15 @@ var sh_client_components_Buttons = $hx_exports["sh"]["client"]["components"]["Bu
 sh_client_components_Buttons.__name__ = true;
 sh_client_components_Buttons.__super__ = React.Component;
 sh_client_components_Buttons.prototype = $extend(React.Component.prototype,{
-	render: function() {
+	formatPolicy: function(policy) {
+		switch(policy) {
+		case "FASCIST_POLICY":
+			return "Décret fasciste";
+		case "LIBERAL_POLICY":
+			return "Décret liberal";
+		}
+	}
+	,render: function() {
 		var _gthis = this;
 		var game = this.props.game;
 		var showStartButton = game.isInState("GAME_START") && (this.props.id == game.president || this.props.local);
@@ -993,7 +1092,7 @@ sh_client_components_Buttons.prototype = $extend(React.Component.prototype,{
 		}
 		var showRevealButton1 = showRevealButton && (this.props.id == game.president || this.props.local);
 		var showChaosButton = (game.isInState("VOTE_COUNTING") && game.voteResult == "NEIN" && game.electionTracker == 2 || game.isInState("VETO_PROPOSITION") && game.electionTracker == 2) && (this.props.id == game.president || this.props.local);
-		var showVoteButtons = game.isInState("GOVERNMENT_VOTE") && game.votes.h[this.props.id] == null && !this.props.local;
+		var showVoteButtons = game.isInState("GOVERNMENT_VOTE") && !game.votes.h.hasOwnProperty(this.props.id) && !this.props.local;
 		var showDiscardButton = game.isInState("PRESIDENT_SESSION") && (this.props.id == game.president || this.props.local);
 		var showSelectButton = game.isInState("CHANCELOR_SESSION") && (this.props.id == game.chancelor || this.props.local);
 		var showVetoButton = game.isInState("CHANCELOR_SESSION") && (this.props.id == game.chancelor || this.props.local) && game.fascistPoliciesPassed == 5 && !game.vetoUsed;
@@ -1001,55 +1100,60 @@ sh_client_components_Buttons.prototype = $extend(React.Component.prototype,{
 		var showDeclineButton = game.isInState("VETO_PROPOSITION") && (this.props.id == game.president || this.props.local);
 		var showPeekButton = game.isInState("POLICY_PEEK") && (this.props.id == game.president || this.props.local);
 		var showPeekResult = game.isInState("POLICY_PEEK_RESULT") && (this.props.id == game.president || this.props.local);
+		if(!showDiscardButton && !showSelectButton && !showSelectButton && !showPeekResult && !showStartButton && !showRevealButton1 && !showChaosButton && !showNextButton && !showVoteButtons && !showVetoButton && !showAcceptButton && !showDeclineButton && !showPeekButton) {
+			return null;
+		}
 		var tmp = react_ReactType.fromString("div");
-		var tmp1 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showStartButton, onClick : function() {
-			return _gthis.props.clickHandeler(0,"START");
+		var tmp1 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
+			return _gthis.props.clickHandeler("DISCARD",game.president,0);
+		}},this.formatPolicy(game.proposedPolicies[0]));
+		var tmp2 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
+			return _gthis.props.clickHandeler("DISCARD",game.president,1);
+		}},this.formatPolicy(game.proposedPolicies[1]));
+		var tmp3 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
+			return _gthis.props.clickHandeler("DISCARD",game.president,2);
+		}},this.formatPolicy(game.proposedPolicies[2]));
+		var tmp4 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showSelectButton, onClick : function() {
+			return _gthis.props.clickHandeler("SELECT",game.chancelor,0);
+		}},this.formatPolicy(game.proposedPolicies[0]));
+		var tmp5 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showSelectButton, onClick : function() {
+			return _gthis.props.clickHandeler("SELECT",game.chancelor,1);
+		}},this.formatPolicy(game.proposedPolicies[1]));
+		var tmp6 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},this.formatPolicy(game.drawPile[0]));
+		var tmp7 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},this.formatPolicy(game.drawPile[1]));
+		var tmp8 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},this.formatPolicy(game.drawPile[2]));
+		var tmp9 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showStartButton, onClick : function() {
+			return _gthis.props.clickHandeler("START",0);
 		}},"Commencer");
-		var tmp2 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showRevealButton1, onClick : function() {
-			return _gthis.props.clickHandeler(0,"REVEAL");
+		var tmp10 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showRevealButton1, onClick : function() {
+			return _gthis.props.clickHandeler("REVEAL",0);
 		}},"Révéler");
-		var tmp3 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showChaosButton, onClick : function() {
-			return _gthis.props.clickHandeler(0,"CHAOS");
+		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showChaosButton, onClick : function() {
+			return _gthis.props.clickHandeler("CHAOS",0);
 		}},"CHAOS");
-		var tmp4 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showNextButton, onClick : function() {
-			return _gthis.props.clickHandeler(0,"NEXT");
+		var tmp12 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showNextButton, onClick : function() {
+			return _gthis.props.clickHandeler("NEXT",0);
 		}},"Suivant");
-		var tmp5 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVoteButtons, onClick : function() {
-			return _gthis.props.clickHandeler(_gthis.props.id,"JA");
+		var tmp13 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVoteButtons, onClick : function() {
+			return _gthis.props.clickHandeler("JA",_gthis.props.id);
 		}},"JA !");
-		var tmp6 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVoteButtons, onClick : function() {
-			return _gthis.props.clickHandeler(_gthis.props.id,"NEIN");
+		var tmp14 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVoteButtons, onClick : function() {
+			return _gthis.props.clickHandeler("NEIN",_gthis.props.id);
 		}},"NEIN !");
-		var tmp7 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"DISCARD",0);
-		}},game.proposedPolicies[0]);
-		var tmp8 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"DISCARD",1);
-		}},game.proposedPolicies[1]);
-		var tmp9 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDiscardButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"DISCARD",2);
-		}},game.proposedPolicies[2]);
-		var tmp10 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showSelectButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.chancelor,"SELECT",0);
-		}},game.proposedPolicies[0]);
-		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showSelectButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.chancelor,"SELECT",1);
-		}},game.proposedPolicies[1]);
-		var tmp12 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVetoButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.chancelor,"VETO");
-		}},"Demander un véto");
-		var tmp13 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showAcceptButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"ACCEPT");
+		var tmp15 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showVetoButton, onClick : function() {
+			return _gthis.props.clickHandeler("VETO",game.chancelor);
+		}},"Véto");
+		var tmp16 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showAcceptButton, onClick : function() {
+			return _gthis.props.clickHandeler("ACCEPT",game.president);
 		}},"Accepter");
-		var tmp14 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDeclineButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"DECLINE");
+		var tmp17 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showDeclineButton, onClick : function() {
+			return _gthis.props.clickHandeler("DECLINE",game.president);
 		}},"Refuser");
-		var tmp15 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekButton, onClick : function() {
-			return _gthis.props.clickHandeler(game.president,"PEEK");
-		}},"Espionner");
-		var tmp16 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},game.drawPile[0]);
-		var tmp17 = React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},game.drawPile[1]);
-		return React.createElement(tmp,{ id : "buttons"},tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13,tmp14,tmp15,tmp16,tmp17,React.createElement(react_ReactType.fromString("button"),{ hidden : !showPeekResult, disabled : true},game.drawPile[2]));
+		var tmp18 = react_ReactType.fromString("button");
+		var tmp19 = React.createElement(react_ReactType.fromString("i"),{ className : "bi bi-binoculars-fill"});
+		return React.createElement(tmp,{ id : "buttons"},tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13,tmp14,tmp15,tmp16,tmp17,React.createElement(tmp18,{ hidden : !showPeekButton, onClick : function() {
+			return _gthis.props.clickHandeler("PEEK",game.president);
+		}},tmp19,"Espionner",React.createElement(react_ReactType.fromString("i"),{ className : "bi bi-binoculars-fill"})));
 	}
 });
 var sh_client_components_FascistBoard = $hx_exports["sh"]["client"]["components"]["FascistBoard"] = function(props) {
@@ -1087,11 +1191,11 @@ sh_client_components_FascistBoard.prototype = $extend(React.Component.prototype,
 		while(_g < _g1) {
 			var i = _g++;
 			var tmp = react_ReactType.fromString("span");
-			var tmp1 = i <= game.fascistPoliciesPassed ? "bold" : "";
-			var tmp2 = "" + this.format(sh_core_Game.FASCIST_BOARDS[game.fascistBoard][i]);
-			policies.push(React.createElement(tmp,{ key : "fascistpolicy" + i, style : { margin : ".5em", fontWeight : tmp1}},tmp2 + " "));
+			var tmp1 = i <= game.fascistPoliciesPassed ? "passed" : "";
+			var tmp2 = this.format(sh_core_Game.FASCIST_BOARDS[game.fascistBoard][i]);
+			policies.push(React.createElement(tmp,{ key : "fascistpolicy" + i, className : tmp1},"" + tmp2));
 		}
-		return React.createElement(react_ReactType.fromString("div"),{ id : "fascist-board"},policies);
+		return React.createElement(react_ReactType.fromString("div"),{ id : "fascist-board", className : "board"},policies);
 	}
 });
 var sh_client_components_LiberalBoard = $hx_exports["sh"]["client"]["components"]["LiberalBoard"] = function(props) {
@@ -1100,7 +1204,7 @@ var sh_client_components_LiberalBoard = $hx_exports["sh"]["client"]["components"
 sh_client_components_LiberalBoard.__name__ = true;
 sh_client_components_LiberalBoard.__super__ = React.Component;
 sh_client_components_LiberalBoard.prototype = $extend(React.Component.prototype,{
-	format: function(power) {
+	formatPower: function(power) {
 		switch(power) {
 		case "EXECUTION":
 			return "Exécution";
@@ -1129,20 +1233,29 @@ sh_client_components_LiberalBoard.prototype = $extend(React.Component.prototype,
 		while(_g < _g1) {
 			var i = _g++;
 			var tmp = react_ReactType.fromString("span");
-			var tmp1 = i <= game.liberalPoliciesPassed ? "bold" : "";
-			var tmp2 = "" + this.format(sh_core_Game.LIBERAL_BOARDS[game.liberalBoard][i]);
-			policies.push(React.createElement(tmp,{ key : "liberalpolicy" + i, style : { margin : ".5em", fontWeight : tmp1}},tmp2 + " "));
+			var tmp1 = i <= game.liberalPoliciesPassed ? "passed" : "";
+			var tmp2 = this.formatPower(sh_core_Game.LIBERAL_BOARDS[game.liberalBoard][i]);
+			policies.push(React.createElement(tmp,{ key : "liberalpolicy" + i, className : tmp1},"" + tmp2));
 		}
-		return React.createElement(react_ReactType.fromString("div"),{ id : "liberal-board"},policies);
+		return React.createElement(react_ReactType.fromString("div"),{ id : "liberal-board", className : "board"},policies);
 	}
 });
 var sh_client_components_Log = $hx_exports["sh"]["client"]["components"]["Log"] = function(props) {
+	this.size = 0;
 	React.Component.call(this,props);
 };
 sh_client_components_Log.__name__ = true;
 sh_client_components_Log.__super__ = React.Component;
 sh_client_components_Log.prototype = $extend(React.Component.prototype,{
-	componentDidUpdate: function(prevProps,prevState) {
+	formatPolicy: function(policy) {
+		switch(policy) {
+		case "FASCIST_POLICY":
+			return "Fasciste";
+		case "LIBERAL_POLICY":
+			return "Liberal";
+		}
+	}
+	,componentDidUpdate: function(prevProps,prevState) {
 		window.document.getElementById("log").scrollTop = window.document.getElementById("log").scrollHeight;
 	}
 	,render: function() {
@@ -1161,7 +1274,7 @@ sh_client_components_Log.prototype = $extend(React.Component.prototype,{
 			} else {
 				className = false;
 			}
-			var className1 = className ? "state" : "event";
+			var className1 = (className ? "state" : "event") + " " + (i > this.size ? "new" : "");
 			var _g4 = history[i];
 			switch(_g4._hx_index) {
 			case 0:
@@ -1172,7 +1285,7 @@ sh_client_components_Log.prototype = $extend(React.Component.prototype,{
 					break;
 				case "POLICY_REVEAL":
 					var tmp = react_ReactType.fromString("p");
-					var tmp1 = "Le décret adopté est : " + util_ArrayExt.last(game.playedPolicies);
+					var tmp1 = "Le décret adopté est : " + this.formatPolicy(util_ArrayExt.last(game.playedPolicies));
 					logs.push(React.createElement(tmp,{ key : "l" + i, className : className1},tmp1 + "."));
 					break;
 				default:
@@ -1190,7 +1303,7 @@ sh_client_components_Log.prototype = $extend(React.Component.prototype,{
 					break;
 				case "CHAOS":
 					var tmp3 = react_ReactType.fromString("p");
-					var tmp4 = "Le pays sombre dans le chaos et adopte le décret : " + util_ArrayExt.last(game.playedPolicies);
+					var tmp4 = "Le pays sombre dans le chaos et adopte le décret : " + this.formatPolicy(util_ArrayExt.last(game.playedPolicies));
 					logs.push(React.createElement(tmp3,{ key : "l" + i, className : className1},tmp4 + "."));
 					break;
 				case "CHOOSE":
@@ -1269,12 +1382,9 @@ sh_client_components_Log.prototype = $extend(React.Component.prototype,{
 				var _g11 = _g4.cards;
 				logs.push(React.createElement(react_ReactType.fromString("p"),{ key : "l" + i, className : className1},"La pioche est re-mélangée."));
 				break;
-			case 4:
-				var error = _g4.error;
-				logs.push(React.createElement(react_ReactType.fromString("p"),{ key : "l" + i, className : className1},"Error : " + error));
-				break;
 			}
 		}
+		this.size = history.length - 1;
 		return React.createElement(react_ReactType.fromString("div"),{ id : "log"},logs);
 	}
 });
@@ -1284,57 +1394,117 @@ var sh_client_components_Player = $hx_exports["sh"]["client"]["components"]["Pla
 sh_client_components_Player.__name__ = true;
 sh_client_components_Player.__super__ = React.Component;
 sh_client_components_Player.prototype = $extend(React.Component.prototype,{
-	render: function() {
+	formatRole: function(role) {
+		switch(role) {
+		case "FASCIST":
+			return "Fasciste";
+		case "HITLER":
+			return "Hitler";
+		case "LIBERAL":
+			return "Liberal";
+		case "NONE":
+			return "";
+		}
+	}
+	,render: function() {
 		var _gthis = this;
 		var id = this.props.id;
 		var game = this.props.game;
-		var style = { backgroundColor : game.players[id].status == "DEAD" ? "dimgray" : game.votes.h[id] == "JA" && game.isInState("VOTE_COUNTING") ? "forestgreen" : game.votes.h[id] == "NEIN" && game.isInState("VOTE_COUNTING") ? "firebrick" : game.isInState("FASCISTS_REVEAL") && this.props.local ? game.players[id].role == "HITLER" ? "red" : game.players[id].role == "FASCIST" ? "sienna" : "silver" : game.isInState("FASCISTS_REVEAL") && game.players[this.props.localId].role == "FASCIST" ? game.players[id].role == "HITLER" ? "red" : game.players[id].role == "FASCIST" ? "sienna" : "silver" : game.isInState("FASCISTS_REVEAL") && game.players[this.props.localId].role == "HITLER" && game.players.length < 7 ? game.players[id].role == "HITLER" ? "red" : game.players[id].role == "FASCIST" ? "sienna" : "silver" : game.isInState("LOYALTY_INVESTIGATION_RESULT") && this.props.localId == game.president && id == game.investigatedPlayer ? game.players[id].role == "HITLER" || game.players[id].role == "FASCIST" ? "sienna" : "cyan" : game.isInState("LOYALTY_INVESTIGATION_RESULT") && this.props.local && id == game.investigatedPlayer ? game.players[id].role == "HITLER" || game.players[id].role == "FASCIST" ? "sienna" : "cyan" : id == game.president ? "chartreuse" : id == game.chancelor ? "orange" : "silver"};
+		var className = "";
+		if(game.players[id].status == "DEAD") {
+			className = "dead";
+		} else if(game.votes.h[id] == "JA" && game.isInState("VOTE_COUNTING")) {
+			className = "ja";
+		} else if(game.votes.h[id] == "NEIN" && game.isInState("VOTE_COUNTING")) {
+			className = "nein";
+		} else if(game.isInState("FASCISTS_REVEAL") && this.props.local) {
+			if(game.players[id].role == "HITLER") {
+				className = "hitler";
+			} else if(game.players[id].role == "FASCIST") {
+				className = "fascist";
+			}
+		} else if(game.isInState("FASCISTS_REVEAL") && game.players[this.props.localId].role == "FASCIST") {
+			if(game.players[id].role == "HITLER") {
+				className = "hitler";
+			} else if(game.players[id].role == "FASCIST") {
+				className = "fascist";
+			}
+		} else if(game.isInState("FASCISTS_REVEAL") && game.players[this.props.localId].role == "HITLER" && game.players.length < 7) {
+			if(game.players[id].role == "HITLER") {
+				className = "hitler";
+			} else if(game.players[id].role == "FASCIST") {
+				className = "fascist";
+			}
+		} else if(game.isInState("LOYALTY_INVESTIGATION_RESULT") && this.props.localId == game.president && id == game.investigatedPlayer) {
+			if(game.players[id].role == "HITLER" || game.players[id].role == "FASCIST") {
+				className = "fascist";
+			} else {
+				className = "liberal";
+			}
+		} else if(game.isInState("LOYALTY_INVESTIGATION_RESULT") && this.props.local && id == game.investigatedPlayer) {
+			if(game.players[id].role == "HITLER" || game.players[id].role == "FASCIST") {
+				className = "fascist";
+			} else {
+				className = "liberal";
+			}
+		} else if(id == game.president) {
+			className = "president";
+		} else if(id == game.chancelor) {
+			className = "chancelor";
+		}
 		var content = null;
 		if(game.fsm.currentState == fsm__$FSM_State.NULL_ID) {
 			content = null;
 		} else if(game.players[id].status == "DEAD") {
-			content = React.createElement(react_ReactType.fromString("div"),{ },"dead");
-		} else if(game.isInState("CHANCELOR_NOMINATION") && id != game.president && (this.props.localId == game.president || this.props.local)) {
+			content = React.createElement(react_ReactType.fromString("div"),{ },"Mort");
+		} else if(game.isInState("CHANCELOR_NOMINATION") && id != game.president && game.checkEligibility(id) && (this.props.localId == game.president || this.props.local)) {
 			content = React.createElement(react_ReactType.fromString("div"),{ },React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
-				return _gthis.props.clickHandeler(game.president,"NOMINATE",id);
-			}},"NOMINATE"));
-		} else if(game.isInState("GOVERNMENT_VOTE") && game.votes.h[id] == null && this.props.local) {
+				return _gthis.props.clickHandeler("NOMINATE",game.president,id);
+			}},"Nommer"));
+		} else if(game.isInState("GOVERNMENT_VOTE") && !game.votes.h.hasOwnProperty(id) && this.props.local) {
 			var content1 = react_ReactType.fromString("div");
 			var content2 = React.createElement(react_ReactType.fromString("button"),{ className : "half", onClick : function() {
-				return _gthis.props.clickHandeler(id,"JA");
-			}},"JA");
+				return _gthis.props.clickHandeler("JA",id);
+			}},"Ja !");
 			content = React.createElement(content1,{ },content2,React.createElement(react_ReactType.fromString("button"),{ className : "half", onClick : function() {
-				return _gthis.props.clickHandeler(id,"NEIN");
-			}},"NEIN"));
-		} else if(game.isInState("GOVERNMENT_VOTE") && game.votes.h[id] != null) {
+				return _gthis.props.clickHandeler("NEIN",id);
+			}},"Nein !"));
+		} else if(game.isInState("GOVERNMENT_VOTE") && game.votes.h.hasOwnProperty(id)) {
 			content = React.createElement(react_ReactType.fromString("div"),{ },React.createElement(react_ReactType.fromString("span"),{ },"voted"));
 		} else if(game.isInState("VOTE_COUNTING")) {
 			var content1 = game.votes.h[id];
 			content = React.createElement(react_ReactType.fromString("div"),{ },content1);
 		} else if(game.isInState("LOYALTY_INVESTIGATION") && id != game.president && (this.props.localId == game.president || this.props.local)) {
 			content = React.createElement(react_ReactType.fromString("div"),{ },React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
-				return _gthis.props.clickHandeler(game.president,"INVESTIGATE",id);
-			}},"INVESTIGATE"));
+				return _gthis.props.clickHandeler("INVESTIGATE",game.president,id);
+			}},"Enquêter"));
 		} else if(game.isInState("SPECIAL_ELECTION") && id != game.president && (this.props.localId == game.president || this.props.local)) {
 			content = React.createElement(react_ReactType.fromString("div"),{ },React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
-				return _gthis.props.clickHandeler(game.president,"CHOOSE",id);
-			}},"CHOOSE"));
+				return _gthis.props.clickHandeler("CHOOSE",game.president,id);
+			}},"Choisir"));
 		} else if(game.isInState("EXECUTION") && id != game.president && (this.props.localId == game.president || this.props.local)) {
 			content = React.createElement(react_ReactType.fromString("div"),{ },React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
-				return _gthis.props.clickHandeler(game.president,"EXECUTE",id);
-			}},"EXECUTE"));
+				return _gthis.props.clickHandeler("EXECUTE",game.president,id);
+			}},"Exécuter"));
 		}
 		var role = null;
 		if(this.props.local || id == this.props.localId) {
-			role = React.createElement(react_ReactType.fromString("div"),{ },"" + game.players[id].role);
+			var role1 = react_ReactType.fromString("div");
+			var role2 = this.formatRole(game.players[id].role);
+			role = React.createElement(role1,{ },"" + role2);
 		}
 		var tmp = react_ReactType.fromString("div");
-		var tmp1 = { key : "player" + id, className : "player", style : style};
-		var tmp2 = React.createElement(react_ReactType.fromString("div"),{ className : "title"},"" + game.players[id].name);
-		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ hidden : role == null},role);
-		var tmp4 = id != game.president && id != game.chancelor;
-		var tmp5 = id == game.president ? "President" : id == game.chancelor ? "Chancelor" : "";
-		return React.createElement(tmp,tmp1,tmp2,tmp3,React.createElement(react_ReactType.fromString("div"),{ hidden : tmp4},tmp5),React.createElement(react_ReactType.fromString("div"),{ hidden : content == null},content));
+		var tmp1 = { key : "player" + id, className : "player " + className};
+		var tmp2 = react_ReactType.fromString("div");
+		var tmp3 = !this.props.local && id == this.props.localId;
+		var tmp4 = React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp3});
+		var tmp3 = React.createElement(react_ReactType.fromString("span"),{ },"" + game.players[id].name);
+		var tmp5 = !this.props.local && id == this.props.localId;
+		var tmp6 = React.createElement(tmp2,{ className : "title"},tmp4,tmp3,React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp5}));
+		var tmp2 = React.createElement(react_ReactType.fromString("div"),{ },role);
+		var tmp3 = React.createElement(react_ReactType.fromString("div"),{ },content);
+		var tmp4 = id == game.president ? "President" : id == game.chancelor ? "Chancelier" : "";
+		return React.createElement(tmp,tmp1,tmp6,tmp2,tmp3,React.createElement(react_ReactType.fromString("div"),{ },tmp4));
 	}
 });
 var sh_client_components_PlayerList = $hx_exports["sh"]["client"]["components"]["PlayerList"] = function(props) {
@@ -1350,7 +1520,7 @@ sh_client_components_PlayerList.prototype = $extend(React.Component.prototype,{
 		var _g1 = game.players.length;
 		while(_g < _g1) {
 			var id = _g++;
-			if(id == Math.round(game.players.length / 2)) {
+			if(id == Math.round(game.players.length / 2) && game.players.length > 5) {
 				players.push(React.createElement(react_ReactType.fromString("br"),{ key : id}));
 			}
 			players.push(React.createElement(react_ReactType.fromComp(sh_client_components_Player),{ key : "player" + id, game : game, id : id, clickHandeler : this.props.clickHandeler, local : this.props.local, localId : this.props.id}));
@@ -1366,71 +1536,24 @@ sh_client_components_TopBoard.__super__ = React.Component;
 sh_client_components_TopBoard.prototype = $extend(React.Component.prototype,{
 	render: function() {
 		var game = this.props.game;
-		var content;
-		switch(game.getState()) {
-		case "CHANCELOR_NOMINATION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va nommer son chancelier.");
-			break;
-		case "CHANCELOR_SESSION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le chancelier choisi le décret à adpter.");
-			break;
-		case "EXECUTION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va choisir le joueur a éxécuter.");
-			break;
-		case "EXECUTION_RESULT":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président a choisi le joueur a éxécuter.");
-			break;
-		case "FASCISTS_REVEAL":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les fascistes se découvrent.");
-			break;
-		case "FASCIST_VICTORY":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Victoire des fascistes !");
-			break;
-		case "GAME_START":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"La partie commence !");
-			break;
-		case "GOVERNMENT_VOTE":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les joueurs votent pour le gouvernement proposé.");
-			break;
-		case "LIBERAL_VICTORY":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Victoire des libéraux !");
-			break;
-		case "LOYALTY_INVESTIGATION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va enquêter sur un joueur.");
-			break;
-		case "LOYALTY_INVESTIGATION_RESULT":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président reçoit le résultat de l'enquête.");
-			break;
-		case "POLICY_PEEK":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le présdent va espionner les trois prochains décrets.");
-			break;
-		case "POLICY_PEEK_RESULT":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le présdent a espionné les trois prochains décrets.");
-			break;
-		case "POLICY_REVEAL":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le décret choisi est révélé.");
-			break;
-		case "PRESIDENT_SESSION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président choisi un décret à défausser.");
-			break;
-		case "SPECIAL_ELECTION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président va choisir son successeur.");
-			break;
-		case "SPECIAL_ELECTION_RESULT":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Le président a choisi son successeur.");
-			break;
-		case "VETO_PROPOSITION":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Lechancelier demande le véto.");
-			break;
-		case "VOTE_COUNTING":
-			content = React.createElement(react_ReactType.fromString("span"),{ key : "state", className : "state"},"Les votes sont comptés.");
-			break;
+		if(game == null) {
+			return React.createElement(react_ReactType.fromString("div"),{ id : "top"},React.createElement(react_ReactType.fromString("br"),{ }));
+		} else {
+			var tmp = react_ReactType.fromString("div");
+			var tmp1 = "Chaos : " + game.electionTracker;
+			var tmp2 = React.createElement(react_ReactType.fromString("span"),{ },tmp1 + "/3");
+			var tmp1 = React.createElement(react_ReactType.fromString("span"),{ }," | ");
+			var tmp3 = "Pioche : " + game.drawPile.length;
+			var tmp4 = React.createElement(react_ReactType.fromString("span"),{ },tmp3 + "/17");
+			var tmp3 = React.createElement(react_ReactType.fromString("span"),{ }," | ");
+			var tmp5 = "Défausse : " + game.discardPile.length;
+			return React.createElement(tmp,{ id : "top"},tmp2,tmp1,tmp4,tmp3,React.createElement(react_ReactType.fromString("span"),{ },tmp5 + "/17"));
 		}
-		return React.createElement(react_ReactType.fromString("div"),{ id : "top"},React.createElement(react_ReactType.fromString("span"),{ },content));
 	}
 });
 var sh_core_Game = $hx_exports["sh"]["core"]["Game"] = function() {
 	this.fsm = null;
+	this.errors = [];
 	this.messages = [];
 	this.investigatedPlayer = sh_core_PlayerId.NONE;
 	this.nextPower = null;
@@ -1527,11 +1650,44 @@ sh_core_Game.prototype = {
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onNominate(args[1]);
 		});
+		this.fsm.addTransition(chancelorNomination,chancelorNomination,"NOMINATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return !_gthis.checkEligibility(args[1]);
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_ELIGIBLE);
+		});
+		this.fsm.addTransition(chancelorNomination,chancelorNomination,"NOMINATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] == _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
+		this.fsm.addTransition(chancelorNomination,chancelorNomination,"NOMINATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[1]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
+		});
 		this.fsm.addTransition(governmentVote,governmentVote,"JA",true,function() {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(_gthis.votes.h[args[0]] == null) {
+			if(!_gthis.votes.h.hasOwnProperty(args[0])) {
 				return _gthis.players[args[0]].status == "ALIVE";
 			} else {
 				return false;
@@ -1542,11 +1698,33 @@ sh_core_Game.prototype = {
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onVote(args[0],"JA");
 		});
+		this.fsm.addTransition(governmentVote,governmentVote,"JA",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.votes.h.hasOwnProperty(args[0]);
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.HAS_VOTED);
+		});
+		this.fsm.addTransition(governmentVote,governmentVote,"JA",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[0]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
+		});
 		this.fsm.addTransition(governmentVote,governmentVote,"NEIN",true,function() {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(_gthis.votes.h[args[0]] == null) {
+			if(!_gthis.votes.h.hasOwnProperty(args[0])) {
 				return _gthis.players[args[0]].status == "ALIVE";
 			} else {
 				return false;
@@ -1556,6 +1734,28 @@ sh_core_Game.prototype = {
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onVote(args[0],"NEIN");
+		});
+		this.fsm.addTransition(governmentVote,governmentVote,"NEIN",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.votes.h.hasOwnProperty(args[0]);
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.HAS_VOTED);
+		});
+		this.fsm.addTransition(governmentVote,governmentVote,"NEIN",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[0]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
 		});
 		this.fsm.addTransition(governmentVote,voteCounting,"REVEAL",false,function() {
 			var $l=arguments.length;
@@ -1578,6 +1778,28 @@ sh_core_Game.prototype = {
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.onVoteEnded();
+		});
+		this.fsm.addTransition(governmentVote,governmentVote,"REVEAL",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			var tmp = Lambda.count(_gthis.votes);
+			var _g = [];
+			var _g1 = 0;
+			var _g2 = _gthis.players;
+			while(_g1 < _g2.length) {
+				var v = _g2[_g1];
+				++_g1;
+				if(v.status == "ALIVE") {
+					_g.push(v);
+				}
+			}
+			return tmp < _g.length;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.HAS_NOT_VOTED);
 		});
 		this.fsm.addTransition(voteCounting,fascistVictory,"CHAOS",false,function() {
 			var $l=arguments.length;
@@ -1623,6 +1845,21 @@ sh_core_Game.prototype = {
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.onChaos();
+		});
+		this.fsm.addTransition(voteCounting,voteCounting,"CHAOS",true,function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			if(_gthis.voteResult != "JA") {
+				return _gthis.electionTracker < 2;
+			} else {
+				return true;
+			}
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_CHAOS);
 		});
 		this.fsm.addTransition(voteCounting,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
@@ -1673,11 +1910,26 @@ sh_core_Game.prototype = {
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.onSuccessfulVote();
 		});
+		this.fsm.addTransition(voteCounting,voteCounting,"NEXT",true,function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			if(_gthis.voteResult == "NEIN") {
+				return _gthis.electionTracker == 2;
+			} else {
+				return false;
+			}
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_CHAOS);
+		});
 		this.fsm.addTransition(presidentSession,chancelorSession,"DISCARD",false,function() {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(args[0] == _gthis.president && args[1] != null && args[1] >= 0) {
+			if(args[0] == _gthis.president && args[1] >= 0) {
 				return args[1] < 3;
 			} else {
 				return false;
@@ -1688,11 +1940,22 @@ sh_core_Game.prototype = {
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onPolicyDiscarded(args[1]);
 		});
+		this.fsm.addTransition(presidentSession,presidentSession,"NEXT",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
 		this.fsm.addTransition(chancelorSession,policyReveal,"SELECT",false,function() {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(args[0] == _gthis.chancelor && args[1] != null && args[1] >= 0) {
+			if(args[0] == _gthis.chancelor && args[1] >= 0) {
 				return args[1] < 2;
 			} else {
 				return false;
@@ -1702,6 +1965,17 @@ sh_core_Game.prototype = {
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onPolicySelected(args[1]);
+		});
+		this.fsm.addTransition(chancelorSession,chancelorSession,"NEXT",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_CHANCELOR);
 		});
 		this.fsm.addTransition(chancelorSession,vetoProposition,"VETO",false,function() {
 			var $l=arguments.length;
@@ -1717,6 +1991,17 @@ sh_core_Game.prototype = {
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
 			_gthis.onVetoProposed();
+		});
+		this.fsm.addTransition(chancelorSession,chancelorSession,"VETO",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_CHANCELOR);
 		});
 		this.fsm.addTransition(vetoProposition,fascistVictory,"CHAOS",false,function() {
 			var $l=arguments.length;
@@ -1776,7 +2061,7 @@ sh_core_Game.prototype = {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.onVetoRejected();
+			_gthis.onVetoAccepted();
 		});
 		this.fsm.addTransition(vetoProposition,chancelorSession,"DECLINE",false,function() {
 			var $l=arguments.length;
@@ -1787,7 +2072,7 @@ sh_core_Game.prototype = {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
-			_gthis.onVetoAccepted();
+			_gthis.onVetoRejected();
 		});
 		this.fsm.addTransition(policyReveal,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
@@ -1815,7 +2100,7 @@ sh_core_Game.prototype = {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(args[0] == _gthis.president && args[1] != null && args[1] != _gthis.president) {
+			if(args[0] == _gthis.president && args[1] != _gthis.president) {
 				return _gthis.players[args[1]].status == "ALIVE";
 			} else {
 				return false;
@@ -1825,6 +2110,39 @@ sh_core_Game.prototype = {
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onInvestigate(args[1]);
+		});
+		this.fsm.addTransition(loyaltyInvestigation,loyaltyInvestigation,"INVESTIGATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
+		this.fsm.addTransition(loyaltyInvestigation,loyaltyInvestigation,"INVESTIGATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[1] == _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_SELF);
+		});
+		this.fsm.addTransition(loyaltyInvestigation,loyaltyInvestigation,"INVESTIGATE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[1]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
 		});
 		this.fsm.addTransition(loyaltyInvestigationResult,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
@@ -1852,7 +2170,7 @@ sh_core_Game.prototype = {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(args[0] == _gthis.president && args[1] != null && args[1] != _gthis.president) {
+			if(args[0] == _gthis.president && args[1] != _gthis.president) {
 				return _gthis.players[args[1]].status == "ALIVE";
 			} else {
 				return false;
@@ -1862,6 +2180,39 @@ sh_core_Game.prototype = {
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onChoose(args[1]);
+		});
+		this.fsm.addTransition(specialElection,specialElection,"CHOOSE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
+		this.fsm.addTransition(specialElection,specialElection,"CHOOSE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[1] == _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_SELF);
+		});
+		this.fsm.addTransition(specialElection,specialElection,"CHOOSE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[1]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
 		});
 		this.fsm.addTransition(specialElectionResult,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
@@ -1895,6 +2246,17 @@ sh_core_Game.prototype = {
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onPeek();
 		});
+		this.fsm.addTransition(policyPeek,policyPeek,"PEEK",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
 		this.fsm.addTransition(policyPeekResult,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
 			var _ = new Array($l>0?$l-0:0);
@@ -1921,7 +2283,7 @@ sh_core_Game.prototype = {
 			var $l=arguments.length;
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
-			if(args[0] == _gthis.president && args[1] != null && args[1] != _gthis.president) {
+			if(args[0] == _gthis.president && args[1] != _gthis.president) {
 				return _gthis.players[args[1]].status == "ALIVE";
 			} else {
 				return false;
@@ -1931,6 +2293,39 @@ sh_core_Game.prototype = {
 			var args = new Array($l>0?$l-0:0);
 			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
 			_gthis.onExecute(args[1]);
+		});
+		this.fsm.addTransition(execution,execution,"EXECUTE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[0] != _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_NOT_PRESIDENT);
+		});
+		this.fsm.addTransition(execution,execution,"EXECUTE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return args[1] == _gthis.president;
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_SELF);
+		});
+		this.fsm.addTransition(execution,execution,"EXECUTE",true,function() {
+			var $l=arguments.length;
+			var args = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){args[$i-0]=arguments[$i];}
+			return _gthis.players[args[1]].status == "DEAD";
+		},function() {
+			var $l=arguments.length;
+			var _ = new Array($l>0?$l-0:0);
+			for(var $i=0;$i<$l;++$i){_[$i-0]=arguments[$i];}
+			_gthis.errors.push(sh_core_Error.IS_DEAD);
 		});
 		this.fsm.addTransition(executionResult,chancelorNomination,"NEXT",false,function() {
 			var $l=arguments.length;
@@ -2001,7 +2396,9 @@ sh_core_Game.prototype = {
 		var $l=arguments.length;
 		var args = new Array($l>1?$l-1:0);
 		for(var $i=1;$i<$l;++$i){args[$i-1]=arguments[$i];}
-		if(($_=this.fsm,$_.update.apply($_,[event].concat(args)))) {
+		this.messages = [];
+		this.errors = [];
+		if(($_=this.fsm,$_.update.apply($_,[event].concat(args))) && this.errors.length == 0) {
 			this.messages.push(sh_core_Message.EVENT(event,args[0],args[1]));
 			this.messages.push(sh_core_Message.STATE(this.fsm.states[this.fsm.currentState].name));
 		}
@@ -2165,7 +2562,6 @@ sh_core_Game.prototype = {
 		this.presidentForced = true;
 	}
 	,onPeek: function() {
-		console.log("sh/core/Game.hx:439:","president looks at the top 3 policies");
 	}
 	,onExecute: function(target) {
 		this.players[target].status = "DEAD";
@@ -2230,9 +2626,23 @@ var sh_core_Message = $hxEnums["sh.core.Message"] = { __ename__:true,__construct
 	,EVENT: ($_=function(event,source,target) { return {_hx_index:1,event:event,source:source,target:target,__enum__:"sh.core.Message",toString:$estr}; },$_._hx_name="EVENT",$_.__params__ = ["event","source","target"],$_)
 	,INIT: ($_=function(cards,firstPresident,roles) { return {_hx_index:2,cards:cards,firstPresident:firstPresident,roles:roles,__enum__:"sh.core.Message",toString:$estr}; },$_._hx_name="INIT",$_.__params__ = ["cards","firstPresident","roles"],$_)
 	,DECK: ($_=function(cards) { return {_hx_index:3,cards:cards,__enum__:"sh.core.Message",toString:$estr}; },$_._hx_name="DECK",$_.__params__ = ["cards"],$_)
-	,ERROR: ($_=function(error) { return {_hx_index:4,error:error,__enum__:"sh.core.Message",toString:$estr}; },$_._hx_name="ERROR",$_.__params__ = ["error"],$_)
 };
-sh_core_Message.__constructs__ = [sh_core_Message.STATE,sh_core_Message.EVENT,sh_core_Message.INIT,sh_core_Message.DECK,sh_core_Message.ERROR];
+sh_core_Message.__constructs__ = [sh_core_Message.STATE,sh_core_Message.EVENT,sh_core_Message.INIT,sh_core_Message.DECK];
+var sh_core_Error = $hxEnums["sh.core.Error"] = { __ename__:true,__constructs__:null
+	,IS_NOT_ELIGIBLE: {_hx_name:"IS_NOT_ELIGIBLE",_hx_index:0,__enum__:"sh.core.Error",toString:$estr}
+	,IS_NOT_PRESIDENT: {_hx_name:"IS_NOT_PRESIDENT",_hx_index:1,__enum__:"sh.core.Error",toString:$estr}
+	,IS_NOT_CHANCELOR: {_hx_name:"IS_NOT_CHANCELOR",_hx_index:2,__enum__:"sh.core.Error",toString:$estr}
+	,IS_DEAD: {_hx_name:"IS_DEAD",_hx_index:3,__enum__:"sh.core.Error",toString:$estr}
+	,HAS_VOTED: {_hx_name:"HAS_VOTED",_hx_index:4,__enum__:"sh.core.Error",toString:$estr}
+	,HAS_NOT_VOTED: {_hx_name:"HAS_NOT_VOTED",_hx_index:5,__enum__:"sh.core.Error",toString:$estr}
+	,IS_CHAOS: {_hx_name:"IS_CHAOS",_hx_index:6,__enum__:"sh.core.Error",toString:$estr}
+	,IS_NOT_CHAOS: {_hx_name:"IS_NOT_CHAOS",_hx_index:7,__enum__:"sh.core.Error",toString:$estr}
+	,IS_SELF: {_hx_name:"IS_SELF",_hx_index:8,__enum__:"sh.core.Error",toString:$estr}
+	,CAN_NOT_VETO: {_hx_name:"CAN_NOT_VETO",_hx_index:9,__enum__:"sh.core.Error",toString:$estr}
+	,IS_VICTORIOUS: {_hx_name:"IS_VICTORIOUS",_hx_index:10,__enum__:"sh.core.Error",toString:$estr}
+	,IS_NOT_VICTORIOUS: {_hx_name:"IS_NOT_VICTORIOUS",_hx_index:11,__enum__:"sh.core.Error",toString:$estr}
+};
+sh_core_Error.__constructs__ = [sh_core_Error.IS_NOT_ELIGIBLE,sh_core_Error.IS_NOT_PRESIDENT,sh_core_Error.IS_NOT_CHANCELOR,sh_core_Error.IS_DEAD,sh_core_Error.HAS_VOTED,sh_core_Error.HAS_NOT_VOTED,sh_core_Error.IS_CHAOS,sh_core_Error.IS_NOT_CHAOS,sh_core_Error.IS_SELF,sh_core_Error.CAN_NOT_VETO,sh_core_Error.IS_VICTORIOUS,sh_core_Error.IS_NOT_VICTORIOUS];
 var sh_core_Player = function(id,name) {
 	this.id = id;
 	this.name = name != null ? name : sh_core_Player.NAMES[Std.random(sh_core_Player.NAMES.length)];

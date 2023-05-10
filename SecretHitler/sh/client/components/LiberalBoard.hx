@@ -10,7 +10,7 @@ class LiberalBoard extends ReactComponent {
         super(props);
     }
 
-    function format(power:Power):String {
+    function formatPower(power:Power):String {
         return switch(power) {
             case NO_POWER : "Aucun pouvoir";
             case LOYALTY_INVESTIGATION : "Enquête";
@@ -28,14 +28,16 @@ class LiberalBoard extends ReactComponent {
         if(game==null || !game.fsm.isRunning)
             return jsx(<div id='liberal-board'><br/></div>);
 
-        for(i in 1...Game.LIBERAL_BOARDS[game.liberalBoard].length)
+        for(i in 1...Game.LIBERAL_BOARDS[game.liberalBoard].length) {
             policies.push(jsx(
-                <span key={'liberalpolicy$i'} style={{margin: '.5em', fontWeight: i<=game.liberalPoliciesPassed? 'bold': ''}}>
-                    {'${format(Game.LIBERAL_BOARDS[game.liberalBoard][i])} '}
+                <span key={'liberalpolicy$i'} className={i<=game.liberalPoliciesPassed? 'passed': ''}>
+                    {'${formatPower(Game.LIBERAL_BOARDS[game.liberalBoard][i])}'}
                 </span>
             ));
+        }
+            
         return jsx(
-            <div id='liberal-board'>
+            <div id='liberal-board' className='board'>
                 {policies}
             </div>
         );

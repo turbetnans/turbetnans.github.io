@@ -4,12 +4,17 @@ import sh.core.Game;
 import react.ReactMacro.jsx;
 import react.ReactComponent;
 
-using util.ArrayExt;
-
 @:expose
 class Buttons extends ReactComponent {
     public function new(props) {
         super(props);
+    }
+
+    private function formatPolicy(policy:Policy) {
+        return switch(policy){
+            case FASCIST_POLICY: "Décret fasciste";
+            case LIBERAL_POLICY: "Décret liberal";
+        };
     }
 
     override function render() {
@@ -42,7 +47,7 @@ class Buttons extends ReactComponent {
 
         var showVoteButtons:Bool = 
             game.isInState(State.GOVERNMENT_VOTE) &&
-            game.votes.get(props.id)==null &&
+            !game.votes.exists(props.id) &&
             !props.local;
 
         var showDiscardButton:Bool = 
@@ -75,27 +80,35 @@ class Buttons extends ReactComponent {
         var showPeekResult:Bool =
             game.isInState(State.POLICY_PEEK_RESULT) &&
             (props.id==game.president || props.local);
+        
+        if(!showDiscardButton && !showSelectButton && !showSelectButton &&
+                !showPeekResult && !showStartButton && !showRevealButton &&
+                !showChaosButton && !showNextButton && !showVoteButtons &&
+                !showVetoButton && !showAcceptButton && !showDeclineButton &&
+                !showPeekButton) {
+            return null;
+        }
 
         return jsx(
             <div id='buttons'>
-                <button hidden={!showStartButton} onClick={()->props.clickHandeler(0, START)}>{'Commencer'}</button>
-                <button hidden={!showRevealButton} onClick={()->props.clickHandeler(0, REVEAL)}>{'Révéler'}</button>
-                <button hidden={!showChaosButton} onClick={()->props.clickHandeler(0, CHAOS)}>{'CHAOS'}</button>
-                <button hidden={!showNextButton} onClick={()->props.clickHandeler(0, NEXT)}>{'Suivant'}</button>
-                <button hidden={!showVoteButtons} onClick={()->props.clickHandeler(props.id, JA)}>{'JA !'}</button>
-                <button hidden={!showVoteButtons} onClick={()->props.clickHandeler(props.id, NEIN)}>{'NEIN !'}</button>
-                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(game.president, DISCARD, 0)}>{game.proposedPolicies[0]}</button>
-                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(game.president, DISCARD, 1)}>{game.proposedPolicies[1]}</button>
-                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(game.president, DISCARD, 2)}>{game.proposedPolicies[2]}</button>
-                <button hidden={!showSelectButton} onClick={()->props.clickHandeler(game.chancelor, SELECT, 0)}>{game.proposedPolicies[0]}</button>
-                <button hidden={!showSelectButton} onClick={()->props.clickHandeler(game.chancelor, SELECT, 1)}>{game.proposedPolicies[1]}</button>
-                <button hidden={!showVetoButton} onClick={()->props.clickHandeler(game.chancelor, VETO)}>{'Demander un véto'}</button>
-                <button hidden={!showAcceptButton} onClick={()->props.clickHandeler(game.president, ACCEPT)}>{'Accepter'}</button>
-                <button hidden={!showDeclineButton} onClick={()->props.clickHandeler(game.president, DECLINE)}>{'Refuser'}</button>
-                <button hidden={!showPeekButton} onClick={()->props.clickHandeler(game.president, PEEK)}>{'Espionner'}</button>
-                <button hidden={!showPeekResult} disabled={true}>{game.drawPile[0]}</button>
-                <button hidden={!showPeekResult} disabled={true}>{game.drawPile[1]}</button>
-                <button hidden={!showPeekResult} disabled={true}>{game.drawPile[2]}</button>
+                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(DISCARD, game.president, 0)}>{formatPolicy(game.proposedPolicies[0])}</button>
+                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(DISCARD, game.president, 1)}>{formatPolicy(game.proposedPolicies[1])}</button>
+                <button hidden={!showDiscardButton} onClick={()->props.clickHandeler(DISCARD, game.president, 2)}>{formatPolicy(game.proposedPolicies[2])}</button>
+                <button hidden={!showSelectButton} onClick={()->props.clickHandeler(SELECT, game.chancelor, 0)}>{formatPolicy(game.proposedPolicies[0])}</button>
+                <button hidden={!showSelectButton} onClick={()->props.clickHandeler(SELECT, game.chancelor, 1)}>{formatPolicy(game.proposedPolicies[1])}</button>
+                <button hidden={!showPeekResult} disabled={true}>{formatPolicy(game.drawPile[0])}</button>
+                <button hidden={!showPeekResult} disabled={true}>{formatPolicy(game.drawPile[1])}</button>
+                <button hidden={!showPeekResult} disabled={true}>{formatPolicy(game.drawPile[2])}</button>
+                <button hidden={!showStartButton} onClick={()->props.clickHandeler(START, 0)}>{'Commencer'}</button>
+                <button hidden={!showRevealButton} onClick={()->props.clickHandeler(REVEAL, 0)}>{'Révéler'}</button>
+                <button hidden={!showChaosButton} onClick={()->props.clickHandeler(CHAOS, 0)}>{'CHAOS'}</button>
+                <button hidden={!showNextButton} onClick={()->props.clickHandeler(NEXT, 0)}>{'Suivant'}</button>
+                <button hidden={!showVoteButtons} onClick={()->props.clickHandeler(JA, props.id)}>{'JA !'}</button>
+                <button hidden={!showVoteButtons} onClick={()->props.clickHandeler(NEIN, props.id)}>{'NEIN !'}</button>
+                <button hidden={!showVetoButton} onClick={()->props.clickHandeler(VETO, game.chancelor)}>{'Véto'}</button>
+                <button hidden={!showAcceptButton} onClick={()->props.clickHandeler(ACCEPT, game.president)}>{'Accepter'}</button>
+                <button hidden={!showDeclineButton} onClick={()->props.clickHandeler(DECLINE, game.president)}>{'Refuser'}</button>
+                <button hidden={!showPeekButton} onClick={()->props.clickHandeler(PEEK, game.president)}>{'Espionner'}</button>
             </div>
         );
     }
