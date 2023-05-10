@@ -1,0 +1,206 @@
+/* ----------------------------------------------------------------------------*/
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+* {
+  font-family: "Open Sans", sans-serif;
+}
+body {
+  margin: 0; padding: 0;
+  font-size: 16px;
+}
+button {
+  font-size: 100%;
+}
+
+/*----------------------------------------------------------------------------*/
+#client {
+  min-height: 100vh;
+  max-height: 100vh;
+  text-align: center;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+}
+
+.header, .footer {
+  flex: 0 0 auto;
+  width: 45em;
+  margin: auto;
+  padding: 0 -.25em;
+}
+
+/*----------------------------------------------------------------------------*/
+#menu, #room {
+  background-color: silver;
+  box-shadow: inset 0 0 .5em black;
+  width: 45em;
+  margin: .25em auto;
+  flex: 1 1 auto;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+/*----------------------------------------------------------------------------*/
+#menu #id, #room #id {
+  box-shadow: inset 0 0 .5em black, 0 0 .5em black;
+  display: inline-block;
+  width: 20em;
+  height: 2em;
+  text-align: center;
+  margin: .5em 0;
+  line-height: 2em;
+  border-radius: .5em;
+}
+#menu input, #room input {
+  width: 20em;
+  height: 2em;
+  text-align: center;
+  margin: .5em 0;
+}
+#menu button, #room button {
+  background-color: #0003;
+  height: 2em;
+  width: 20em;
+  border: none;
+  margin: .5em 0;
+}
+#menu button:hover, #room button:hover {
+  box-shadow: inset 0 0 .5em black;
+}
+#menu button:hover:active, #room button:hover:active {
+  box-shadow: inset 0 0 .5em black;
+}
+
+/*----------------------------------------------------------------------------*/
+#top {
+  padding: .25em;
+  background-color: dimgray;
+  margin: .25em auto;
+}
+
+/*----------------------------------------------------------------------------*/
+#bottom {
+  padding: .25em;
+  background-color: dimgray;
+  margin: .25em auto;
+}
+
+/*----------------------------------------------------------------------------*/
+#playerList {
+  padding: .25em;
+  background-color: dimgray;
+  margin: .25em auto;
+}
+
+/*----------------------------------------------------------------------------*/
+#liberal-board {
+  padding: .25em;
+  background-color: silver;
+  margin: .25em auto;
+  color: blue;
+}
+
+/*----------------------------------------------------------------------------*/
+#fascist-board {
+  padding: .25em;
+  background-color: silver;
+  margin: .25em auto;
+  color: brown;
+}
+
+/*----------------------------------------------------------------------------*/
+.player {
+  display: inline-block;
+  vertical-align: middle;
+  margin: .25em;
+  width: 8em;
+  height: 8em;
+  transition: background-color .2s;
+}
+.player button {
+  background-color: #0003;
+  height: 2em;
+  width: 100%;
+  border: none;
+}
+.player button.half {
+  width: 50%;
+}
+.player button:hover {
+  box-shadow: inset 0 0 .5em black;
+}
+.player button:hover:active {
+  box-shadow: inset 0 0 .5em black;
+}
+
+.player div {
+  height: 2em;
+}
+.player .title {
+  background-color: #000b;
+  color: silver;
+  height: 2em;
+}
+
+/*----------------------------------------------------------------------------*/
+.policy {
+  height: 2em;
+  min-width: 10em;
+  margin: 0 1em;
+  background-color: silver;
+
+}
+
+/*----------------------------------------------------------------------------*/
+#buttons {
+  height: 2em;
+  margin: .25em;
+}
+#buttons button {
+  background-color: dimgray;
+  height: 2em;
+  width: 8em;
+  border: none;
+  margin: 0 .25em;
+}
+#buttons button:disabled {
+  color: black;
+  box-shadow: inset 0 0 .5em black;
+}
+#buttons button:enabled:hover {
+  box-shadow: inset 0 0 .5em black;
+}
+#buttons button:enabled:hover:active {
+  box-shadow: inset 0 0 .5em black;
+}
+
+/*----------------------------------------------------------------------------*/
+#log {
+  background-color: silver;
+  box-shadow: inset 0 0 .5em black;
+  width: 45em;
+  min-height: 2em;
+  margin: .25em auto;
+  flex: 1 1 auto;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+#log p {
+  margin: .25em;
+}
+#log p.new {
+  color: forestgreen;
+}
+#log p:last-child {
+  margin-bottom: 1em;
+}
+
+/*----------------------------------------------------------------------------*/
+div.line {
+  margin-bottom: .5em;
+  margin-left: 2em;
+  margin-right: 2em;
+  height: 2px;
+  background-color: black;
+}
+
+/*----------------------------------------------------------------------------*/

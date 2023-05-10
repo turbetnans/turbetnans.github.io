@@ -1,0 +1,6 @@
+-js web/main.js
+-lib react
+-D react_global
+-lib react-native
+-main Main
+-debug
