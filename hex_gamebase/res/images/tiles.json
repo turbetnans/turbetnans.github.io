@@ -1,0 +1,8 @@
+{
+	"version": 1,
+	"tiles": [
+		{ "name": "grass", "content": [0,1,2], "prio": 3 },
+		{ "name": "stone", "content": [0,1,2,3], "prio": 2 },
+		{ "name": "water", "content": [0,1,2,3], "prio": 1 }
+	]
+}
