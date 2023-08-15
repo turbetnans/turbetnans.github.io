@@ -26,7 +26,7 @@ class Hero extends HexEntity {
         spr.set(Assets.horty);
 
         spr.anim.registerStateAnim("swimming", 2,
-            ()->Game.ME.level.grid.getCellAt(Math.round(avatarPosition.u), Math.round(avatarPosition.w))?.data=="water"
+            ()->Game.ME.level.grid.getCellAt(HexLib.round(avatarPosition).u, HexLib.round(avatarPosition).w).data=="water"
         );
         spr.anim.registerStateAnim("walking", 1,
             ()->avatarPosition!=avatarTarget
@@ -41,7 +41,7 @@ class Hero extends HexEntity {
             var mx: Int = Math.floor(App.ME.mouse.levelX);
             var my: Int = Math.floor(App.ME.mouse.levelY);
             var hex: Hex = HexLib.round(proj.unproject(new Vec2( mx+.5, my+.5 )));
-            var obstacles = Entity.ALL.mapToArray(e->e);
+            var obstacles = Entity.ALL.mapToArray(e->e).filter(e->e.collidable);
             path = HexLib.pathFinding(
                 level.grid,
                 HexLib.round(avatarPosition),

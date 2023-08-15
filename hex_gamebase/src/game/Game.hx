@@ -92,6 +92,10 @@ class Game extends AppChildProcess {
 
 		for(cell in level.grid.content) {
 			if(cell.data=="grass" && cell.coord.getNeigbours().filter(h->level.grid.getCellAt(h.u,h.w)?.data=="grass").length>=5) {
+				var wheatPos = proj.project(cell.coord);
+				var wheat = new Wheat(Math.round(wheatPos.x)+Std.random(3)-1, Math.round(wheatPos.y)+4+Std.random(3)-1);
+			}
+			if(cell.data=="grass" && cell.coord.getNeigbours().filter(h->level.grid.getCellAt(h.u,h.w)?.data=="grass").length<=1) {
 				var treePos = proj.project(cell.coord);
 				var tree = new Tree(Math.round(treePos.x)+Std.random(3)-1, Math.round(treePos.y)+4+Std.random(3)-1);
 			}

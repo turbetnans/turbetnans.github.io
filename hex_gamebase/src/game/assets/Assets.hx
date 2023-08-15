@@ -19,6 +19,7 @@ class Assets {
 	public static var horty : SpriteLib;
 	public static var tree : SpriteLib;
 	public static var rock : SpriteLib;
+	public static var wheat : SpriteLib;
 
 
 	static var _initDone = false;
@@ -37,6 +38,7 @@ class Assets {
 		horty = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.horty.toAseprite());
 		tree = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.tree.toAseprite());
 		rock = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.rock.toAseprite());
+		wheat = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.wheat.toAseprite());
 
 		// Hot-reloading of CastleDB
 		#if debug

@@ -12,5 +12,6 @@ class Rock extends HexEntity {
         spr.set(Assets.rock);
         spr.anim.registerStateAnim("idle",0);
         dir = Std.random(2)==0? -1: 1;
+        collidable = true;
     }
 }

@@ -12,5 +12,6 @@ class Tree extends HexEntity {
         spr.set(Assets.tree);
         spr.anim.registerStateAnim("idle",0);
         dir = Std.random(2)==0? -1: 1;
+        collidable = true;
     }
 }

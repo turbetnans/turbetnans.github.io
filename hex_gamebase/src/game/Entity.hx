@@ -189,6 +189,8 @@ class Entity {
 
 	var actions : RecyclablePool<tools.ChargedAction>;
 
+    public var collidable: Bool = false;
+
 
 	/**
 		Constructor
