@@ -33,5 +33,12 @@
 	<br>
 	en Haxe
 	</p>
+	<p>
+	<a href="/hex_gamebase/run_js.html" style="text-decoration: none;">Pathfinding héxagonal</a>
+	<br>
+	réalisé en 2023 en projet d'apprentissage de Haxe, Heaps.io et GameBase
+	<br>
+	en Haxe
+	</p>
 </body>
 </html>
