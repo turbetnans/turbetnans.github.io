@@ -17,6 +17,9 @@ class Const {
 	public static final GRID_X = 16;
 	public static final GRID_Y = 9;
 
+	public static final CHUNK_SIZE = 4;
+	public static final LOADING_RADIUS = 2; 
+
 	/** "Infinite", sort-of. More like a "big number" **/
 	public static final INFINITE : Int = 0xfffFfff;
 
@@ -30,7 +33,7 @@ class Const {
 	public static var SCALE(get,never) : Int;
 		static inline function get_SCALE() {
 			// can be replaced with another way to determine the game scaling
-			return dn.heaps.Scaler.bestFit_i(200,200);
+			return dn.heaps.Scaler.bestFit_i(400,300);
 		}
 
 	/** Specific scaling for top UI elements **/

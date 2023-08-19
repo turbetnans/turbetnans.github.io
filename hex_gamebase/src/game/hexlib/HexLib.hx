@@ -163,18 +163,21 @@ class HexGrid<D> {
 	public function new(r:Int) {
 		radius = r;
 		content = new Map<Int,HexCell<D>>();
+		offset = new Hex(0,0);
 	}
 	public function setCellAt(u:Int, w:Int, cell:HexCell<D>) {
-		if(cell.coord.u!=u||cell.coord.w!=w) return;
-		content.set((u+radius)+(2*radius+1)*(w+radius), cell);
+		content.set((u-offset.u+radius)+(2*radius+1)*(w-offset.w+radius), cell);
 	}
 	public function getCellAt(u:Int, w:Int): Null<HexCell<D>> {
-		if(u<-radius||u>radius||w<-radius||w>radius) return null;
-		return content.get((u+radius)+(2*radius+1)*(w+radius));
+		if(u-offset.u<-radius||u-offset.u>radius||w-offset.w<-radius||w-offset.w>radius)
+			return null;
+		return content.get((u-offset.u+radius)+(2*radius+1)*(w-offset.w+radius));
 	}
 
 	public var content: Map<Int,HexCell<D>>;
 	public var radius: Int;
+
+	public var offset: Hex;
 }
 
 /*----------------------------------------------------------------------------*/

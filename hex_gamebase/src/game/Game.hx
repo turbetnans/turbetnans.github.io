@@ -83,7 +83,7 @@ class Game extends AppChildProcess {
 
 		level = new Level(u, w);
 		currentChunk = new Hex(u, w);
-		level.loadChunksAround(u, w, 2);
+		level.loadChunksAround(u, w, Const.LOADING_RADIUS);
 
 		// <---- Here: instanciate your level entities
 
@@ -228,21 +228,8 @@ class Game extends AppChildProcess {
 		super.fixedUpdate();
 		
 		var chunk: Hex = level.grid.getCellAt(HexLib.round(hero.avatarPosition).u, HexLib.round(hero.avatarPosition).w).data.chunk;
-		var delta: Hex = new Hex();
 		if(chunk != currentChunk) {
-			level.loadChunksAround(chunk.u, chunk.w, 2);
-			delta = (currentChunk-chunk)*Chunk.SIZE;
-			hero.avatarPosition += delta;
-			hero.avatarTarget += delta;
-			for(i in 0...hero.path.length) {
-				hero.path[i] += delta;
-			}
-			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
-			proj.origin = new Vec2(.5,.5);
-			for(e in level.entities) {
-				var deltaXY: Vec2 = proj.project(delta);
-				e.setPosPixel(e.sprX+deltaXY.x, e.sprY+deltaXY.y);
-			}
+			level.loadChunksAround(chunk.u, chunk.w, Const.LOADING_RADIUS);
 			currentChunk = chunk;
 		}
 
@@ -261,7 +248,6 @@ class Game extends AppChildProcess {
 		// Entities main loop
 		for(e in Entity.ALL) if( !e.destroyed ) e.frameUpdate();
 		
-		camera.centerOnTarget();
 		scroller.ysort(Const.DP_MAIN);
 
 		// Global key shortcuts

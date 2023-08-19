@@ -39,8 +39,8 @@ class Level extends GameChildProcess {
 	public function new(u: Int, w: Int) {
 		super();
 
-		uOffset = u*Chunk.SIZE;
-		wOffset = w*Chunk.SIZE;
+		uOffset = u*Const.CHUNK_SIZE;
+		wOffset = w*Const.CHUNK_SIZE;
 
 		var random = new Random(new Xorshift64Plus());
         seed = random.nextInt()+"";
@@ -48,7 +48,8 @@ class Level extends GameChildProcess {
 		createRootInLayers(Game.ME.scroller, Const.DP_BG);
 
 		// grid
-		grid = new HexGrid<CellData>(Chunk.SIZE);
+		grid = new HexGrid<CellData>(Const.CHUNK_SIZE);
+		grid.offset = new Hex(uOffset, wOffset);
 
 		// entities
 		entities = [];
@@ -57,14 +58,14 @@ class Level extends GameChildProcess {
 		chunks = [];
 		pendingChunks = [];
 		renderedChunks = [];
-		loadChunk(u, w);
 	}
 
 	public function loadChunksAround(u: Int, w: Int, radius: Int){
-		uOffset = u*Chunk.SIZE;
-		wOffset = w*Chunk.SIZE;
+		uOffset = u*Const.CHUNK_SIZE;
+		wOffset = w*Const.CHUNK_SIZE;
 
-		grid = new HexGrid<CellData>(Chunk.SIZE*5);
+		grid = new HexGrid<CellData>(Const.CHUNK_SIZE*(2*radius+1));
+		grid.offset = new Hex(uOffset, wOffset);
 
 		for(chunk in chunks) {
 			if(HexLib.distance(new Hex(u,w), new Hex(chunk.u,chunk.w))>2*radius) {
@@ -97,8 +98,8 @@ class Level extends GameChildProcess {
 
 		for(cell in chunk.grid.content) {
 			var newCell = new HexCell<CellData>(
-				cell.coord.u + u*Chunk.SIZE - uOffset,
-				cell.coord.w + w*Chunk.SIZE - wOffset,
+				cell.coord.u + u*Const.CHUNK_SIZE,
+				cell.coord.w + w*Const.CHUNK_SIZE,
 				cell.data
 			);
 			grid.setCellAt(newCell.coord.u, newCell.coord.w, newCell);
@@ -117,8 +118,8 @@ class Level extends GameChildProcess {
 
 		for(cell in chunk.grid.content) {
 			var newCell = new HexCell<CellData>(
-				cell.coord.u + chunk.u*Chunk.SIZE - uOffset,
-				cell.coord.w + chunk.w*Chunk.SIZE - wOffset,
+				cell.coord.u + chunk.u*Const.CHUNK_SIZE,
+				cell.coord.w + chunk.w*Const.CHUNK_SIZE,
 				cell.data
 			);
 
@@ -203,8 +204,12 @@ class Level extends GameChildProcess {
 		for(cell in grid.content) {
 			if( cell==null ) continue;
 			var pos: Vec2 = proj.project(cell.coord);
-			random.setStringSeed((cell.coord.u-cell.data.chunk.u*Chunk.SIZE+uOffset)+","+(cell.coord.w-cell.data.chunk.w*Chunk.SIZE+wOffset));
-			tileGroup.add(pos.x,pos.y,tiles[cell.data.cellType][random.randomInt(0,tiles[cell.data.cellType].length-1)].center());
+			random.setStringSeed((cell.coord.u-cell.data.chunk.u*Const.CHUNK_SIZE)+","+(cell.coord.w-cell.data.chunk.w*Const.CHUNK_SIZE));
+			tileGroup.add(
+				pos.x,
+				pos.y,
+				tiles[cell.data.cellType][random.randomInt(0,tiles[cell.data.cellType].length-1)].center()
+			);
 		}
 		// display sides
 		for(cell in grid.content) {
@@ -217,11 +222,19 @@ class Level extends GameChildProcess {
 				if(me>other) {
 					var h2 = HexLib.lerp(cell.coord,h1);
 					var pos: Vec2 = proj.project(h2);
-					tileGroup.add(pos.x,pos.y,sides[cell.data.cellType][count].center());
+					tileGroup.add(
+						pos.x,
+						pos.y,
+						sides[cell.data.cellType][count].center()
+					);
 				} else if(me<other) {
 					var h2 = HexLib.lerp(cell.coord,h1);
 					var pos: Vec2 = proj.project(h2);
-					tileGroup.add(pos.x,pos.y,sides[c.data.cellType][(count+3)%6].center());
+					tileGroup.add(
+						pos.x,
+						pos.y,
+						sides[c.data.cellType][(count+3)%6].center()
+					);
 				}
 				count++;
 			}

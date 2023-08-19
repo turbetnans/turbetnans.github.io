@@ -1,11 +1,8 @@
-import js.html.svg.ZoomAndPan;
 import seedyrng.Xorshift64Plus;
 import seedyrng.Random;
 import hexlib.HexLib;
 
 class Chunk {
-	static public var SIZE(default, never): Int = 3;
-
 	public var grid: HexGrid<CellData>;
 
 	public var u: Int;
@@ -22,7 +19,7 @@ class Chunk {
 		destroyed = false;
 
 		// grid
-		grid = new HexGrid<CellData>(SIZE);
+		grid = new HexGrid<CellData>(Const.CHUNK_SIZE);
 		
 		// populate
 		var chunk: Hex = new Hex(u, w);
@@ -39,29 +36,29 @@ class Chunk {
 		for(z in (-grid.radius)...(grid.radius+1)) {
 			for(x in (z<0?-z-grid.radius:-grid.radius)...(z>0?-z+grid.radius+1:grid.radius+1)) {
 				var y: Int = -x-z;
-				var cellId: Int = (x+u*SIZE+SIZE)+(2*SIZE+1)*(z+w*SIZE+SIZE);
+				var cellId: Int = (x+u*Const.CHUNK_SIZE+Const.CHUNK_SIZE)+(2*Const.CHUNK_SIZE+1)*(z+w*Const.CHUNK_SIZE+Const.CHUNK_SIZE);
 				random.setStringSeed(worldSeed+cellId);
-				if(Math.abs(x)==SIZE && Math.abs(y)==SIZE) {
+				if(Math.abs(x)==Const.CHUNK_SIZE && Math.abs(y)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,2)!=0) {
 						continue;
 					}
-				} else if(Math.abs(y)==SIZE && Math.abs(z)==SIZE) {
+				} else if(Math.abs(y)==Const.CHUNK_SIZE && Math.abs(z)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,2)!=1) {
 						continue;
 					}
-				} else if(Math.abs(z)==SIZE && Math.abs(x)==SIZE) {
+				} else if(Math.abs(z)==Const.CHUNK_SIZE && Math.abs(x)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,2)!=2) {
 						continue;
 					}
-				} else if(Math.abs(x)==SIZE) {
+				} else if(Math.abs(x)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,1)==(x>0?0:1)) {
 						continue;
 					}
-				} else if(Math.abs(y)==SIZE) {
+				} else if(Math.abs(y)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,1)==(y>0?0:1)) {
 						continue;
 					}
-				} else if(Math.abs(z)==SIZE) {
+				} else if(Math.abs(z)==Const.CHUNK_SIZE) {
 					if(random.randomInt(0,1)==(z>0?0:1)) {
 						continue;
 					}
@@ -135,11 +132,11 @@ class Chunk {
 			if(cell.data.biomeType=="forest" && random.randomInt(0,5)<1) {
 				cell.data.entityType = "tree";
 			}
-			if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=6) {
+			if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=5) {
 				cell.data.entityType = "wheat";
-			} else if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=5 && random.randomInt(0,2)<2) {
+			} else if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=3 && random.randomInt(0,2)<2) {
 				cell.data.entityType = "wheat";
-			} else if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=4 && random.randomInt(0,2)<1) {
+			} else if(cell.data.biomeType=="field" && cell.coord.getNeigbours().filter(h->grid.getCellAt(h.u,h.w)?.data.cellType=="grass").length>=1 && random.randomInt(0,2)<1) {
 				cell.data.entityType = "wheat";
 			}
 			if(cell.data.biomeType=="plain" && cell.data.cellType=="stone" && random.randomInt(0,3)<1) {
