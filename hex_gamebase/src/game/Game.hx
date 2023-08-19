@@ -1,3 +1,5 @@
+import seedyrng.Xorshift64Plus;
+import seedyrng.Random;
 import h2d.Graphics;
 import hxd.Res;
 import h2d.Tile;
@@ -84,6 +86,9 @@ class Game extends AppChildProcess {
 		level.loadChunksAround(u, w, 2);
 
 		// <---- Here: instanciate your level entities
+
+		while(level.pendingChunks.length>0)
+			level.loadEntities(level.pendingChunks.pop());
 
 		var proj: Projector = new Projector(new ProjectorProperties(0, 0));
 		proj.origin = new Vec2(.5,.5);
@@ -232,9 +237,17 @@ class Game extends AppChildProcess {
 			for(i in 0...hero.path.length) {
 				hero.path[i] += delta;
 			}
+			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
+			proj.origin = new Vec2(.5,.5);
+			for(e in level.entities) {
+				var deltaXY: Vec2 = proj.project(delta);
+				e.setPosPixel(e.sprX+deltaXY.x, e.sprY+deltaXY.y);
+			}
 			currentChunk = chunk;
 		}
 
+		if(level.pendingChunks.length>0)
+			level.loadEntities(level.pendingChunks.pop());
 
 		// Entities "30 fps" loop
 		for(e in Entity.ALL) if( !e.destroyed ) e.fixedUpdate();

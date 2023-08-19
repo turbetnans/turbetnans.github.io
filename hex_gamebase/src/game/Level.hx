@@ -29,6 +29,8 @@ class Level extends GameChildProcess {
 	public var wOffset: Int;
 
 	public var chunks: Map<String, Chunk>;
+	public var renderedChunks: Map<String, Chunk>;
+	public var pendingChunks: Array<Chunk>;
 
 	public var entities: Array<HexEntity>;
 
@@ -53,6 +55,8 @@ class Level extends GameChildProcess {
 
 		// chunks
 		chunks = [];
+		pendingChunks = [];
+		renderedChunks = [];
 		loadChunk(u, w);
 	}
 
@@ -60,30 +64,36 @@ class Level extends GameChildProcess {
 		uOffset = u*Chunk.SIZE;
 		wOffset = w*Chunk.SIZE;
 
-		chunks = [];
-
 		grid = new HexGrid<CellData>(Chunk.SIZE*5);
-		
-		for(e in entities)
-			e.destroy();
-		entities = [];
 
+		for(chunk in chunks) {
+			if(HexLib.distance(new Hex(u,w), new Hex(chunk.u,chunk.w))>2*radius) {
+				chunks.remove(chunk.u+","+chunk.w);
+				for(e in entities) {
+					if(e.chunkId==chunk.u+","+chunk.w){
+						e.destroy();
+					}
+				}
+			}
+		}
+		
+		entities = entities.filter(e->!e.destroyed);
+
+		renderedChunks = [];
+		pendingChunks = [];
 		loadChunk(u, w);
 		for(i in 0...radius)
-			for(chunk in chunks)
+			for(chunk in renderedChunks)
 				for(coords in chunk.getNeighboursCoords())
 					loadChunk(coords.u, coords.w);
 	}
 
-	function loadChunk(u: Int, w: Int) {
-		if(chunks.exists(u+","+w))
+	public function loadChunk(u: Int, w: Int) {
+		if(renderedChunks.exists(u+","+w))
 			return;
 
-
 		var chunk = new Chunk(u, w, seed);
-		chunks.set(u+","+w, chunk);
-
-		var random = new Random(new Xorshift64Plus());
+		renderedChunks.set(u+","+w, chunk);
 
 		for(cell in chunk.grid.content) {
 			var newCell = new HexCell<CellData>(
@@ -92,31 +102,49 @@ class Level extends GameChildProcess {
 				cell.data
 			);
 			grid.setCellAt(newCell.coord.u, newCell.coord.w, newCell);
-			
+		}
+
+		if(!chunks.exists(u+","+w)) {
+			chunks.set(u+","+w, chunk);
+			pendingChunks.push(chunk);
+		}
+
+		invalidate();
+	}
+
+	public function loadEntities(chunk: Chunk) {
+		var random = new Random(new Xorshift64Plus());
+
+		for(cell in chunk.grid.content) {
+			var newCell = new HexCell<CellData>(
+				cell.coord.u + chunk.u*Chunk.SIZE - uOffset,
+				cell.coord.w + chunk.w*Chunk.SIZE - wOffset,
+				cell.data
+			);
+
 			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
 			proj.origin = new Vec2(.5,.5);
 			
 			random.setStringSeed(cell.coord.u+","+cell.coord.w);
 
-			if(newCell.data.entityType=="wheat") {
-				var wheatPos = proj.project(newCell.coord);
-				var entity = new Wheat(Math.round(wheatPos.x)+random.randomInt(0,2)-1, Math.round(wheatPos.y)+3+random.randomInt(0,2)-1);
+			var pos = proj.project(newCell.coord);
+			var entity = switch(newCell.data.entityType) {
+				case "wheat":
+					new Wheat(Math.round(pos.x)+random.randomInt(0,2)-1, Math.round(pos.y)+3+random.randomInt(0,2)-1);
+				case "tree":
+					new Tree(Math.round(pos.x)+random.randomInt(0,2)-1, Math.round(pos.y)+3+random.randomInt(0,2)-1);
+				case "rock":
+					new Rock(Math.round(pos.x)+random.randomInt(0,2)-1, Math.round(pos.y)+3+random.randomInt(0,2)-1);
+				case _:
+					null;
+			};
+			if(entity!=null) {
 				entity.dir = random.randomInt(0,1)==0? -1: 1;
-				entities.push(entity);
-			} else if(newCell.data.entityType=="tree") {
-				var treePos = proj.project(newCell.coord);
-				var entity = new Tree(Math.round(treePos.x)+random.randomInt(0,2)-1, Math.round(treePos.y)+3+random.randomInt(0,2)-1);
-				entity.dir = random.randomInt(0,1)==0? -1: 1;
-				entities.push(entity);
-			} else if(newCell.data.entityType=="rock") {
-				var rockPos = proj.project(newCell.coord);
-				var entity = new Rock(Math.round(rockPos.x)+random.randomInt(0,2)-1, Math.round(rockPos.y)+3+random.randomInt(0,2)-1);
-				entity.dir = random.randomInt(0,1)==0? -1: 1;
+				entity.chunkId = chunk.u+","+chunk.w;
 				entities.push(entity);
 			}
 		}
-
-		invalidate();
+		
 	}
 
 	override function onDispose() {

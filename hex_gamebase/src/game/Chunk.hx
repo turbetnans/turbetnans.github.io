@@ -11,11 +11,15 @@ class Chunk {
 	public var u: Int;
 	public var w: Int;
 
+	public var destroyed: Bool;
+
 	public function new(u: Int, w: Int, worldSeed: String) {
 		var random = new Random(new Xorshift64Plus());
 
 		this.u = u;
 		this.w = w;
+
+		destroyed = false;
 
 		// grid
 		grid = new HexGrid<CellData>(SIZE);
