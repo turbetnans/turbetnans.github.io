@@ -42,7 +42,6 @@ class Level extends GameChildProcess {
 
 		var random = new Random(new Xorshift64Plus());
         seed = random.nextInt()+"";
-		seed = "test";
 
 		createRootInLayers(Game.ME.scroller, Const.DP_BG);
 
