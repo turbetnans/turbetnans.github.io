@@ -4,17 +4,15 @@ import hexlib.HexLib;
 import hexlib.Projector;
 import hexlib.Vec2;
 
-import h2d.Tile;
-
 class Hero extends HexEntity {
     
 	var ca : ControllerAccess<GameAction>;
 
-    var path: Array<Hex> = [];
+    public var path: Array<Hex> = [];
     var pathStep: Int = 0;
 
-	var avatarPosition: FractionalHex = new FractionalHex();
-	var avatarTarget: FractionalHex = new FractionalHex();
+	public var avatarPosition: FractionalHex = new FractionalHex();
+	public var avatarTarget: FractionalHex = new FractionalHex();
 
     public function new(x: Int, y: Int) {
         super(x, y);
@@ -26,7 +24,7 @@ class Hero extends HexEntity {
         spr.set(Assets.horty);
 
         spr.anim.registerStateAnim("swimming", 2,
-            ()->Game.ME.level.grid.getCellAt(HexLib.round(avatarPosition).u, HexLib.round(avatarPosition).w).data=="water"
+            ()->Game.ME.level.grid?.getCellAt(HexLib.round(avatarPosition).u, HexLib.round(avatarPosition).w).data.cellType=="water"
         );
         spr.anim.registerStateAnim("walking", 1,
             ()->avatarPosition!=avatarTarget
@@ -46,11 +44,11 @@ class Hero extends HexEntity {
                 level.grid,
                 HexLib.round(avatarPosition),
                 hex,
-                (c:HexCell<String>) -> {
+                (c:HexCell<CellData>) -> {
                     if(obstacles.filter(e->HexLib.round(proj.unproject(new Vec2(e.sprX, e.sprY)))==c.coord).length>0) {
                         Math.POSITIVE_INFINITY;
                     } else {
-                        switch(c.data){
+                        switch(c.data.cellType){
                             case "stone": 1;
                             case "grass": 2;
                             case "sand": 3;
@@ -82,6 +80,10 @@ class Hero extends HexEntity {
 		if(avatarPosition == avatarTarget && pathStep < path.length) {
 			avatarTarget = path[pathStep++];
 		}
+        if(pathStep==path.length) {
+            path = [];
+            pathStep = 0;
+        }
         var dx = (oldPosition-avatarPosition).u + (oldPosition-avatarPosition).w/2;
         dir = dx<0? 1: dx>0? -1: dir;
     }

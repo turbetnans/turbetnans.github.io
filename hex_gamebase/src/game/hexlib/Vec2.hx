@@ -27,7 +27,12 @@ abstract Vec2(VecBase) {
 	}
 
 	// Operator overloading
-		// TODO
+
+	// Add A+B
+	@:op(A+B)
+	static public inline function add(vec1:Vec2, vec2:Vec2): Vec2 {
+		return new Vec2(vec1.x+vec2.x, vec1.y+vec2.y);
+	}
 
 	// toString
 	public inline function toString(): String { return "[Vec2] "+(this.x)+", "+(this.y); }

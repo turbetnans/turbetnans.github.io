@@ -35,7 +35,9 @@ class Game extends AppChildProcess {
 	var slowMos : Map<SlowMoId, { id:SlowMoId, t:Float, f:Float }> = new Map();
 
 
-	var hero: HexEntity;
+	var hero: Hero;
+
+	var currentChunk: Hex;
 
 	public function new() {
 		super();
@@ -54,7 +56,7 @@ class Game extends AppChildProcess {
 		hud = new ui.Hud();
 		camera = new Camera();
 
-		startLevel(Assets.worldData.all_worlds.SampleWorld.all_levels.FirstLevel);
+		startLevel(0,0);
 	}
 
 
@@ -69,7 +71,7 @@ class Game extends AppChildProcess {
 
 
 	/** Load a level **/
-	function startLevel(l:World.World_Level) {
+	function startLevel(u: Int, w: Int) {
 		if( level!=null )
 			level.destroy();
 		fx.clear();
@@ -77,12 +79,13 @@ class Game extends AppChildProcess {
 			e.destroy();
 		garbageCollectEntities();
 
-		level = new Level(l);
+		level = new Level(u, w);
+		currentChunk = new Hex(u, w);
+		level.loadChunksAround(u, w, 2);
+
 		// <---- Here: instanciate your level entities
 
 		var proj: Projector = new Projector(new ProjectorProperties(0, 0));
-		var origin = new Vec2();
-		origin.set(.5,.5);
 		proj.origin = new Vec2(.5,.5);
 		
 		var avatarPosition: FractionalHex = new FractionalHex(0, 0);
@@ -90,28 +93,10 @@ class Game extends AppChildProcess {
 
 		hero = new Hero(Math.round(avatarPos.x), Math.round(avatarPos.y));
 
-		for(cell in level.grid.content) {
-			if(cell.data=="grass" && cell.coord.getNeigbours().filter(h->level.grid.getCellAt(h.u,h.w)?.data=="grass").length>=5) {
-				var wheatPos = proj.project(cell.coord);
-				var wheat = new Wheat(Math.round(wheatPos.x)+Std.random(3)-1, Math.round(wheatPos.y)+4+Std.random(3)-1);
-			}
-			if(cell.data=="grass" && cell.coord.getNeigbours().filter(h->level.grid.getCellAt(h.u,h.w)?.data=="grass").length<=1) {
-				var treePos = proj.project(cell.coord);
-				var tree = new Tree(Math.round(treePos.x)+Std.random(3)-1, Math.round(treePos.y)+4+Std.random(3)-1);
-			}
-			if(cell.data=="stone" && cell.coord.getNeigbours().filter(h->level.grid.getCellAt(h.u,h.w)?.data=="stone").length==6) {
-				if(Std.random(3)<2) {
-					var rockPos = proj.project(cell.coord);
-					var rock = new Rock(Math.round(rockPos.x)+Std.random(3)-1, Math.round(rockPos.y)+4+Std.random(3)-1);
-				}
-			}
-		}
-
 		camera.centerOnTarget();
 		hud.onLevelStart();
 		dn.Process.resizeAll();
 		dn.Gc.runNow();
-
 	}
 
 
@@ -127,8 +112,6 @@ class Game extends AppChildProcess {
 	@:allow(assets.Assets)
 	function onLdtkReload() {
 		hud.notify("LDtk reloaded");
-		if( level!=null )
-			startLevel( Assets.worldData.all_worlds.SampleWorld.getLevel(level.data.uid) );
 	}
 
 	/** Window/app resize event **/
@@ -238,6 +221,20 @@ class Game extends AppChildProcess {
 	/** Main loop but limited to 30 fps (so it might not be called during some frames) **/
 	override function fixedUpdate() {
 		super.fixedUpdate();
+		
+		var chunk: Hex = level.grid.getCellAt(HexLib.round(hero.avatarPosition).u, HexLib.round(hero.avatarPosition).w).data.chunk;
+		var delta: Hex = new Hex();
+		if(chunk != currentChunk) {
+			level.loadChunksAround(chunk.u, chunk.w, 2);
+			delta = (currentChunk-chunk)*Chunk.SIZE;
+			hero.avatarPosition += delta;
+			hero.avatarTarget += delta;
+			for(i in 0...hero.path.length) {
+				hero.path[i] += delta;
+			}
+			currentChunk = chunk;
+		}
+
 
 		// Entities "30 fps" loop
 		for(e in Entity.ALL) if( !e.destroyed ) e.fixedUpdate();
@@ -250,7 +247,8 @@ class Game extends AppChildProcess {
 
 		// Entities main loop
 		for(e in Entity.ALL) if( !e.destroyed ) e.frameUpdate();
-
+		
+		camera.centerOnTarget();
 		scroller.ysort(Const.DP_MAIN);
 
 		// Global key shortcuts

@@ -1,7 +1,8 @@
+import seedyrng.Xorshift64Plus;
+import seedyrng.Random;
 import h2d.TileGroup;
 import hxd.Res;
 import hexlib.Projector;
-import h2d.Tile;
 import hexlib.Vec2;
 import hexlib.HexLib;
 
@@ -22,72 +23,107 @@ class Level extends GameChildProcess {
 	public var marks : dn.MarkerMap<LevelMark>;
 	var invalidated = true;
 
+	public var grid: HexGrid<CellData>;
 
-	public var grid: HexGrid<String>;
+	public var uOffset: Int;
+	public var wOffset: Int;
 
-	public function new(ldtkLevel:World.World_Level) {
+	public var chunks: Map<String, Chunk>;
+
+	public var entities: Array<HexEntity>;
+
+	public var seed: String;
+
+	public function new(u: Int, w: Int) {
 		super();
+
+		uOffset = u*Chunk.SIZE;
+		wOffset = w*Chunk.SIZE;
+
+		var random = new Random(new Xorshift64Plus());
+        seed = random.nextInt()+"";
+		seed = "test";
 
 		createRootInLayers(Game.ME.scroller, Const.DP_BG);
 
 		// grid
-		grid = new HexGrid<String>(24);
+		grid = new HexGrid<CellData>(Chunk.SIZE);
+
+		// entities
+		entities = [];
+
+		// chunks
+		chunks = [];
+		loadChunk(u, w);
+	}
+
+	public function loadChunksAround(u: Int, w: Int, radius: Int){
+		uOffset = u*Chunk.SIZE;
+		wOffset = w*Chunk.SIZE;
+
+		chunks = [];
+
+		grid = new HexGrid<CellData>(Chunk.SIZE*5);
 		
-		// populate
-		for(z in (-grid.radius)...(grid.radius+1)) {
-			for(x in (z<0?-z-grid.radius:-grid.radius)...(z>0?-z+grid.radius+1:grid.radius+1)) {
-				grid.setCellAt(x,z,new HexCell(x,z,
-					Std.random(3)==0? "water":
-					Std.random(3)==0? "sand":
-					Std.random(2)==0? "stone":
-					"grass"
-				));
+		for(e in entities)
+			e.destroy();
+		entities = [];
+
+		loadChunk(u, w);
+		for(i in 0...radius)
+			for(chunk in chunks)
+				for(coords in chunk.getNeighboursCoords())
+					loadChunk(coords.u, coords.w);
+	}
+
+	function loadChunk(u: Int, w: Int) {
+		if(chunks.exists(u+","+w))
+			return;
+
+
+		var chunk = new Chunk(u, w, seed);
+		chunks.set(u+","+w, chunk);
+
+		var random = new Random(new Xorshift64Plus());
+
+		for(cell in chunk.grid.content) {
+			var newCell = new HexCell<CellData>(
+				cell.coord.u + u*Chunk.SIZE - uOffset,
+				cell.coord.w + w*Chunk.SIZE - wOffset,
+				cell.data
+			);
+			grid.setCellAt(newCell.coord.u, newCell.coord.w, newCell);
+			
+			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
+			proj.origin = new Vec2(.5,.5);
+			
+			random.setStringSeed(cell.coord.u+","+cell.coord.w);
+
+			if(newCell.data.entityType=="wheat") {
+				var wheatPos = proj.project(newCell.coord);
+				var entity = new Wheat(Math.round(wheatPos.x)+random.randomInt(0,2)-1, Math.round(wheatPos.y)+3+random.randomInt(0,2)-1);
+				entity.dir = random.randomInt(0,1)==0? -1: 1;
+				entities.push(entity);
+			} else if(newCell.data.entityType=="tree") {
+				var treePos = proj.project(newCell.coord);
+				var entity = new Tree(Math.round(treePos.x)+random.randomInt(0,2)-1, Math.round(treePos.y)+3+random.randomInt(0,2)-1);
+				entity.dir = random.randomInt(0,1)==0? -1: 1;
+				entities.push(entity);
+			} else if(newCell.data.entityType=="rock") {
+				var rockPos = proj.project(newCell.coord);
+				var entity = new Rock(Math.round(rockPos.x)+random.randomInt(0,2)-1, Math.round(rockPos.y)+3+random.randomInt(0,2)-1);
+				entity.dir = random.randomInt(0,1)==0? -1: 1;
+				entities.push(entity);
 			}
 		}
-		for(i in 0...4) {
-			var nextData = new Map<Int, String>();
-			for(cellKey in grid.content.keys()) {
-				var cell = grid.content.get(cellKey);
-				var count: Map<String, Float> = [
-					"grass" => 0,
-					"stone" => 0,
-					"water" => 0,
-					"sand" => -2
-				];
-				count[cell.data] += 3;
-				for(h1 in cell.coord.getNeigbours()) {
-					var c = grid.getCellAt(h1.u,h1.w);
-					if(c!=null) {
-						count[c.data]++;
-						if(i<3 && c.data=="water" && cell.data!="water") {
-							count["sand"]+=1.33;
-						}
-					}
-				}
-				var data = "grass";
-				for(countKey in count.keys()) {
-					if(count[countKey]>count[data]) {
-						data = countKey;
-					}
-				}
-				nextData.set(cellKey, data);
-			}
-			for(dataKey in nextData.keys()) {
-				grid.content[dataKey].data = nextData[dataKey];
-			}
-		}
+
+		invalidate();
 	}
 
 	override function onDispose() {
 		super.onDispose();
-		grid = null;
+		chunks = null;
 	}
-
-	/** TRUE if given coords are in level bounds **/
-	public inline function isValid(cx,cy) return true;
-
-	/** Gets the integer ID of a given level grid coord **/
-	public inline function coordId(cx,cy) return cx + cy*cWid;
 
 	/** Ask for a level render that will only happen at the end of the current frame. **/
 	public inline function invalidate() {
@@ -104,9 +140,9 @@ class Level extends GameChildProcess {
 		// Placeholder level render
 		root.removeChildren();
 
+		var random = new Random(new Xorshift64Plus());
+
 		var proj: Projector = new Projector(new ProjectorProperties(0, 0));
-		var origin = new Vec2();
-		origin.set(.5,.5);
 		proj.origin = new Vec2(.5,.5);
 
 		var tilesGrid = Res.atlas.world.toAseprite().toTile().gridFlatten(16);
@@ -140,22 +176,25 @@ class Level extends GameChildProcess {
 		for(cell in grid.content) {
 			if( cell==null ) continue;
 			var pos: Vec2 = proj.project(cell.coord);
-			tileGroup.add(pos.x,pos.y,tiles[cell.data][Std.random(tiles[cell.data].length)].center());
+			random.setStringSeed((cell.coord.u-cell.data.chunk.u*Chunk.SIZE+uOffset)+","+(cell.coord.w-cell.data.chunk.w*Chunk.SIZE+wOffset));
+			tileGroup.add(pos.x,pos.y,tiles[cell.data.cellType][random.randomInt(0,tiles[cell.data.cellType].length-1)].center());
 		}
 		// display sides
 		for(cell in grid.content) {
 			var count:Int=0;
+			if( cell==null ) continue;
 			for(h1 in cell.coord.getNeigbours()){
-				var h2 = HexLib.lerp(cell.coord,h1);
-				var c: HexCell<String> = grid.getCellAt(h1.u,h1.w);
-				var pos: Vec2 = proj.project(h2);
-
-				var me = priorities[cell.data];
-				var other = c==null? -1: priorities[c.data];
+				var c: HexCell<CellData> = grid.getCellAt(h1.u,h1.w);
+				var me = priorities[cell.data.cellType];
+				var other = c==null? -1: priorities[c.data.cellType];
 				if(me>other) {
-					tileGroup.add(pos.x,pos.y,sides[cell.data][count].center());
+					var h2 = HexLib.lerp(cell.coord,h1);
+					var pos: Vec2 = proj.project(h2);
+					tileGroup.add(pos.x,pos.y,sides[cell.data.cellType][count].center());
 				} else if(me<other) {
-					tileGroup.add(pos.x,pos.y,sides[c.data][(count+3)%6].center());
+					var h2 = HexLib.lerp(cell.coord,h1);
+					var pos: Vec2 = proj.project(h2);
+					tileGroup.add(pos.x,pos.y,sides[c.data.cellType][(count+3)%6].center());
 				}
 				count++;
 			}

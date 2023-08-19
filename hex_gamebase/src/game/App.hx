@@ -176,7 +176,7 @@ class App extends dn.Process {
 	**/
 	function initEngine() {
 		// Engine settings
-		engine.backgroundColor = 0xff<<24 | 0x111133;
+		engine.backgroundColor = 0xff<<24 | 0x000000;
         #if( hl && !debug )
         engine.fullScreen = true;
         #end
