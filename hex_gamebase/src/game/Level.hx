@@ -93,7 +93,8 @@ class Level extends GameChildProcess {
 		if(renderedChunks.exists(u+","+w))
 			return;
 
-		var chunk = new Chunk(u, w, seed);
+		var chunk = new Chunk(u, w);
+		chunk.generate(seed);
 		renderedChunks.set(u+","+w, chunk);
 
 		for(cell in chunk.grid.content) {
@@ -126,7 +127,7 @@ class Level extends GameChildProcess {
 			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
 			proj.origin = new Vec2(.5,.5);
 			
-			random.setStringSeed(cell.coord.u+","+cell.coord.w);
+			random.setStringSeed((cell.coord.u+cell.data.chunk.u*Const.CHUNK_SIZE)+","+(cell.coord.w+cell.data.chunk.w*Const.CHUNK_SIZE));
 
 			var pos = proj.project(newCell.coord);
 			var entity = switch(newCell.data.entityType) {
@@ -204,7 +205,7 @@ class Level extends GameChildProcess {
 		for(cell in grid.content) {
 			if( cell==null ) continue;
 			var pos: Vec2 = proj.project(cell.coord);
-			random.setStringSeed((cell.coord.u-cell.data.chunk.u*Const.CHUNK_SIZE)+","+(cell.coord.w-cell.data.chunk.w*Const.CHUNK_SIZE));
+			random.setStringSeed(cell.coord.u+","+cell.coord.w);
 			tileGroup.add(
 				pos.x,
 				pos.y,
