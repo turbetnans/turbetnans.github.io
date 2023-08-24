@@ -50,9 +50,9 @@ class Hero extends HexEntity {
                     } else {
                         switch(c.data.cellType){
                             case "stone": 1;
-                            case "grass": 2;
-                            case "sand": 3;
-                            case "water": 4;
+                            case "grass": 1.5;
+                            case "sand": 2;
+                            case "water": 3;
                             default: Math.POSITIVE_INFINITY;
                         }
                     }

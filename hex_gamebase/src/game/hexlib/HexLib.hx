@@ -96,6 +96,22 @@ class HexLib {
 		return [];
 	}
 	
+	// Rotation (1 unit of angle = 60°)
+	static public function rotateAroundHex(hex:Hex, angle:Int, center:Hex):Hex {
+		return center + rotateAroundOrigin(hex - center, angle);
+	}
+	static public function rotateAroundOrigin(hex:Hex, angle:Int):Hex {
+		angle = angle % 6;
+		if (angle > 0) { // CCW / LEFT
+			var newwHex:Hex = new Hex(hex.u + hex.w, -hex.u);
+			return rotateAroundOrigin(newwHex, angle - 1);
+		} else if (angle < 0) { // CW / RIGHT
+			var newwHex:Hex = new Hex(-hex.w, hex.u + hex.w);
+			return rotateAroundOrigin(newwHex, angle + 1);
+		} else {
+			return hex;
+		}
+	}
 
 	// Correctness check (precision is used to compensate for float errors)
 	static public inline function validityCheck(u:Float,v:Float,w:Float,?strict:Bool=false): Bool {

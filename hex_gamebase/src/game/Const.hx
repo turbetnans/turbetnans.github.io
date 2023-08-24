@@ -17,8 +17,8 @@ class Const {
 	public static final GRID_X = 16;
 	public static final GRID_Y = 9;
 
-	public static final CHUNK_SIZE = 4;
-	public static final LOADING_RADIUS = 2; 
+	public static final CHUNK_SIZE = 3;
+	public static final LOADING_RADIUS = 3; 
 
 	/** "Infinite", sort-of. More like a "big number" **/
 	public static final INFINITE : Int = 0xfffFfff;

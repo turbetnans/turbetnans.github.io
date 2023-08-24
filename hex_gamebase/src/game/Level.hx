@@ -61,20 +61,22 @@ class Level extends GameChildProcess {
 	}
 
 	public function loadChunksAround(u: Int, w: Int, radius: Int){
-		uOffset = u*Const.CHUNK_SIZE;
-		wOffset = w*Const.CHUNK_SIZE;
+		var chunk = new Chunk(u, w);
+		var chunkWorldCoords = chunk.getChunkWorldCoords();
+		uOffset = chunkWorldCoords.u;
+		wOffset = chunkWorldCoords.w;
 
 		grid = new HexGrid<CellData>(Const.CHUNK_SIZE*(2*radius+1));
 		grid.offset = new Hex(uOffset, wOffset);
 
 		for(chunk in chunks) {
-			if(HexLib.distance(new Hex(u,w), new Hex(chunk.u,chunk.w))>2*radius) {
-				chunks.remove(chunk.u+","+chunk.w);
+			if(HexLib.distance(new Hex(u,w), new Hex(chunk.u,chunk.w))>radius) {
 				for(e in entities) {
-					if(e.chunkId==chunk.u+","+chunk.w){
+					if(e.chunkCoords==new Hex(chunk.u, chunk.w)){
 						e.destroy();
 					}
 				}
+				chunks.remove(chunk.u+","+chunk.w);
 			}
 		}
 		
@@ -84,9 +86,11 @@ class Level extends GameChildProcess {
 		pendingChunks = [];
 		loadChunk(u, w);
 		for(i in 0...radius)
-			for(chunk in renderedChunks)
-				for(coords in chunk.getNeighboursCoords())
+			for(chunk in renderedChunks) {
+				var chunkCoords: Hex = new Hex(chunk.u, chunk.w);
+				for(coords in chunkCoords.getNeigbours())
 					loadChunk(coords.u, coords.w);
+			}
 	}
 
 	public function loadChunk(u: Int, w: Int) {
@@ -99,8 +103,8 @@ class Level extends GameChildProcess {
 
 		for(cell in chunk.grid.content) {
 			var newCell = new HexCell<CellData>(
-				cell.coord.u + u*Const.CHUNK_SIZE,
-				cell.coord.w + w*Const.CHUNK_SIZE,
+				cell.coord.u + chunk.getChunkWorldCoords().u,
+				cell.coord.w + chunk.getChunkWorldCoords().w,
 				cell.data
 			);
 			grid.setCellAt(newCell.coord.u, newCell.coord.w, newCell);
@@ -116,18 +120,19 @@ class Level extends GameChildProcess {
 
 	public function loadEntities(chunk: Chunk) {
 		var random = new Random(new Xorshift64Plus());
+		var chunkWorldCoords: Hex = chunk.getChunkWorldCoords();
 
 		for(cell in chunk.grid.content) {
 			var newCell = new HexCell<CellData>(
-				cell.coord.u + chunk.u*Const.CHUNK_SIZE,
-				cell.coord.w + chunk.w*Const.CHUNK_SIZE,
+				cell.coord.u + chunkWorldCoords.u,
+				cell.coord.w + chunkWorldCoords.w,
 				cell.data
 			);
 
 			var proj: Projector = new Projector(new ProjectorProperties(0, 0));
 			proj.origin = new Vec2(.5,.5);
 			
-			random.setStringSeed((cell.coord.u+cell.data.chunk.u*Const.CHUNK_SIZE)+","+(cell.coord.w+cell.data.chunk.w*Const.CHUNK_SIZE));
+			random.setStringSeed((cell.coord.u+chunkWorldCoords.u)+","+(cell.coord.w+chunkWorldCoords.w));
 
 			var pos = proj.project(newCell.coord);
 			var entity = switch(newCell.data.entityType) {
@@ -142,11 +147,10 @@ class Level extends GameChildProcess {
 			};
 			if(entity!=null) {
 				entity.dir = random.randomInt(0,1)==0? -1: 1;
-				entity.chunkId = chunk.u+","+chunk.w;
+				entity.chunkCoords = new Hex(chunk.u, chunk.w);
 				entities.push(entity);
 			}
 		}
-		
 	}
 
 	override function onDispose() {

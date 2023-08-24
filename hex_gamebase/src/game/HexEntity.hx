@@ -1,6 +1,8 @@
+import hexlib.HexLib.Hex;
+
 class HexEntity extends Entity {
 
-    public var chunkId: String;
+    public var chunkCoords: Hex;
 
     public function new(x: Int, y: Int) {
         super(x, y);
