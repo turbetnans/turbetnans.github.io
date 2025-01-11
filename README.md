@@ -20,13 +20,6 @@
 	en Haxe
 	</p>
 	<p>
-	<a href="/SecretHitler/web/index.html" style="text-decoration: none;">Secret Hitler</a>
-	<br>
-	réalisé entre 2022 et 2023 en tant que projet perso (wip)
-	<br>
-	en Haxe
-	</p>
-	<p>
 	<a href="/TicTacToe/web/index.html" style="text-decoration: none;">Morpion</a>
 	<br>
 	réalisé en 2022 en projet d'apprentissage de React pour Haxe
