@@ -1,1 +1,130 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono');
+
+/*#region VARIABLES*/
+* {
+    --brightRed: #f66;
+    --brightOrange: #f90;
+    --brightYellow: #ff3;
+    --deepRed: #900;
+    --transparentRed: #9669;
+    --brightGreen: #6f9;
+    --deepGreen: #093;
+    --transparentGreen: #6969;
+    --brightBlue: #69f;
+    --deepBlue: #039;
+    --black: #000;
+    --darkestGray: #1a1a1a;
+    --darkerGray: #333;
+    --darkGray: #666;
+    --lightGray: #999;
+    --lighterGray: #ccc;
+    --white: #fff;
+    --transparentDarkGray: #0009;
+    --transparentLightGray: #9999;
+    --transparent: #0000;
+}
+
+* {
+    font-family: "Roboto Mono", serif !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    color: white;
+    background-color: var(--black);
+}
+
+#root {
+    min-height: 100vh;
+    max-height: 100vh;
+    min-width: 100vw;
+    max-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    overflow: clip;
+}
+
+.header {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--darkerGray);
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 1rem;
+    
+    &.title {
+        background-color: var(--darkGray);
+        gap: 0;
+    }
+}
+
+.body {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--darkerGray);
+    display: flex;
+    justify-content: center;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    margin: 0;
+    padding: 1rem;
+}
+
+input {
+    background-color: lightgrey;
+    height: 2rem;
+    width: 8rem;
+    font-size: 100%;
+    padding: 0 .5rem;
+    margin: 0;
+    border: none;
+    border-radius: .25rem;
+}
+
+button {
+    background-color: lightgrey;
+    height: 2rem;
+    width: 12rem;
+    font-size: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: .25rem;
+}
+
+.block {
+    width: 100%;
+    gap: .5rem;
+}
+
+.line,
+.title {
+    &>span {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        border-left: 1px solid var(--lightGray);
+        border-right: 1px solid var(--lightGray);
+        display: inline-block;
+        height: 2rem;
+    }
+}
+
+.name,
+.type {
+    width: 12rem;
+}
+
+.hp,
+.attack,
+.defense,
+.spAttack,
+.spDefense,
+.speed {
+    width: 8rem;
+    text-align: right;
+}
