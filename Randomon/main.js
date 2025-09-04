@@ -650,7 +650,32 @@ src_core_EnglishGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
 		return groups;
 	}
 });
-Math.__name__ = true;
+var haxe_Timer = function(time_ms) {
+	var me = this;
+	this.id = setInterval(function() {
+		me.run();
+	},time_ms);
+};
+haxe_Timer.__name__ = true;
+haxe_Timer.delay = function(f,time_ms) {
+	var t = new haxe_Timer(time_ms);
+	t.run = function() {
+		t.stop();
+		f();
+	};
+	return t;
+};
+haxe_Timer.prototype = {
+	stop: function() {
+		if(this.id == null) {
+			return;
+		}
+		clearInterval(this.id);
+		this.id = null;
+	}
+	,run: function() {
+	}
+};
 var react_ReactType = {};
 react_ReactType.fromString = function(s) {
 	if(s == null) {
@@ -683,6 +708,7 @@ react_ReactType.isNull = function() {
 	$global.console.error("Runtime value for ReactType is null." + " Something may be wrong with your externs.");
 	return "div";
 };
+Math.__name__ = true;
 var src_client_App = function() { };
 src_client_App.__name__ = true;
 src_client_App.render = function(props) {
@@ -694,7 +720,9 @@ src_client_App.render = function(props) {
 	var pokemonsEn = src_utils_react_ReactHooks_useState([]);
 	var pokemonsJp = src_utils_react_ReactHooks_useState([]);
 	var pokemonsCn = src_utils_react_ReactHooks_useState([]);
+	var timerRef = React.useRef(null);
 	var randomons = src_utils_react_ReactHooks_useState([]);
+	var displayedRandomons = src_utils_react_ReactHooks_useState([]);
 	var amount = src_utils_react_ReactHooks_useState(20);
 	var duration = src_utils_react_ReactHooks_useState(null);
 	React.useEffect(function() {
@@ -744,6 +772,7 @@ src_client_App.render = function(props) {
 		src_utils_react_StateObject.setState(generatorCn,_generator);
 	},[tmp != null ? tmp.length : null]);
 	var generateFr = function() {
+		src_utils_react_StateObject.setState(randomons,[]);
 		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
@@ -755,9 +784,10 @@ src_client_App.render = function(props) {
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
 		var t2 = HxOverrides.now() / 1000;
-		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
+		src_utils_react_StateObject.setState(duration,t2 - t1);
 	};
 	var generateEn = function() {
+		src_utils_react_StateObject.setState(randomons,[]);
 		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
@@ -769,9 +799,10 @@ src_client_App.render = function(props) {
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
 		var t2 = HxOverrides.now() / 1000;
-		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
+		src_utils_react_StateObject.setState(duration,t2 - t1);
 	};
 	var generateJp = function() {
+		src_utils_react_StateObject.setState(randomons,[]);
 		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
@@ -783,9 +814,10 @@ src_client_App.render = function(props) {
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
 		var t2 = HxOverrides.now() / 1000;
-		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
+		src_utils_react_StateObject.setState(duration,t2 - t1);
 	};
 	var generateCn = function() {
+		src_utils_react_StateObject.setState(randomons,[]);
 		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
@@ -797,8 +829,30 @@ src_client_App.render = function(props) {
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
 		var t2 = HxOverrides.now() / 1000;
-		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
+		src_utils_react_StateObject.setState(duration,t2 - t1);
 	};
+	var pushRandomon = null;
+	pushRandomon = function(list) {
+		if(list.length > 0) {
+			var randomon = list.splice(0,20);
+			src_utils_react_StateObject.setState(displayedRandomons,function(prev) {
+				return prev.concat(randomon);
+			});
+			timerRef.current = haxe_Timer.delay(function() {
+				pushRandomon(list);
+			},100);
+		}
+	};
+	React.useEffect(function() {
+		src_utils_react_StateObject.setState(displayedRandomons,[]);
+		if(src_utils_react_StateObject.get_state(randomons).length > 0) {
+			var tmp = timerRef.current;
+			if(tmp != null) {
+				tmp.stop();
+			}
+			pushRandomon(src_utils_react_StateObject.get_state(randomons).slice());
+		}
+	},[src_utils_react_StateObject.get_state(randomons)]);
 	var randomonTemplate = function(randomon) {
 		if(randomon == null) {
 			return null;
@@ -846,10 +900,9 @@ src_client_App.render = function(props) {
 	}
 	var tmp3 = React.createElement(tmp1,{ className : "header title"},tmp2);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = react_ReactType.fromString("div");
 	var _g = [];
 	var _g_current = 0;
-	var _g_array = src_utils_react_StateObject.get_state(randomons);
+	var _g_array = src_utils_react_StateObject.get_state(displayedRandomons);
 	while(_g_current < _g_array.length) {
 		var _g_value = _g_array[_g_current];
 		var _g_key = _g_current++;
@@ -857,17 +910,17 @@ src_client_App.render = function(props) {
 		var randomon = _g_value;
 		_g.push(React.createElement(react_ReactType.fromString("div"),{ key : n, className : "line"},randomonTemplate(randomon)));
 	}
-	var tmp4 = React.createElement(tmp1,{ className : "body"},React.createElement(tmp2,{ },_g));
+	var tmp2 = React.createElement(tmp1,{ className : "body"},_g);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2;
+	var tmp4;
 	if(src_utils_react_StateObject.get_state(duration) != null) {
 		var tmp5 = src_utils_react_StateObject.get_state(randomons);
-		tmp2 = (tmp5 != null ? tmp5.length : null) + " randomons generated in " + src_utils_react_StateObject.get_state(duration) + " ms";
+		tmp4 = (tmp5 != null ? tmp5.length : null) + " randomons generated in " + Math.round(src_utils_react_StateObject.get_state(duration) * 1000) + " ms";
 	} else {
-		tmp2 = null;
+		tmp4 = null;
 	}
-	var tmp5 = React.createElement(tmp1,{ className : "header"},tmp2);
-	return React.createElement(tmp,{ },tmp8,tmp3,tmp4,tmp5);
+	var tmp5 = React.createElement(tmp1,{ className : "footer"},tmp4);
+	return React.createElement(tmp,{ },tmp8,tmp3,tmp2,tmp5);
 };
 var JsxStaticInit_$_$ = function() { };
 JsxStaticInit_$_$.__name__ = true;

@@ -2,16 +2,15 @@
 
 /*#region VARIABLES*/
 * {
-    --brightRed: #f66;
-    --brightOrange: #f90;
-    --brightYellow: #ff3;
+    --brightRed: #fcc;
     --deepRed: #900;
-    --transparentRed: #9669;
-    --brightGreen: #6f9;
+    --transparentRed: #90000017;
+    --brightGreen: #cfd;
     --deepGreen: #093;
-    --transparentGreen: #6969;
-    --brightBlue: #69f;
+    --transparentGreen: #00903017;
+    --brightBlue: #cdf;
     --deepBlue: #039;
+    --transparentBLue: #00309017;
     --black: #000;
     --darkestGray: #1a1a1a;
     --darkerGray: #333;
@@ -46,20 +45,24 @@ body {
     overflow: clip;
 }
 
-.header {
+.header,
+.footer {
     width: 100%;
     box-sizing: border-box;
-    background-color: var(--darkerGray);
+    background-color: var(--darkGray);
     display: flex;
     justify-content: center;
     gap: 2rem;
     flex: 0 0 auto;
     margin: 0;
     padding: 1rem;
-    
+    min-height: 3rem;
+
     &.title {
-        background-color: var(--darkGray);
         gap: 0;
+        padding: 0;
+        background-color: var(--darkerGray);
+        padding-top: 1rem;
     }
 }
 
@@ -68,15 +71,15 @@ body {
     box-sizing: border-box;
     background-color: var(--darkerGray);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     flex: 1 1 auto;
     overflow-y: auto;
     margin: 0;
-    padding: 1rem;
 }
 
 input {
-    background-color: lightgrey;
+    background-color: var(--lighterGray);
     height: 2rem;
     width: 8rem;
     font-size: 100%;
@@ -84,10 +87,19 @@ input {
     margin: 0;
     border: none;
     border-radius: .25rem;
+    transition: .2s;
+    box-shadow: 0 0 4px var(--black);
+
+    &:hover:not(:disabled),
+    &:active:not(:disabled),
+    &:focus-visible:not(:disabled) {
+        transform: scale(105%);
+        background-color: var(--brightGreen);
+    }
 }
 
 button {
-    background-color: lightgrey;
+    background-color: var(--lighterGray);
     height: 2rem;
     width: 12rem;
     font-size: 100%;
@@ -95,6 +107,22 @@ button {
     margin: 0;
     border: none;
     border-radius: .25rem;
+    transition: .2s;
+    box-shadow: 0 0 4px var(--black);
+
+    &:focus:not(:disabled) {
+        background-color: var(--brightBlue);
+    }
+
+    &:hover:not(:disabled) {
+        transform: scale(105%);
+        background-color: var(--brightBlue);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(95%);
+        background-color: var(--brightBlue);
+    }
 }
 
 .block {
@@ -105,13 +133,49 @@ button {
 .line,
 .title {
     &>span {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        border-left: 1px solid var(--lightGray);
-        border-right: 1px solid var(--lightGray);
+        padding: 0.125rem 0.5rem;
+        border-left: 4px solid var(--lightGray);
+        border-right: 4px solid var(--lightGray);
         display: inline-block;
         height: 2rem;
+
+        &:first-child {
+            border-left: 8px solid var(--lightGray);
+        }
+
+        &:last-child {
+            border-right: 8px solid var(--lightGray);
+        }
     }
+}
+
+.title>span {
+    height: 100%;
+    border-color: var(--lighterGray) !important;
+    border-top: 8px solid var(--lightGray);
+    border-bottom: 4px solid var(--lightGray);
+}
+
+.line>span {
+    border-color: var(--lightGray) !important;
+}
+
+.line:last-child {
+    margin-bottom: 1rem;
+
+    &>span {
+        border-bottom: 8px solid var(--lightGray);
+    }
+}
+
+.line {
+    background-color: var(--transparent);
+    transition: background-color .1s;
+}
+
+.line:hover {
+    background-color: var(--transparentRed);
+    transition: background-color 0s;
 }
 
 .name,
