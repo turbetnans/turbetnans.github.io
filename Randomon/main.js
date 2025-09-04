@@ -650,6 +650,7 @@ src_core_EnglishGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
 		return groups;
 	}
 });
+Math.__name__ = true;
 var react_ReactType = {};
 react_ReactType.fromString = function(s) {
 	if(s == null) {
@@ -695,6 +696,7 @@ src_client_App.render = function(props) {
 	var pokemonsCn = src_utils_react_ReactHooks_useState([]);
 	var randomons = src_utils_react_ReactHooks_useState([]);
 	var amount = src_utils_react_ReactHooks_useState(20);
+	var duration = src_utils_react_ReactHooks_useState(null);
 	React.useEffect(function() {
 		var file = haxe_Resource.getString("pokedex");
 		var pokemonsJson = [];
@@ -742,6 +744,7 @@ src_client_App.render = function(props) {
 		src_utils_react_StateObject.setState(generatorCn,_generator);
 	},[tmp != null ? tmp.length : null]);
 	var generateFr = function() {
+		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
 		var _g2 = src_utils_react_StateObject.get_state(amount);
@@ -751,8 +754,11 @@ src_client_App.render = function(props) {
 		}
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
+		var t2 = HxOverrides.now() / 1000;
+		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
 	};
 	var generateEn = function() {
+		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
 		var _g2 = src_utils_react_StateObject.get_state(amount);
@@ -762,8 +768,11 @@ src_client_App.render = function(props) {
 		}
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
+		var t2 = HxOverrides.now() / 1000;
+		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
 	};
 	var generateJp = function() {
+		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
 		var _g2 = src_utils_react_StateObject.get_state(amount);
@@ -773,8 +782,11 @@ src_client_App.render = function(props) {
 		}
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
+		var t2 = HxOverrides.now() / 1000;
+		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
 	};
 	var generateCn = function() {
+		var t1 = HxOverrides.now() / 1000;
 		var _g = [];
 		var _g1 = 0;
 		var _g2 = src_utils_react_StateObject.get_state(amount);
@@ -784,51 +796,57 @@ src_client_App.render = function(props) {
 		}
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
+		var t2 = HxOverrides.now() / 1000;
+		src_utils_react_StateObject.setState(duration,Math.round((t2 - t1) * 1000000) / 1000);
 	};
 	var randomonTemplate = function(randomon) {
 		if(randomon == null) {
 			return null;
 		}
 		var randomonTemplate = react_ReactType.fromComp(React.Fragment);
-		var randomonTemplate1 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "12rem"}},randomon.name);
+		var randomonTemplate1 = React.createElement(react_ReactType.fromString("span"),{ className : "name"},randomon.name);
 		var randomonTemplate2 = randomon.type[1] != "-" ? " - " + randomon.type[1] : "";
-		var randomonTemplate3 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "12rem"}},randomon.type[0],randomonTemplate2);
-		var randomonTemplate2 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.hp);
-		var randomonTemplate4 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.attack);
-		var randomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.defense);
-		var randomonTemplate6 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.spAttack);
-		var randomonTemplate7 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.spDefense);
-		var randomonTemplate8 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},randomon.speed);
+		var randomonTemplate3 = React.createElement(react_ReactType.fromString("span"),{ className : "type"},randomon.type[0],randomonTemplate2);
+		var randomonTemplate2 = React.createElement(react_ReactType.fromString("span"),{ className : "hp"},randomon.hp);
+		var randomonTemplate4 = React.createElement(react_ReactType.fromString("span"),{ className : "attack"},randomon.attack);
+		var randomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ className : "defense"},randomon.defense);
+		var randomonTemplate6 = React.createElement(react_ReactType.fromString("span"),{ className : "spAttack"},randomon.spAttack);
+		var randomonTemplate7 = React.createElement(react_ReactType.fromString("span"),{ className : "spDefense"},randomon.spDefense);
+		var randomonTemplate8 = React.createElement(react_ReactType.fromString("span"),{ className : "speed"},randomon.speed);
 		return React.createElement(randomonTemplate,{ },randomonTemplate1,randomonTemplate3,randomonTemplate2,randomonTemplate4,randomonTemplate5,randomonTemplate6,randomonTemplate7,randomonTemplate8);
 	};
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = react_ReactType.fromString("p");
-	var tmp3 = React.createElement(react_ReactType.fromString("input"),{ type : "number", min : "1", max : "1000", value : src_utils_react_StateObject.get_state(amount), onChange : function(e) {
+	var tmp2 = React.createElement(react_ReactType.fromString("input"),{ className : "", type : "number", min : "1", max : "1000", value : src_utils_react_StateObject.get_state(amount), onChange : function(e) {
 		src_utils_react_StateObject.setState(amount,e.target.value);
-	}, style : { width : "6rem"}});
-	var tmp4 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateFr, disabled : src_utils_react_StateObject.get_state(generatorFr) == null, style : { width : "9rem", marginLeft : "1rem"}},"generate french");
-	var tmp5 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateEn, disabled : src_utils_react_StateObject.get_state(generatorEn) == null, style : { width : "9rem", marginLeft : "1rem"}},"generate english");
-	var tmp6 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateJp, disabled : src_utils_react_StateObject.get_state(generatorJp) == null, style : { width : "9rem", marginLeft : "1rem"}},"generate japanese");
-	var tmp7 = react_ReactType.fromString("button");
+	}});
+	var tmp3 = React.createElement(react_ReactType.fromString("button"),{ className : "", onClick : generateFr, disabled : src_utils_react_StateObject.get_state(generatorFr) == null},"generate french");
+	var tmp4 = React.createElement(react_ReactType.fromString("button"),{ className : "", onClick : generateEn, disabled : src_utils_react_StateObject.get_state(generatorEn) == null},"generate english");
+	var tmp5 = React.createElement(react_ReactType.fromString("button"),{ className : "", onClick : generateJp, disabled : src_utils_react_StateObject.get_state(generatorJp) == null},"generate japanese");
+	var tmp6 = react_ReactType.fromString("button");
 	var generateCn1 = generateCn;
-	var tmp8 = src_utils_react_StateObject.get_state(generatorCn) == null;
-	var tmp9 = React.createElement(tmp2,{ },tmp3,tmp4,tmp5,tmp6,React.createElement(tmp7,{ onClick : generateCn1, disabled : tmp8, style : { width : "9rem", marginLeft : "1rem"}},"generate chinese"));
+	var tmp7 = src_utils_react_StateObject.get_state(generatorCn) == null;
+	var tmp8 = React.createElement(tmp1,{ className : "header"},tmp2,tmp3,tmp4,tmp5,React.createElement(tmp6,{ className : "", onClick : generateCn1, disabled : tmp7},"generate chinese"));
+	var tmp1 = react_ReactType.fromString("div");
 	var tmp2;
 	var tmp3 = src_utils_react_StateObject.get_state(randomons);
 	if((tmp3 != null ? tmp3.length : null) > 0) {
-		var tmp3 = react_ReactType.fromString("div");
-		var tmp4 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "12rem"}},"NAME");
-		var tmp5 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "12rem"}},"TYPES");
-		var tmp6 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"HP");
-		var tmp7 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"ATTACK");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"DEFENSE");
-		var tmp10 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"SP ATTACK");
-		var tmp11 = React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"SP DEFENSE");
-		tmp2 = React.createElement(tmp3,{ style : { marginBottom : "1rem"}},tmp4,tmp5,tmp6,tmp7,tmp8,tmp10,tmp11,React.createElement(react_ReactType.fromString("span"),{ style : { display : "inline-block", marginLeft : "1rem", width : "6rem", textAlign : "right"}},"SPEED"));
+		var tmp3 = react_ReactType.fromComp(React.Fragment);
+		var tmp4 = React.createElement(react_ReactType.fromString("span"),{ className : "name"},"NAME");
+		var tmp5 = React.createElement(react_ReactType.fromString("span"),{ className : "type"},"TYPES");
+		var tmp6 = React.createElement(react_ReactType.fromString("span"),{ className : "hp"},"HP");
+		var tmp7 = React.createElement(react_ReactType.fromString("span"),{ className : "attack"},"ATTACK");
+		var tmp9 = React.createElement(react_ReactType.fromString("span"),{ className : "defense"},"DEFENSE");
+		var tmp10 = React.createElement(react_ReactType.fromString("span"),{ className : "spAttack"},"SP ATTACK");
+		var tmp11 = React.createElement(react_ReactType.fromString("span"),{ className : "spDefense"},"SP DEFENSE");
+		var tmp12 = React.createElement(react_ReactType.fromString("span"),{ className : "speed"},"SPEED");
+		tmp2 = React.createElement(tmp3,{ },tmp4,tmp5,tmp6,tmp7,tmp9,tmp10,tmp11,tmp12);
 	} else {
 		tmp2 = null;
 	}
+	var tmp3 = React.createElement(tmp1,{ className : "header title"},tmp2);
+	var tmp1 = react_ReactType.fromString("div");
+	var tmp2 = react_ReactType.fromString("div");
 	var _g = [];
 	var _g_current = 0;
 	var _g_array = src_utils_react_StateObject.get_state(randomons);
@@ -837,14 +855,22 @@ src_client_App.render = function(props) {
 		var _g_key = _g_current++;
 		var n = _g_key;
 		var randomon = _g_value;
-		_g.push(React.createElement(react_ReactType.fromString("div"),{ key : n},randomonTemplate(randomon)));
+		_g.push(React.createElement(react_ReactType.fromString("div"),{ key : n, className : "line"},randomonTemplate(randomon)));
 	}
-	var tmp3 = React.createElement(tmp1,{ style : { padding : "1rem"}},tmp9,tmp2,_g);
-	return React.createElement(tmp,{ },tmp3);
+	var tmp4 = React.createElement(tmp1,{ className : "body"},React.createElement(tmp2,{ },_g));
+	var tmp1 = react_ReactType.fromString("div");
+	var tmp2;
+	if(src_utils_react_StateObject.get_state(duration) != null) {
+		var tmp5 = src_utils_react_StateObject.get_state(randomons);
+		tmp2 = (tmp5 != null ? tmp5.length : null) + " randomons generated in " + src_utils_react_StateObject.get_state(duration) + " ms";
+	} else {
+		tmp2 = null;
+	}
+	var tmp5 = React.createElement(tmp1,{ className : "header"},tmp2);
+	return React.createElement(tmp,{ },tmp8,tmp3,tmp4,tmp5);
 };
 var JsxStaticInit_$_$ = function() { };
 JsxStaticInit_$_$.__name__ = true;
-Math.__name__ = true;
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
 	this.message = message;
