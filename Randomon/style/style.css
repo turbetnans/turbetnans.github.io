@@ -333,26 +333,32 @@ span.link {
         }
 
         &.stats {
-            &>p>span {
-                display: inline-block;
-                width: 50%;
-            }
+            display: flex;
+            justify-content: center;
 
-            &>p>span:first-child {
-                box-sizing: border-box;
-                padding-right: .5rem;
-                text-align: right;
-            }
+            &>div {
+                width: 12rem;
+                border-left: 1px solid var(--lightGray);
+                border-right: 1px solid var(--lightGray);
+                display: flex;
+                justify-content: space-between;
 
-            &>p>span:last-child {
-                box-sizing: border-box;
-                padding-left: .5rem;
-                text-align: left;
-                font-weight: bold;
-            }
+                &:first-child {
+                    border-left: 2px solid var(--lightGray);
+                }
 
-            &>p:not(:last-child) {
-                padding-bottom: .5rem;
+                &:last-child {
+                    border-right: 2px solid var(--lightGray);
+                }
+
+                &>span:first-child {
+                    padding-left: 1rem;
+                }
+
+                &>span:last-child {
+                    padding-right: 1rem;
+                    font-weight: bold;
+                }
             }
         }
 
@@ -374,7 +380,8 @@ span.link {
         min-width: 20rem;
         background-color: var(--transparent);
         transition: background-color .1s, outline-color .1s;
-        overflow-y: clip;
+        overflow-y: auto;
+        max-height: 30rem;
 
         &:hover {
             transition: background-color 0s, outline-color 0s;

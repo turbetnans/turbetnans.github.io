@@ -1096,7 +1096,7 @@ src_core_BaseGenerator.prototype = {
 			this.sizeStats.h[name.length] = v;
 			var type0 = pokemon.type[0];
 			var tmp1 = pokemon.type[1];
-			var type1 = tmp1 != null ? tmp1 : "-";
+			var type1 = tmp1 != null ? tmp1 : "Ø";
 			if(this.typePairsStats.h[type0] == null) {
 				var this1 = this.typePairsStats;
 				var _g1 = new haxe_ds_StringMap();
@@ -1162,7 +1162,7 @@ src_core_BaseGenerator.prototype = {
 				var this41 = this.typeStats;
 				var v6 = this41.h[group1].h[tmp4] + 1;
 				this41.h[group1].h[tmp4] = v6;
-				if(type1 != "-") {
+				if(type1 != "Ø") {
 					if(this.typeStats.h[group1] == null) {
 						var this4 = this.typeStats;
 						var v7 = new haxe_ds_StringMap();
@@ -1540,34 +1540,6 @@ src_core_EnglishGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
 	}
 	,__class__: src_core_EnglishGenerator
 });
-var haxe_Timer = function(time_ms) {
-	var me = this;
-	this.id = setInterval(function() {
-		me.run();
-	},time_ms);
-};
-$hxClasses["haxe.Timer"] = haxe_Timer;
-haxe_Timer.__name__ = "haxe.Timer";
-haxe_Timer.delay = function(f,time_ms) {
-	var t = new haxe_Timer(time_ms);
-	t.run = function() {
-		t.stop();
-		f();
-	};
-	return t;
-};
-haxe_Timer.prototype = {
-	stop: function() {
-		if(this.id == null) {
-			return;
-		}
-		clearInterval(this.id);
-		this.id = null;
-	}
-	,run: function() {
-	}
-	,__class__: haxe_Timer
-};
 var haxe_Serializer = function() {
 	this.buf = new StringBuf();
 	this.cache = [];
@@ -1915,6 +1887,34 @@ haxe_ds_StringMap.prototype = {
 	}
 	,__class__: haxe_ds_StringMap
 };
+var haxe_Timer = function(time_ms) {
+	var me = this;
+	this.id = setInterval(function() {
+		me.run();
+	},time_ms);
+};
+$hxClasses["haxe.Timer"] = haxe_Timer;
+haxe_Timer.__name__ = "haxe.Timer";
+haxe_Timer.delay = function(f,time_ms) {
+	var t = new haxe_Timer(time_ms);
+	t.run = function() {
+		t.stop();
+		f();
+	};
+	return t;
+};
+haxe_Timer.prototype = {
+	stop: function() {
+		if(this.id == null) {
+			return;
+		}
+		clearInterval(this.id);
+		this.id = null;
+	}
+	,run: function() {
+	}
+	,__class__: haxe_Timer
+};
 var src_client_App = function() { };
 $hxClasses["src.client.App"] = src_client_App;
 src_client_App.__name__ = "src.client.App";
@@ -1933,6 +1933,8 @@ src_client_App.render = function(props) {
 	var selectedRandomon = src_utils_react_ReactHooks_useState(null);
 	var amount = src_utils_react_ReactHooks_useState(10);
 	var duration = src_utils_react_ReactHooks_useState(null);
+	var copied = src_utils_react_ReactHooks_useState(false);
+	var copiedTimer = React.useRef(null);
 	var ball = React.useMemo(function() {
 		var ball = react_ReactType.fromString("svg");
 		var ball1 = react_ReactType.fromString("g");
@@ -1949,7 +1951,7 @@ src_client_App.render = function(props) {
 			}
 		} catch( _g ) {
 			var e = haxe_Exception.caught(_g);
-			haxe_Log.trace("cant read arg",{ fileName : "src/client/App.hx", lineNumber : 67, className : "src.client.App", methodName : "render", customParams : [e]});
+			haxe_Log.trace("cant read arg",{ fileName : "src/client/App.hx", lineNumber : 71, className : "src.client.App", methodName : "render", customParams : [e]});
 			src_utils_react_StateObject.setState(selectedRandomon,null);
 		}
 		var file = haxe_Resource.getString("pokedex");
@@ -1997,6 +1999,20 @@ src_client_App.render = function(props) {
 		_generator.processNames(src_utils_react_StateObject.get_state(pokemonsCn));
 		src_utils_react_StateObject.setState(generatorCn,_generator);
 	},[tmp != null ? tmp.length : null]);
+	React.useEffect(function() {
+		if(src_utils_react_StateObject.get_state(selectedRandomon) == null) {
+			var location = $global.location;
+			var url = location.protocol + "//" + location.host + location.pathname;
+			window.history.pushState(null,"",url);
+			window.document.title = "Randomon";
+		} else {
+			var base64 = haxe_crypto_Base64.encode(haxe_io_Bytes.ofString(haxe_Serializer.run(src_utils_react_StateObject.get_state(selectedRandomon))));
+			var location = $global.location;
+			var url = location.protocol + "//" + location.host + location.pathname;
+			window.history.pushState(null,"",url + "?r=" + base64);
+			window.document.title = "Randomon" + " | " + src_utils_react_StateObject.get_state(selectedRandomon).name;
+		}
+	},[src_utils_react_StateObject.get_state(selectedRandomon)]);
 	var generateFr = function() {
 		src_utils_react_StateObject.setState(randomons,[]);
 		var t1 = HxOverrides.now() / 1000;
@@ -2090,7 +2106,7 @@ src_client_App.render = function(props) {
 		var selectedRandomonTemplate3 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
 		var selectedRandomonTemplate5;
-		if(randomon.type[1] != "-") {
+		if(randomon.type[1] != "Ø") {
 			var selectedRandomonTemplate6 = react_ReactType.fromComp(React.Fragment);
 			var selectedRandomonTemplate7 = React.createElement(react_ReactType.fromString("span"),{ },randomon.type[0]);
 			var selectedRandomonTemplate8 = React.createElement(react_ReactType.fromString("span"),{ },randomon.type[1]);
@@ -2099,7 +2115,7 @@ src_client_App.render = function(props) {
 			selectedRandomonTemplate5 = null;
 		}
 		var selectedRandomonTemplate6;
-		if(randomon.type[1] == "-") {
+		if(randomon.type[1] == "Ø") {
 			var selectedRandomonTemplate7 = react_ReactType.fromComp(React.Fragment);
 			var selectedRandomonTemplate8 = React.createElement(react_ReactType.fromString("span"),{ className : "monoType"},randomon.type[0]);
 			selectedRandomonTemplate6 = React.createElement(selectedRandomonTemplate7,{ },selectedRandomonTemplate8);
@@ -2108,22 +2124,22 @@ src_client_App.render = function(props) {
 		}
 		var selectedRandomonTemplate7 = React.createElement(selectedRandomonTemplate3,{ className : "types"},React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,selectedRandomonTemplate6));
 		var selectedRandomonTemplate3 = react_ReactType.fromString("div");
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"HP");
 		var selectedRandomonTemplate6 = React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.hp));
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"ATK");
 		var selectedRandomonTemplate8 = React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.attack));
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"DEF");
 		var selectedRandomonTemplate9 = React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.defense));
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"Sp ATK");
 		var selectedRandomonTemplate10 = React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.spAttack));
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"Sp DEF");
 		var selectedRandomonTemplate11 = React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.spDefense));
-		var selectedRandomonTemplate4 = react_ReactType.fromString("p");
+		var selectedRandomonTemplate4 = react_ReactType.fromString("div");
 		var selectedRandomonTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },"Speed");
 		var selectedRandomonTemplate12 = React.createElement(selectedRandomonTemplate3,{ className : "stats"},selectedRandomonTemplate6,selectedRandomonTemplate8,selectedRandomonTemplate9,selectedRandomonTemplate10,selectedRandomonTemplate11,React.createElement(selectedRandomonTemplate4,{ },selectedRandomonTemplate5,React.createElement(react_ReactType.fromString("span"),{ },randomon.speed)));
 		var selectedRandomonTemplate3 = react_ReactType.fromString("div");
@@ -2164,7 +2180,7 @@ src_client_App.render = function(props) {
 		}
 		var randomonTemplate = react_ReactType.fromComp(React.Fragment);
 		var randomonTemplate1 = React.createElement(react_ReactType.fromString("span"),{ className : "name"},randomon.name);
-		var randomonTemplate2 = randomon.type[1] != "-" ? " - " + randomon.type[1] : "";
+		var randomonTemplate2 = randomon.type[1] != "Ø" ? " - " + randomon.type[1] : "";
 		var randomonTemplate3 = React.createElement(react_ReactType.fromString("span"),{ className : "type"},randomon.type[0],randomonTemplate2);
 		var randomonTemplate2 = React.createElement(react_ReactType.fromString("span"),{ className : "hp"},randomon.hp);
 		var randomonTemplate4 = React.createElement(react_ReactType.fromString("span"),{ className : "attack"},randomon.attack);
@@ -2232,16 +2248,22 @@ src_client_App.render = function(props) {
 	var tmp4 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateEn, disabled : src_utils_react_StateObject.get_state(generatorEn) == null || src_utils_react_StateObject.get_state(selectedRandomon) != null},"Generate " + "🇬🇧");
 	var tmp5 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateJp, disabled : src_utils_react_StateObject.get_state(generatorJp) == null || src_utils_react_StateObject.get_state(selectedRandomon) != null},"Generate " + "🇯🇵");
 	var tmp6 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateCn, disabled : src_utils_react_StateObject.get_state(generatorCn) == null || src_utils_react_StateObject.get_state(selectedRandomon) != null},"Generate " + "🇨🇳");
-	var tmp7 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
-		var base64 = haxe_crypto_Base64.encode(haxe_io_Bytes.ofString(haxe_Serializer.run(src_utils_react_StateObject.get_state(selectedRandomon))));
-		var url = $global.location.href;
-		return $global.navigator.clipboard.writeText(url + "?r=" + base64);
-	}, disabled : src_utils_react_StateObject.get_state(selectedRandomon) == null},"Share");
+	var tmp7 = React.createElement(react_ReactType.fromString("button"),{ disabled : src_utils_react_StateObject.get_state(selectedRandomon) == null, onClick : function() {
+		$global.navigator.clipboard.writeText($global.location.href);
+		src_utils_react_StateObject.setState(copied,true);
+		var tmp = copiedTimer.current;
+		if(tmp != null) {
+			tmp.stop();
+		}
+		return copiedTimer.current = haxe_Timer.delay(function() {
+			src_utils_react_StateObject.setState(copied,false);
+		},1000);
+	}},src_utils_react_StateObject.get_state(copied) ? "Copied" : "Share");
 	var tmp8 = react_ReactType.fromString("button");
 	var tmp9 = src_utils_react_StateObject.get_state(selectedRandomon) == null;
-	var tmp10 = React.createElement(tmp1,{ className : "header"},ball,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,React.createElement(tmp8,{ className : "close", onClick : function() {
+	var tmp10 = React.createElement(tmp1,{ className : "header"},ball,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,React.createElement(tmp8,{ className : "close", disabled : tmp9, onClick : function() {
 		src_utils_react_StateObject.setState(selectedRandomon,null);
-	}, disabled : tmp9},"X"),ball);
+	}},"X"),ball);
 	var tmp1 = src_utils_react_StateObject.get_state(selectedRandomon) != null ? selectedRandomonTemplate(src_utils_react_StateObject.get_state(selectedRandomon)) : listTemplate(src_utils_react_StateObject.get_state(displayedRandomons));
 	var tmp2 = react_ReactType.fromString("div");
 	var tmp3 = react_ReactType.fromString("span");
