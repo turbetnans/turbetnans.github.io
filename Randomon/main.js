@@ -371,32 +371,6 @@ src_client_Statistics.render = function(props) {
 	var tmp4 = React.createElement(tmp1,{ className : className},tmp2,content,React.createElement(react_ReactType.fromString("div"),{ },tmp3));
 	return React.createElement(tmp,{ },tmp4);
 };
-var haxe_Log = function() { };
-$hxClasses["haxe.Log"] = haxe_Log;
-haxe_Log.__name__ = "haxe.Log";
-haxe_Log.formatOutput = function(v,infos) {
-	var str = Std.string(v);
-	if(infos == null) {
-		return str;
-	}
-	var pstr = infos.fileName + ":" + infos.lineNumber;
-	if(infos.customParams != null) {
-		var _g = 0;
-		var _g1 = infos.customParams;
-		while(_g < _g1.length) {
-			var v = _g1[_g];
-			++_g;
-			str += ", " + Std.string(v);
-		}
-	}
-	return pstr + ": " + str;
-};
-haxe_Log.trace = function(v,infos) {
-	var str = haxe_Log.formatOutput(v,infos);
-	if(typeof(console) != "undefined" && console.log != null) {
-		console.log(str);
-	}
-};
 var haxe_io_Bytes = function(data) {
 	this.length = data.byteLength;
 	this.b = new Uint8Array(data);
@@ -960,6 +934,32 @@ haxe_Unserializer.prototype = {
 		throw haxe_Exception.thrown("Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos);
 	}
 	,__class__: haxe_Unserializer
+};
+var haxe_Log = function() { };
+$hxClasses["haxe.Log"] = haxe_Log;
+haxe_Log.__name__ = "haxe.Log";
+haxe_Log.formatOutput = function(v,infos) {
+	var str = Std.string(v);
+	if(infos == null) {
+		return str;
+	}
+	var pstr = infos.fileName + ":" + infos.lineNumber;
+	if(infos.customParams != null) {
+		var _g = 0;
+		var _g1 = infos.customParams;
+		while(_g < _g1.length) {
+			var v = _g1[_g];
+			++_g;
+			str += ", " + Std.string(v);
+		}
+	}
+	return pstr + ": " + str;
+};
+haxe_Log.trace = function(v,infos) {
+	var str = haxe_Log.formatOutput(v,infos);
+	if(typeof(console) != "undefined" && console.log != null) {
+		console.log(str);
+	}
 };
 var haxe_Resource = function() { };
 $hxClasses["haxe.Resource"] = haxe_Resource;
@@ -1931,9 +1931,6 @@ src_client_App.render = function(props) {
 	var randomons = src_utils_react_ReactHooks_useState([]);
 	var displayedRandomons = src_utils_react_ReactHooks_useState([]);
 	var selectedRandomon = src_utils_react_ReactHooks_useState(null);
-	React.useEffect(function() {
-		haxe_Log.trace("selected update",{ fileName : "src/client/App.hx", lineNumber : 43, className : "src.client.App", methodName : "render", customParams : [src_utils_react_StateObject.get_state(selectedRandomon)]});
-	},[src_utils_react_StateObject.get_state(selectedRandomon)]);
 	var amount = src_utils_react_ReactHooks_useState(10);
 	var duration = src_utils_react_ReactHooks_useState(null);
 	var ball = React.useMemo(function() {
@@ -1952,7 +1949,7 @@ src_client_App.render = function(props) {
 			}
 		} catch( _g ) {
 			var e = haxe_Exception.caught(_g);
-			haxe_Log.trace("cant read arg",{ fileName : "src/client/App.hx", lineNumber : 69, className : "src.client.App", methodName : "render", customParams : [e]});
+			haxe_Log.trace("cant read arg",{ fileName : "src/client/App.hx", lineNumber : 67, className : "src.client.App", methodName : "render", customParams : [e]});
 			src_utils_react_StateObject.setState(selectedRandomon,null);
 		}
 		var file = haxe_Resource.getString("pokedex");
@@ -2237,9 +2234,8 @@ src_client_App.render = function(props) {
 	var tmp6 = React.createElement(react_ReactType.fromString("button"),{ onClick : generateCn, disabled : src_utils_react_StateObject.get_state(generatorCn) == null || src_utils_react_StateObject.get_state(selectedRandomon) != null},"Generate " + "🇨🇳");
 	var tmp7 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 		var base64 = haxe_crypto_Base64.encode(haxe_io_Bytes.ofString(haxe_Serializer.run(src_utils_react_StateObject.get_state(selectedRandomon))));
-		var url = $global.location;
-		$global.navigator.clipboard.writeText(url.protocol + "//" + url.pathname + "?r=" + base64);
-		haxe_Log.trace(url.protocol + "//" + url.pathname + "?r=" + base64,{ fileName : "src/client/App.hx", lineNumber : 380, className : "src.client.App", methodName : "render"});
+		var url = $global.location.href;
+		return $global.navigator.clipboard.writeText(url + "?r=" + base64);
 	}, disabled : src_utils_react_StateObject.get_state(selectedRandomon) == null},"Share");
 	var tmp8 = react_ReactType.fromString("button");
 	var tmp9 = src_utils_react_StateObject.get_state(selectedRandomon) == null;
