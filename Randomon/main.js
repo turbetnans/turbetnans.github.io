@@ -2172,7 +2172,7 @@ src_client_App.render = function(props) {
 		var randomonTemplate6 = React.createElement(react_ReactType.fromString("span"),{ className : "spAttack"},randomon.spAttack);
 		var randomonTemplate7 = React.createElement(react_ReactType.fromString("span"),{ className : "spDefense"},randomon.spDefense);
 		var randomonTemplate8 = React.createElement(react_ReactType.fromString("span"),{ className : "speed"},randomon.speed);
-		var randomonTemplate9 = React.createElement(react_ReactType.fromString("span"),{ className : "details"},React.createElement(react_ReactType.fromString("a"),{ href : "/", onClick : function() {
+		var randomonTemplate9 = React.createElement(react_ReactType.fromString("span"),{ className : "details"},React.createElement(react_ReactType.fromString("span"),{ className : "link", onClick : function() {
 			src_utils_react_StateObject.setState(selectedRandomon,randomon);
 		}},"details"));
 		return React.createElement(randomonTemplate,{ },randomonTemplate1,randomonTemplate3,randomonTemplate2,randomonTemplate4,randomonTemplate5,randomonTemplate6,randomonTemplate7,randomonTemplate8,randomonTemplate9);

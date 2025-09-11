@@ -164,9 +164,8 @@ p {
     margin: 0;
 }
 
-a {
-    color: unset;
-    text-decoration: unset;
+span.link {
+    cursor: pointer;
     color: var(--brightBlue);
 
     &:hover {
