@@ -355,9 +355,7 @@ src_client_Statistics.render = function(props) {
 			selectedFound = selectedFound || data == props.selected;
 			var tmp = react_ReactType.fromString("div");
 			var tmp1 = Std.string(data);
-			var tmp2 = React.createElement(react_ReactType.fromString("div"),{ className : "label" + selected},"" + tmp1);
-			var tmp3 = React.createElement(react_ReactType.fromString("div"),{ className : "bar-wrapper" + selected},React.createElement(react_ReactType.fromString("div"),{ className : "bar" + selected, style : { width : percentage + "%"}}));
-			content.push(React.createElement(tmp,{ key : data},tmp2,tmp3,React.createElement(react_ReactType.fromString("div"),{ className : "percentage" + selected},Math.round(weight * 10000) / 100," %")));
+			content.push(React.createElement(tmp,{ key : "" + Std.string(data) + weight, className : selected},React.createElement(react_ReactType.fromString("div"),{ className : "label" + selected},"" + tmp1),React.createElement(react_ReactType.fromString("div"),{ className : "bar-wrapper" + selected},React.createElement(react_ReactType.fromString("div"),{ className : "bar" + selected, style : { width : percentage + "%"}})),React.createElement(react_ReactType.fromString("div"),{ className : "percentage" + selected},Math.round(weight * 10000) / 100," %")));
 		}
 	}
 	var tmp = react_ReactType.fromComp(React.Fragment);
@@ -368,19 +366,23 @@ src_client_Statistics.render = function(props) {
 		});
 	}},props.title);
 	var tmp3 = selectedFound ? null : "Not found : " + Std.string(props.selected);
-	var tmp4 = React.createElement(tmp1,{ className : className},tmp2,content,React.createElement(react_ReactType.fromString("div"),{ },tmp3));
+	var tmp4 = React.createElement(tmp1,{ className : className},tmp2,content,React.createElement(react_ReactType.fromString("div"),{ className : "selected"},tmp3));
 	return React.createElement(tmp,{ },tmp4);
 };
 var src_client_RandomonDetails = function() { };
 $hxClasses["src.client.RandomonDetails"] = src_client_RandomonDetails;
 src_client_RandomonDetails.__name__ = "src.client.RandomonDetails";
 src_client_RandomonDetails.render = function(props) {
-	if(props.randomon == null) {
-		return React.createElement(react_ReactType.fromString("div"),{ className : "body"});
-	}
+	var displayedGroup = src_utils_react_ReactHooks_useState(0);
+	var displayedStat = src_utils_react_ReactHooks_useState(0);
 	var typesSet = props.randomon.type != null;
 	var baseStatsSet = props.randomon.hp != null || props.randomon.attack != null || props.randomon.defense != null || props.randomon.spAttack != null || props.randomon.spDefense != null || props.randomon.speed != null;
 	var statsSet = props.randomon.stats != null;
+	var groupsSet = props.randomon.groups != null;
+	var group = props.randomon.groups != null ? props.randomon.groups[src_utils_react_StateObject.get_state(displayedGroup)] : null;
+	if(props.randomon == null) {
+		return React.createElement(react_ReactType.fromString("div"),{ className : "body"});
+	}
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
 	var tmp2 = props.randomon.name;
@@ -391,18 +393,18 @@ src_client_RandomonDetails.render = function(props) {
 		var tmp5 = react_ReactType.fromString("div");
 		var tmp6 = react_ReactType.fromString("p");
 		var tmp7;
-		if(props.randomon.type[1] != "Ø") {
+		if(props.randomon.secondType != "Ø") {
 			var tmp8 = react_ReactType.fromComp(React.Fragment);
-			var tmp9 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.type[0]);
-			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.type[1]);
+			var tmp9 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.type);
+			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.secondType);
 			tmp7 = React.createElement(tmp8,{ },tmp9,tmp10);
 		} else {
 			tmp7 = null;
 		}
 		var tmp8;
-		if(props.randomon.type[1] == "Ø") {
+		if(props.randomon.secondType == "Ø") {
 			var tmp9 = react_ReactType.fromComp(React.Fragment);
-			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ className : "monoType"},props.randomon.type[0]);
+			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ className : "monoType"},props.randomon.type);
 			tmp8 = React.createElement(tmp9,{ },tmp10);
 		} else {
 			tmp8 = null;
@@ -442,36 +444,110 @@ src_client_RandomonDetails.render = function(props) {
 	if(statsSet) {
 		var tmp6 = react_ReactType.fromComp(React.Fragment);
 		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = props.randomon.stats;
-		var tmp9 = tmp8 != null ? tmp8.size : null;
-		var tmp8 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Name size stats", stats : tmp9, selected : props.randomon.name.length});
+		var tmp8;
+		if(groupsSet) {
+			var tmp9 = react_ReactType.fromComp(React.Fragment);
+			var tmp10 = react_ReactType.fromString("p");
+			var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+				src_utils_react_StateObject.setState(displayedGroup,function(g) {
+					return js_Boot.__cast(Math.max(g - 1,0) , Int);
+				});
+			}, disabled : src_utils_react_StateObject.get_state(displayedGroup) == 0},"<");
+			var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+			var tmp13 = "Name stats (" + (src_utils_react_StateObject.get_state(displayedGroup) + 1) + "/";
+			var tmp14 = props.randomon.groups;
+			var tmp15 = tmp14 != null ? tmp14.length : null;
+			var tmp14 = props.randomon.stats;
+			var tmp16 = tmp14 != null ? tmp14.name[src_utils_react_StateObject.get_state(displayedGroup)] : null;
+			var tmp14 = group;
+			var tmp17 = React.createElement(tmp12,{ title : tmp13 + (tmp15 != null ? tmp15 : 1) + ")", stats : tmp16 != null ? tmp16 : null, selected : tmp14 != null ? tmp14 : null});
+			var tmp12 = react_ReactType.fromString("button");
+			var tmp13 = src_utils_react_StateObject.get_state(displayedGroup);
+			var tmp14 = props.randomon.groups;
+			var tmp15 = tmp14 != null ? tmp14.length : null;
+			var tmp14 = React.createElement(tmp10,{ className : "navigation"},tmp11,tmp17,React.createElement(tmp12,{ onClick : function() {
+				src_utils_react_StateObject.setState(displayedGroup,function(g) {
+					var tmp = props.randomon.groups;
+					var tmp1 = tmp != null ? tmp.length : null;
+					return js_Boot.__cast(Math.min(g + 1,(tmp1 != null ? tmp1 : 1) - 1) , Int);
+				});
+			}, disabled : tmp13 == (tmp15 != null ? tmp15 : 1) - 1},">"));
+			tmp8 = React.createElement(tmp9,{ },tmp14);
+		} else {
+			tmp8 = null;
+		}
 		var tmp9 = props.randomon.stats;
-		var tmp10 = tmp9 != null ? tmp9.type : null;
-		var props1 = props.randomon.type[0];
-		var tmp9 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "First type stats", stats : tmp10, selected : props1});
+		var tmp10 = tmp9 != null ? tmp9.size : null;
+		var tmp9 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Name size stats", stats : tmp10, selected : props.randomon.name.length}));
+		var tmp7 = react_ReactType.fromString("div");
+		var tmp8 = props.randomon.stats;
+		var tmp10 = tmp8 != null ? tmp8.type : null;
+		var tmp8 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "First type stats", stats : tmp10, selected : props.randomon.type});
 		var tmp10 = props.randomon.stats;
 		var tmp11 = tmp10 != null ? tmp10.secondType : null;
-		var props1 = props.randomon.type[1];
-		var tmp10 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Second type stats", stats : tmp11, selected : props1});
-		var tmp11 = props.randomon.stats;
-		var tmp12 = tmp11 != null ? tmp11.hp : null;
-		var tmp11 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "HP stats", stats : tmp12, selected : props.randomon.hp});
-		var tmp12 = props.randomon.stats;
-		var tmp13 = tmp12 != null ? tmp12.attack : null;
-		var tmp12 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Attack stats", stats : tmp13, selected : props.randomon.attack});
-		var tmp13 = props.randomon.stats;
-		var tmp14 = tmp13 != null ? tmp13.defense : null;
-		var tmp13 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Defense stats", stats : tmp14, selected : props.randomon.defense});
-		var tmp14 = props.randomon.stats;
-		var tmp15 = tmp14 != null ? tmp14.spAttack : null;
-		var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Attack stats", stats : tmp15, selected : props.randomon.spAttack});
-		var tmp15 = props.randomon.stats;
-		var tmp16 = tmp15 != null ? tmp15.spDefense : null;
-		var tmp15 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Defense stats", stats : tmp16, selected : props.randomon.spDefense});
-		var tmp16 = props.randomon.stats;
-		var tmp17 = tmp16 != null ? tmp16.speed : null;
-		var tmp16 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,tmp9,tmp10,tmp11,tmp12,tmp13,tmp14,tmp15,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Speed stats", stats : tmp17, selected : props.randomon.speed}));
-		tmp5 = React.createElement(tmp6,{ },tmp16);
+		var tmp10 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Second type stats", stats : tmp11, selected : props.randomon.secondType}));
+		var tmp7 = react_ReactType.fromString("div");
+		var tmp8 = react_ReactType.fromString("p");
+		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+			src_utils_react_StateObject.setState(displayedStat,function(g) {
+				return js_Boot.__cast(Math.max(g - 1,0) , Int);
+			});
+		}, disabled : src_utils_react_StateObject.get_state(displayedStat) == 0},"<");
+		var tmp12;
+		switch(src_utils_react_StateObject.get_state(displayedStat)) {
+		case 0:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.hp : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "HP stats", stats : tmp15, selected : props.randomon.hp});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		case 1:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.attack : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Attack stats", stats : tmp15, selected : props.randomon.attack});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		case 2:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.defense : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Defense stats", stats : tmp15, selected : props.randomon.defense});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		case 3:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.spAttack : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Attack stats", stats : tmp15, selected : props.randomon.spAttack});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		case 4:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.spDefense : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Defense stats", stats : tmp15, selected : props.randomon.spDefense});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		case 5:
+			var tmp13 = react_ReactType.fromComp(React.Fragment);
+			var tmp14 = props.randomon.stats;
+			var tmp15 = tmp14 != null ? tmp14.speed : null;
+			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Speed stats", stats : tmp15, selected : props.randomon.speed});
+			tmp12 = React.createElement(tmp13,{ },tmp14);
+			break;
+		default:
+			tmp12 = null;
+		}
+		var tmp13 = react_ReactType.fromString("button");
+		var tmp14 = src_utils_react_StateObject.get_state(displayedStat) == 5;
+		var tmp15 = React.createElement(tmp7,{ className : "statistics-wrapper"},React.createElement(tmp8,{ className : "navigation"},tmp11,tmp12,React.createElement(tmp13,{ onClick : function() {
+			src_utils_react_StateObject.setState(displayedStat,function(g) {
+				return js_Boot.__cast(Math.min(g + 1,5) , Int);
+			});
+		}, disabled : tmp14},">")));
+		tmp5 = React.createElement(tmp6,{ },tmp9,tmp10,tmp15);
 	} else {
 		tmp5 = null;
 	}
@@ -483,13 +559,13 @@ $hxClasses["src.client.RandomonLine"] = src_client_RandomonLine;
 src_client_RandomonLine.__name__ = "src.client.RandomonLine";
 src_client_RandomonLine.render = function(props) {
 	if(props.randomon == null) {
-		return null;
+		return React.createElement(react_ReactType.fromString("div"),{ className : "line"});
 	}
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
 	var tmp2 = React.createElement(react_ReactType.fromString("span"),{ className : "name"},props.randomon.name);
-	var tmp3 = props.randomon.type[1] != "Ø" ? " - " + props.randomon.type[1] : "";
-	var tmp4 = React.createElement(react_ReactType.fromString("span"),{ className : "type"},props.randomon.type[0],tmp3);
+	var tmp3 = props.randomon.secondType != "Ø" ? " - " + props.randomon.secondType : "";
+	var tmp4 = React.createElement(react_ReactType.fromString("span"),{ className : "type"},props.randomon.type,tmp3);
 	var tmp3 = React.createElement(react_ReactType.fromString("span"),{ className : "hp"},props.randomon.hp);
 	var tmp5 = React.createElement(react_ReactType.fromString("span"),{ className : "attack"},props.randomon.attack);
 	var tmp6 = React.createElement(react_ReactType.fromString("span"),{ className : "defense"},props.randomon.defense);
@@ -521,7 +597,7 @@ src_client_RandomonList.render = function(props) {
 	var tmp9 = React.createElement(react_ReactType.fromString("span"),{ className : "speed"},"Speed");
 	var tmp10 = React.createElement(tmp1,{ id : "title", className : "header"},tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,React.createElement(react_ReactType.fromString("span"),{ className : "details"}));
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = props.list.length == 0 ? React.createElement(react_ReactType.fromString("div"),{ 'class' : "help"},"Click on generate ! You can also select a number of randomons and a language.") : null;
+	var tmp2 = props.list.length == 0 ? React.createElement(react_ReactType.fromString("div"),{ className : "help"},"Click on generate ! You can also change the amount of randomons or the language.") : null;
 	var _g = [];
 	var _g_current = 0;
 	var _g_array = props.list;
@@ -1125,7 +1201,26 @@ haxe_Log.trace = function(v,infos) {
 		console.log(str);
 	}
 };
-var src_core_Randomon = function(name,language,type,hp,attack,defense,spAttack,spDefense,speed,stats) {
+var haxe_Resource = function() { };
+$hxClasses["haxe.Resource"] = haxe_Resource;
+haxe_Resource.__name__ = "haxe.Resource";
+haxe_Resource.getString = function(name) {
+	var _g = 0;
+	var _g1 = haxe_Resource.content;
+	while(_g < _g1.length) {
+		var x = _g1[_g];
+		++_g;
+		if(x.name == name) {
+			if(x.str != null) {
+				return x.str;
+			}
+			var b = haxe_crypto_Base64.decode(x.data);
+			return b.toString();
+		}
+	}
+	return null;
+};
+var src_core_Randomon = function(name,language,type,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,stats) {
 	this.stats = null;
 	this.speed = null;
 	this.spDefense = null;
@@ -1133,18 +1228,21 @@ var src_core_Randomon = function(name,language,type,hp,attack,defense,spAttack,s
 	this.defense = null;
 	this.attack = null;
 	this.hp = null;
+	this.secondType = null;
 	this.type = null;
 	this.language = null;
 	this.name = null;
 	this.name = name;
 	this.language = language;
 	this.type = type;
+	this.secondType = secondType;
 	this.hp = hp;
 	this.attack = attack;
 	this.defense = defense;
 	this.spAttack = spAttack;
 	this.spDefense = spDefense;
 	this.speed = speed;
+	this.groups = groups;
 	this.stats = stats;
 };
 $hxClasses["src.core.Randomon"] = src_core_Randomon;
@@ -1153,8 +1251,8 @@ src_core_Randomon.prototype = {
 	toString: function() {
 		var str = this.name;
 		str += " " + this.language;
-		var tmp = this.type;
-		str += " / " + (tmp != null ? tmp.join(",") : null);
+		str += " / " + this.type;
+		str += this.secondType != null ? "," + this.secondType : "";
 		str += " / HP: " + this.hp;
 		str += " / ATK: " + this.attack;
 		str += " / DEF: " + this.defense;
@@ -1167,8 +1265,8 @@ src_core_Randomon.prototype = {
 		var array = [];
 		array[0] = "" + this.name;
 		array[1] = "" + this.language;
-		array[2] = "" + this.type[0];
-		array[3] = "" + this.type[1];
+		array[2] = "" + this.type;
+		array[3] = "" + this.secondType;
 		array[4] = "" + this.hp;
 		array[5] = "" + this.attack;
 		array[6] = "" + this.defense;
@@ -1179,10 +1277,10 @@ src_core_Randomon.prototype = {
 		var tmp1 = tmp != null ? tmp.size.h[this.name.length] : null;
 		array[10] = "" + (tmp1 != null ? tmp1 : 1);
 		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.type.h[this.type[0]] : null;
+		var tmp1 = tmp != null ? tmp.type.h[this.type] : null;
 		array[11] = "" + (tmp1 != null ? tmp1 : 1);
 		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.secondType.h[this.type[1]] : null;
+		var tmp1 = tmp != null ? tmp.secondType.h[this.secondType] : null;
 		array[12] = "" + (tmp1 != null ? tmp1 : 1);
 		var tmp = this.stats;
 		var tmp1 = tmp != null ? tmp.hp.h[this.hp] : null;
@@ -1205,40 +1303,41 @@ src_core_Randomon.prototype = {
 		s.serialize(array);
 	}
 	,hxUnserialize: function(u) {
-		var unserialized = u.unserialize();
-		this.name = unserialized[0];
-		this.language = unserialized[1];
-		this.type = [unserialized[2],unserialized[3]];
-		this.hp = Std.parseInt(unserialized[4]);
-		this.attack = Std.parseInt(unserialized[5]);
-		this.defense = Std.parseInt(unserialized[6]);
-		this.spAttack = Std.parseInt(unserialized[7]);
-		this.spDefense = Std.parseInt(unserialized[8]);
-		this.speed = Std.parseInt(unserialized[9]);
-		var tmp = parseFloat(unserialized[10]);
+		var unserialized = js_Boot.__cast(u.unserialize() , Array);
+		this.name = js_Boot.__cast(unserialized[0] , String);
+		this.language = js_Boot.__cast(unserialized[1] , String);
+		this.type = js_Boot.__cast(unserialized[2] , String);
+		this.secondType = js_Boot.__cast(unserialized[3] , String);
+		this.hp = Std.parseInt(js_Boot.__cast(unserialized[4] , String));
+		this.attack = Std.parseInt(js_Boot.__cast(unserialized[5] , String));
+		this.defense = Std.parseInt(js_Boot.__cast(unserialized[6] , String));
+		this.spAttack = Std.parseInt(js_Boot.__cast(unserialized[7] , String));
+		this.spDefense = Std.parseInt(js_Boot.__cast(unserialized[8] , String));
+		this.speed = Std.parseInt(js_Boot.__cast(unserialized[9] , String));
+		var tmp = parseFloat(js_Boot.__cast(unserialized[10] , String));
 		var sizePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[11]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[11] , String));
 		var typePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[12]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[12] , String));
 		var secondTypePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[13]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[13] , String));
 		var hpPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[14]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[14] , String));
 		var attackPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[15]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[15] , String));
 		var defensePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[16]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[16] , String));
 		var spAttackPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[17]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[17] , String));
 		var spDefensePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(unserialized[18]);
+		var tmp = parseFloat(js_Boot.__cast(unserialized[18] , String));
 		var speedPercentage = tmp != null ? tmp : 1;
 		var _g = new haxe_ds_IntMap();
 		_g.h[this.name.length] = sizePercentage;
 		var _g1 = new haxe_ds_StringMap();
-		_g1.h[this.type[0]] = typePercentage;
+		_g1.h[this.type] = typePercentage;
 		var _g2 = new haxe_ds_StringMap();
-		_g2.h[this.type[1]] = secondTypePercentage;
+		_g2.h[this.secondType] = secondTypePercentage;
 		var _g3 = new haxe_ds_IntMap();
 		_g3.h[this.hp] = hpPercentage;
 		var _g4 = new haxe_ds_IntMap();
@@ -1251,28 +1350,9 @@ src_core_Randomon.prototype = {
 		_g7.h[this.spDefense] = spDefensePercentage;
 		var _g8 = new haxe_ds_IntMap();
 		_g8.h[this.speed] = speedPercentage;
-		this.stats = new src_core_Stats(_g,_g1,_g2,_g3,_g4,_g5,_g6,_g7,_g8);
+		this.stats = new src_core_RandomonStats([],_g,_g1,_g2,_g3,_g4,_g5,_g6,_g7,_g8);
 	}
 	,__class__: src_core_Randomon
-};
-var haxe_Resource = function() { };
-$hxClasses["haxe.Resource"] = haxe_Resource;
-haxe_Resource.__name__ = "haxe.Resource";
-haxe_Resource.getString = function(name) {
-	var _g = 0;
-	var _g1 = haxe_Resource.content;
-	while(_g < _g1.length) {
-		var x = _g1[_g];
-		++_g;
-		if(x.name == name) {
-			if(x.str != null) {
-				return x.str;
-			}
-			var b = haxe_crypto_Base64.decode(x.data);
-			return b.toString();
-		}
-	}
-	return null;
 };
 var src_core_BaseGenerator = function(language,depth) {
 	if(depth == null) {
@@ -1310,19 +1390,19 @@ src_core_BaseGenerator.prototype = {
 			var tmp = this.sizeStats.h[name.length];
 			var v = (tmp != null ? tmp : 0) + 1;
 			this.sizeStats.h[name.length] = v;
-			var type0 = pokemon.type[0];
-			var tmp1 = pokemon.type[1];
-			var type1 = tmp1 != null ? tmp1 : "Ø";
-			if(this.typePairsStats.h[type0] == null) {
+			var firstType = pokemon.type;
+			var tmp1 = pokemon.secondType;
+			var secondType = tmp1 != null ? tmp1 : "Ø";
+			if(this.typePairsStats.h[firstType] == null) {
 				var this1 = this.typePairsStats;
 				var _g1 = new haxe_ds_StringMap();
-				_g1.h[type1] = 1.;
+				_g1.h[secondType] = 1.;
 				var v1 = _g1;
-				this1.h[type0] = v1;
+				this1.h[firstType] = v1;
 			} else {
-				var tmp2 = this.typePairsStats.h[type0].h[type1];
+				var tmp2 = this.typePairsStats.h[firstType].h[secondType];
 				var v2 = (tmp2 != null ? tmp2 : 0) + 1;
-				this.typePairsStats.h[type0].h[type1] = v2;
+				this.typePairsStats.h[firstType].h[secondType] = v2;
 			}
 			var groups = this.cutName(name);
 			var _g2 = 0;
@@ -1370,24 +1450,24 @@ src_core_BaseGenerator.prototype = {
 					var v5 = new haxe_ds_StringMap();
 					this3.h[group1] = v5;
 				}
-				if(this.typeStats.h[group1].h[type0] == null) {
-					this.typeStats.h[group1].h[type0] = 0;
+				if(this.typeStats.h[group1].h[firstType] == null) {
+					this.typeStats.h[group1].h[firstType] = 0;
 				}
-				var tmp4 = type0;
+				var tmp4 = firstType;
 				var this41 = this.typeStats;
 				var this41 = this.typeStats;
 				var v6 = this41.h[group1].h[tmp4] + 1;
 				this41.h[group1].h[tmp4] = v6;
-				if(type1 != "Ø") {
+				if(secondType != "Ø") {
 					if(this.typeStats.h[group1] == null) {
 						var this4 = this.typeStats;
 						var v7 = new haxe_ds_StringMap();
 						this4.h[group1] = v7;
 					}
-					if(this.typeStats.h[group1].h[type1] == null) {
-						this.typeStats.h[group1].h[type1] = 0;
+					if(this.typeStats.h[group1].h[secondType] == null) {
+						this.typeStats.h[group1].h[secondType] = 0;
 					}
-					var tmp5 = type1;
+					var tmp5 = secondType;
 					var this51 = this.typeStats;
 					var this51 = this.typeStats;
 					var v8 = this51.h[group1].h[tmp5] + 1;
@@ -1494,10 +1574,11 @@ src_core_BaseGenerator.prototype = {
 		this.speedStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.speedStats);
 		this.typePairsStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_String(this.typePairsStats);
 	}
-	,generateName: function() {
+	,generateRandomon: function() {
 		var fails = 0;
 		var steps = 0;
 		var size = src_core_RandomToolbox.pickWeightedRandom_Int_Float(this.sizeStats);
+		var groupStats = [];
 		var possibleTypes = new haxe_ds_StringMap();
 		var possibleHp = new haxe_ds_IntMap();
 		var possibleAttack = new haxe_ds_IntMap();
@@ -1505,41 +1586,46 @@ src_core_BaseGenerator.prototype = {
 		var possibleSpAttack = new haxe_ds_IntMap();
 		var possibleSpDefense = new haxe_ds_IntMap();
 		var possibleSpeed = new haxe_ds_IntMap();
+		groupStats.push(this.startStats);
 		var group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
 		var groups = [group];
 		var name = group;
 		while(true) {
 			++steps;
 			if(steps >= this.maxSteps) {
-				haxe_Log.trace("max steps reached : " + steps,{ fileName : "src/core/Generator.hx", lineNumber : 194, className : "src.core.BaseGenerator", methodName : "generateName"});
+				haxe_Log.trace("max steps reached : " + steps,{ fileName : "src/core/Generator.hx", lineNumber : 196, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
 				return null;
 			}
 			var i = groups.length - 1;
 			var possibleGroups = new haxe_ds_StringMap();
-			var _g = [];
-			var _g1 = 0;
-			var _g2 = this.depth;
-			while(_g1 < _g2) {
-				var j = _g1++;
-				if(j <= i) {
-					_g.push(groups[i - j]);
+			var localDepth = this.depth;
+			do {
+				possibleGroups = new haxe_ds_StringMap();
+				var _g = [];
+				var _g1 = 0;
+				var _g2 = localDepth;
+				while(_g1 < _g2) {
+					var j = _g1++;
+					if(j <= i) {
+						_g.push(groups[i - j]);
+					}
 				}
-			}
-			var previousGroups = _g;
-			var previousString = "";
-			var _g3 = 0;
-			while(_g3 < previousGroups.length) {
-				var previousGroup = previousGroups[_g3];
-				++_g3;
-				previousString = previousGroup + previousString;
-				var tmp = this.nameStats.h[previousString];
-				if(tmp != null) {
-					possibleGroups = tmp;
+				var previousGroups = _g;
+				var previousString = "";
+				var _g3 = 0;
+				while(_g3 < previousGroups.length) {
+					var previousGroup = previousGroups[_g3];
+					++_g3;
+					previousString = previousGroup + previousString;
+					var tmp = this.nameStats.h[previousString];
+					if(tmp != null) {
+						possibleGroups = tmp;
+					}
 				}
-			}
+				--localDepth;
+			} while(Lambda.count(possibleGroups) < 2 && localDepth > 0);
 			group = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleGroups);
 			if(group == null) {
-				haxe_Log.trace("blocked : " + name + " " + name.length + " / " + size + " (" + fails + ")",{ fileName : "src/core/Generator.hx", lineNumber : 208, className : "src.core.BaseGenerator", methodName : "generateName"});
 				++fails;
 				var _g4 = 0;
 				var _g5 = fails;
@@ -1547,7 +1633,7 @@ src_core_BaseGenerator.prototype = {
 					var i1 = _g4++;
 					groups.pop();
 					if(groups.length == 0) {
-						haxe_Log.trace("forced break : " + name + " " + name.length + " / " + size + " (" + fails + ")",{ fileName : "src/core/Generator.hx", lineNumber : 213, className : "src.core.BaseGenerator", methodName : "generateName"});
+						haxe_Log.trace("forced break : " + name + " " + name.length + " / " + size + " (" + fails + ")",{ fileName : "src/core/Generator.hx", lineNumber : 220, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
 						fails = 0;
 						group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
 						groups = [group];
@@ -1561,6 +1647,7 @@ src_core_BaseGenerator.prototype = {
 					continue;
 				}
 			}
+			groupStats.push(src_core_RandomToolbox.normalizeWeights_String(possibleGroups));
 			var tmp1 = this.typeStats.h[group];
 			var h = (tmp1 != null ? tmp1 : new haxe_ds_StringMap()).h;
 			var _g_h = h;
@@ -1668,16 +1755,41 @@ src_core_BaseGenerator.prototype = {
 			}
 		}
 		name = name.charAt(0).toUpperCase() + HxOverrides.substr(name,1,null);
-		var type0 = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleTypes);
-		var type1 = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.typePairsStats.h[type0]);
-		var types = type1 != null ? [type0,type1] : [type0];
+		var firstType = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleTypes);
+		var secondType = "Ø";
+		var possibleSecondTypes = new haxe_ds_StringMap();
+		var h = this.typePairsStats.h[firstType].h;
+		var _g_h = h;
+		var _g_keys = Object.keys(h);
+		var _g_length = _g_keys.length;
+		var _g_current = 0;
+		while(_g_current < _g_length) {
+			var key = _g_keys[_g_current++];
+			var _g_key = key;
+			var _g_value = _g_h[key];
+			var type = _g_key;
+			var weight = _g_value;
+			if(weight != 0 && possibleTypes.h[type] != null) {
+				var v = possibleTypes.h[type] * weight;
+				possibleSecondTypes.h[type] = v;
+			}
+		}
+		if(Lambda.count(possibleSecondTypes) > 0) {
+			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights_String(possibleSecondTypes);
+			if(this.typePairsStats.h[firstType].h["Ø"] != null) {
+				var v = this.typePairsStats.h[firstType].h["Ø"] / (1 - this.typePairsStats.h[firstType].h["Ø"]);
+				possibleSecondTypes.h["Ø"] = v;
+			}
+			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights_String(possibleSecondTypes);
+			secondType = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleSecondTypes);
+		}
 		var hp = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleHp);
 		var attack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleAttack);
 		var defense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleDefense);
 		var spAttack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpAttack);
 		var spDefense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpDefense);
 		var speed = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpeed);
-		return new src_core_Randomon(name,this.language,types,hp,attack,defense,spAttack,spDefense,speed,new src_core_Stats(src_core_RandomToolbox.normalizeWeights_Int(this.sizeStats),src_core_RandomToolbox.normalizeWeights_String(possibleTypes),src_core_RandomToolbox.normalizeWeights_String(this.typePairsStats.h[type0]),src_core_RandomToolbox.normalizeWeights_Int(possibleHp),src_core_RandomToolbox.normalizeWeights_Int(possibleAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleSpDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpeed)));
+		return new src_core_Randomon(name,this.language,firstType,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,new src_core_RandomonStats(groupStats,src_core_RandomToolbox.normalizeWeights_Int(this.sizeStats),src_core_RandomToolbox.normalizeWeights_String(possibleTypes),src_core_RandomToolbox.normalizeWeights_String(this.typePairsStats.h[firstType]),src_core_RandomToolbox.normalizeWeights_Int(possibleHp),src_core_RandomToolbox.normalizeWeights_Int(possibleAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleSpDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpeed)));
 	}
 	,cutName: function(name) {
 		var groups = [];
@@ -2102,6 +2214,9 @@ haxe_ds_StringMap.prototype = {
 	,keys: function() {
 		return new haxe_ds__$StringMap_StringMapKeyIterator(this.h);
 	}
+	,iterator: function() {
+		return new haxe_ds__$StringMap_StringMapValueIterator(this.h);
+	}
 	,keyValueIterator: function() {
 		return new haxe_ds__$StringMap_StringMapKeyValueIterator(this.h);
 	}
@@ -2174,18 +2289,17 @@ src_client_App.render = function(props) {
 		return React.createElement(ball,{ className : "ball", viewBox : "0 0 5.2916666 5.2916666"},React.createElement(ball1,{ },React.createElement(react_ReactType.fromString("path"),{ d : "M 2.6458333 0 A 2.6458333 2.6458333 0 0 0 0 2.6458333 A 2.6458333 2.6458333 0 0 0 2.6458333 5.2916667 A 2.6458333 2.6458333 0 0 0 5.2916667 2.6458333 A 2.6458333 2.6458333 0 0 0 2.6458333 0 z M 2.6458333 0.52916667 A 2.1166666 2.1166666 0 0 1 4.7454468 2.38125 L 3.670577 2.38125 A 1.0583333 1.0583333 0 0 0 2.6458333 1.5875 A 1.0583333 1.0583333 0 0 0 1.6231567 2.38125 L 0.54983724 2.38125 A 2.1166666 2.1166666 0 0 1 2.6458333 0.52916667 z M 2.6458333 2.1166667 A 0.5291667 0.52916676 0 0 1 3.175 2.6458333 A 0.5291667 0.52916676 0 0 1 2.6458333 3.175 A 0.5291667 0.52916676 0 0 1 2.1166667 2.6458333 A 0.5291667 0.52916676 0 0 1 2.6458333 2.1166667 z M 0.54983724 2.9104167 L 1.6231567 2.9104167 A 1.0583333 1.0583333 0 0 0 2.6458333 3.7041667 A 1.0583333 1.0583333 0 0 0 3.670577 2.9104167 L 4.7454468 2.9104167 A 2.1166666 2.1166666 0 0 1 2.6458333 4.7625 A 2.1166666 2.1166666 0 0 1 0.54983724 2.9104167 z "})));
 	},[]);
 	React.useEffect(function() {
-		try {
-			var params = new URL(window.document.URL).searchParams;
-			var param = params.get("r");
-			if(param != null) {
+		var params = new URL(window.document.URL).searchParams;
+		var param = params.get("r");
+		if(param != null) {
+			try {
 				var serialized = haxe_crypto_Base64.decode(param).toString();
 				var decoded = haxe_Unserializer.run(serialized);
 				src_utils_react_StateObject.setState(selectedRandomon,decoded);
+			} catch( _g ) {
+				haxe_Log.trace("invalid arg",{ fileName : "src/client/App.hx", lineNumber : 81, className : "src.client.App", methodName : "render", customParams : [param]});
+				src_utils_react_StateObject.setState(selectedRandomon,null);
 			}
-		} catch( _g ) {
-			var e = haxe_Exception.caught(_g);
-			haxe_Log.trace("cant read arg",{ fileName : "src/client/App.hx", lineNumber : 82, className : "src.client.App", methodName : "render", customParams : [e]});
-			src_utils_react_StateObject.setState(selectedRandomon,new src_core_Randomon(null,null,null,null,null,null,null,null,null,null));
 		}
 		var file = haxe_Resource.getString("pokedex");
 		var pokemonsJson = [];
@@ -2198,10 +2312,10 @@ src_client_App.render = function(props) {
 		while(_g < pokemonsJson.length) {
 			var pokemonJson = pokemonsJson[_g];
 			++_g;
-			_pokemonsFr.push(new src_core_Randomon(pokemonJson.name.french,"FR",pokemonJson.type,pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
-			_pokemonsEn.push(new src_core_Randomon(pokemonJson.name.english,"EN",pokemonJson.type,pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
-			_pokemonsJp.push(new src_core_Randomon(pokemonJson.name.japanese,"JP",pokemonJson.type,pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
-			_pokemonsCn.push(new src_core_Randomon(pokemonJson.name.chinese,"CN",pokemonJson.type,pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
+			_pokemonsFr.push(new src_core_Randomon(pokemonJson.name.french,"FR",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
+			_pokemonsEn.push(new src_core_Randomon(pokemonJson.name.english,"EN",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
+			_pokemonsJp.push(new src_core_Randomon(pokemonJson.name.japanese,"JP",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
+			_pokemonsCn.push(new src_core_Randomon(pokemonJson.name.chinese,"CN",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
 		}
 		src_utils_react_StateObject.setState(pokemonsFr,_pokemonsFr);
 		src_utils_react_StateObject.setState(pokemonsEn,_pokemonsEn);
@@ -2254,7 +2368,7 @@ src_client_App.render = function(props) {
 		var _g2 = src_utils_react_StateObject.get_state(amount);
 		while(_g1 < _g2) {
 			var i = _g1++;
-			_g.push(generator.generateName());
+			_g.push(generator.generateRandomon());
 		}
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
@@ -2355,6 +2469,28 @@ src_client_App.render = function(props) {
 var JsxStaticInit_$_$ = function() { };
 $hxClasses["JsxStaticInit__"] = JsxStaticInit_$_$;
 JsxStaticInit_$_$.__name__ = "JsxStaticInit__";
+var Lambda = function() { };
+$hxClasses["Lambda"] = Lambda;
+Lambda.__name__ = "Lambda";
+Lambda.count = function(it,pred) {
+	var n = 0;
+	if(pred == null) {
+		var _ = $getIterator(it);
+		while(_.hasNext()) {
+			var _1 = _.next();
+			++n;
+		}
+	} else {
+		var x = $getIterator(it);
+		while(x.hasNext()) {
+			var x1 = x.next();
+			if(pred(x1)) {
+				++n;
+			}
+		}
+	}
+	return n;
+};
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
 Reflect.__name__ = "Reflect";
@@ -2481,15 +2617,6 @@ var haxe_Exception = function(message,previous,native) {
 };
 $hxClasses["haxe.Exception"] = haxe_Exception;
 haxe_Exception.__name__ = "haxe.Exception";
-haxe_Exception.caught = function(value) {
-	if(((value) instanceof haxe_Exception)) {
-		return value;
-	} else if(((value) instanceof Error)) {
-		return new haxe_Exception(value.message,null,value);
-	} else {
-		return new haxe_ValueException(value,null,value);
-	}
-};
 haxe_Exception.thrown = function(value) {
 	if(((value) instanceof haxe_Exception)) {
 		return value.get_native();
@@ -2502,13 +2629,7 @@ haxe_Exception.thrown = function(value) {
 };
 haxe_Exception.__super__ = Error;
 haxe_Exception.prototype = $extend(Error.prototype,{
-	toString: function() {
-		return this.get_message();
-	}
-	,get_message: function() {
-		return this.message;
-	}
-	,get_native: function() {
+	get_native: function() {
 		return this.__nativeException;
 	}
 	,__class__: haxe_Exception
@@ -2635,6 +2756,23 @@ haxe_ds__$StringMap_StringMapKeyIterator.prototype = {
 		return this.keys[this.current++];
 	}
 	,__class__: haxe_ds__$StringMap_StringMapKeyIterator
+};
+var haxe_ds__$StringMap_StringMapValueIterator = function(h) {
+	this.h = h;
+	this.keys = Object.keys(h);
+	this.length = this.keys.length;
+	this.current = 0;
+};
+$hxClasses["haxe.ds._StringMap.StringMapValueIterator"] = haxe_ds__$StringMap_StringMapValueIterator;
+haxe_ds__$StringMap_StringMapValueIterator.__name__ = "haxe.ds._StringMap.StringMapValueIterator";
+haxe_ds__$StringMap_StringMapValueIterator.prototype = {
+	hasNext: function() {
+		return this.current < this.length;
+	}
+	,next: function() {
+		return this.h[this.keys[this.current++]];
+	}
+	,__class__: haxe_ds__$StringMap_StringMapValueIterator
 };
 var haxe_ds__$StringMap_StringMapKeyValueIterator = function(h) {
 	this.h = h;
@@ -2795,6 +2933,7 @@ src_core_RandomToolbox.pickWeightedRandom_String_Float = function(values) {
 	}
 	var random = isInt ? Math.ceil(Math.random() * total) : Math.random() * total;
 	var pick = [random];
+	var lastId = null;
 	var h = values.h;
 	var _g_h = h;
 	var _g_keys = Object.keys(h);
@@ -2806,14 +2945,17 @@ src_core_RandomToolbox.pickWeightedRandom_String_Float = function(values) {
 		var _g_value = _g_h[key];
 		var id = _g_key;
 		var weight = _g_value;
+		lastId = id;
 		random -= weight;
 		pick.push(random);
 		if(random <= 0) {
 			return id;
 		}
 	}
-	haxe_Log.trace("null pick",{ fileName : "src/core/RandomToolbox.hx", lineNumber : 41, className : "src.core.RandomToolbox", methodName : "pickWeightedRandom", customParams : [pick,values == null ? "null" : haxe_ds_StringMap.stringify(values.h),total]});
-	return null;
+	if(lastId == null) {
+		haxe_Log.trace("null pick",{ fileName : "src/core/RandomToolbox.hx", lineNumber : 44, className : "src.core.RandomToolbox", methodName : "pickWeightedRandom", customParams : [pick,values == null ? "null" : haxe_ds_StringMap.stringify(values.h),total]});
+	}
+	return lastId;
 };
 src_core_RandomToolbox.pickWeightedRandom_Int_Float = function(values) {
 	if(values == null) {
@@ -2846,6 +2988,7 @@ src_core_RandomToolbox.pickWeightedRandom_Int_Float = function(values) {
 	}
 	var random = isInt ? Math.ceil(Math.random() * total) : Math.random() * total;
 	var pick = [random];
+	var lastId = null;
 	var map = values;
 	var _g_map = map;
 	var _g_keys = map.keys();
@@ -2855,14 +2998,17 @@ src_core_RandomToolbox.pickWeightedRandom_Int_Float = function(values) {
 		var _g_key = key;
 		var id = _g_key;
 		var weight = _g_value;
+		lastId = id;
 		random -= weight;
 		pick.push(random);
 		if(random <= 0) {
 			return id;
 		}
 	}
-	haxe_Log.trace("null pick",{ fileName : "src/core/RandomToolbox.hx", lineNumber : 41, className : "src.core.RandomToolbox", methodName : "pickWeightedRandom", customParams : [pick,values == null ? "null" : values.toString(),total]});
-	return null;
+	if(lastId == null) {
+		haxe_Log.trace("null pick",{ fileName : "src/core/RandomToolbox.hx", lineNumber : 44, className : "src.core.RandomToolbox", methodName : "pickWeightedRandom", customParams : [pick,values == null ? "null" : values.toString(),total]});
+	}
+	return lastId;
 };
 src_core_RandomToolbox.normalizeWeightsRecursive_String_Int = function(input) {
 	var output = new haxe_ds_StringMap();
@@ -3012,7 +3158,8 @@ src_core_RandomToolbox.normalizeWeights_Int = function(input) {
 	}
 	return output;
 };
-var src_core_Stats = function(size,type,secondType,hp,attack,defense,spAttack,spDefense,speed) {
+var src_core_RandomonStats = function(name,size,type,secondType,hp,attack,defense,spAttack,spDefense,speed) {
+	this.name = name;
 	this.size = size;
 	this.type = type;
 	this.secondType = secondType;
@@ -3023,10 +3170,10 @@ var src_core_Stats = function(size,type,secondType,hp,attack,defense,spAttack,sp
 	this.spDefense = spDefense;
 	this.speed = speed;
 };
-$hxClasses["src.core.Stats"] = src_core_Stats;
-src_core_Stats.__name__ = "src.core.Stats";
-src_core_Stats.prototype = {
-	__class__: src_core_Stats
+$hxClasses["src.core.RandomonStats"] = src_core_RandomonStats;
+src_core_RandomonStats.__name__ = "src.core.RandomonStats";
+src_core_RandomonStats.prototype = {
+	__class__: src_core_RandomonStats
 };
 var src_utils_react_RefObject = function() { };
 $hxClasses["src.utils.react.RefObject"] = src_utils_react_RefObject;
@@ -3063,6 +3210,13 @@ var tink_core_Noise = {};
 tink_core_Noise.ofAny = function(t) {
 	return null;
 };
+var tink_macro_Bouncer = function() { };
+$hxClasses["tink.macro.Bouncer"] = tink_macro_Bouncer;
+tink_macro_Bouncer.__name__ = "tink.macro.Bouncer";
+tink_macro_Bouncer.makeOuter = function(a) {
+	return null;
+};
+function $getIterator(o) { if( o instanceof Array ) return new haxe_iterators_ArrayIterator(o); else return o.iterator(); }
 $global.$haxeUID |= 0;
 if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
 	HxOverrides.now = performance.now.bind(performance);

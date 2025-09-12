@@ -410,6 +410,16 @@ span.link {
             display: flex;
             flex-direction: column;
             align-items: center;
+
+            & .navigation {
+                display: flex;
+                align-items: start;
+            }
+
+            & .navigation button {
+                width: 2rem;
+                margin: .5rem;
+            }
         }
     }
 
@@ -436,13 +446,9 @@ span.link {
         &>div {
             transition: max-height .5s, margin-top .5s;
             max-height: 2rem;
-
-            &:first-of-type {
-                margin-top: .25rem;
-            }
         }
 
-        &.collapsed>div {
+        &.collapsed>div:not(.selected) {
             max-height: 0;
             overflow: hidden;
             margin-top: 0;
@@ -452,7 +458,13 @@ span.link {
             cursor: pointer;
             font-size: 1.25rem;
             padding-bottom: .25rem;
+            margin-bottom: .25rem;
             border-bottom: 2px dashed var(--lightGray);
+            transition: border-bottom-color .5s;
+        }
+
+        &.collapsed .title {
+            border-bottom: 2px dashed var(--transparent);
         }
 
         & .label {
