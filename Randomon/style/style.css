@@ -437,7 +437,23 @@ span.link {
         overflow-y: auto;
         max-height: 30rem;
 
-        &:hover {
+        &.fully-collapsed {
+            min-width: unset;
+            width: .5rem;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: .25rem;
+            margin-right: .25rem;
+            overflow: hidden;
+
+            & * {
+                visibility: hidden;
+                text-wrap: nowrap;
+                transition-duration: 0s;
+            }
+        }
+
+        &:hover:not(.fully-collapsed) {
             transition: background-color 0s, outline-color 0s;
             background-color: var(--transparentRed);
             outline-color: var(--lighterGray);

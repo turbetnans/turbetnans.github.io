@@ -331,7 +331,18 @@ $hxClasses["src.client.Statistics"] = src_client_Statistics;
 src_client_Statistics.__name__ = "src.client.Statistics";
 src_client_Statistics.render = function(props) {
 	var collapsed = src_utils_react_ReactHooks_useState(true);
-	var className = src_utils_react_StateObject.get_state(collapsed) ? "statistics collapsed" : "statistics";
+	var className = "statistics";
+	if(src_utils_react_StateObject.get_state(collapsed)) {
+		className += " collapsed";
+	}
+	if(props.fullyCollapsed) {
+		className += " collapsed fully-collapsed";
+	}
+	React.useEffect(function() {
+		if(props.fullyCollapsed == true) {
+			src_utils_react_StateObject.setState(collapsed,true);
+		}
+	},[props.fullyCollapsed]);
 	var selectedFound = false;
 	var content = [];
 	var max = 0;
@@ -360,13 +371,14 @@ src_client_Statistics.render = function(props) {
 	}
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = React.createElement(react_ReactType.fromString("p"),{ className : "title", onClick : function() {
+	var tmp2 = props.fullyCollapsed ? null : function() {
 		src_utils_react_StateObject.setState(collapsed,function(c) {
 			return !c;
 		});
-	}},props.title);
-	var tmp3 = selectedFound ? null : "Not found : " + Std.string(props.selected);
-	var tmp4 = React.createElement(tmp1,{ className : className},tmp2,content,React.createElement(react_ReactType.fromString("div"),{ className : "selected"},tmp3));
+	};
+	var tmp3 = React.createElement(react_ReactType.fromString("p"),{ className : "title", onClick : tmp2},props.title);
+	var tmp2 = selectedFound ? null : "Not found : " + Std.string(props.selected);
+	var tmp4 = React.createElement(tmp1,{ className : className},tmp3,content,React.createElement(react_ReactType.fromString("div"),{ className : "selected"},tmp2));
 	return React.createElement(tmp,{ },tmp4);
 };
 var src_client_RandomonDetails = function() { };
@@ -379,7 +391,6 @@ src_client_RandomonDetails.render = function(props) {
 	var baseStatsSet = props.randomon.hp != null || props.randomon.attack != null || props.randomon.defense != null || props.randomon.spAttack != null || props.randomon.spDefense != null || props.randomon.speed != null;
 	var statsSet = props.randomon.stats != null;
 	var groupsSet = props.randomon.groups != null;
-	var group = props.randomon.groups != null ? props.randomon.groups[src_utils_react_StateObject.get_state(displayedGroup)] : null;
 	if(props.randomon == null) {
 		return React.createElement(react_ReactType.fromString("div"),{ className : "body"});
 	}
@@ -447,32 +458,41 @@ src_client_RandomonDetails.render = function(props) {
 		var tmp8;
 		if(groupsSet) {
 			var tmp9 = react_ReactType.fromComp(React.Fragment);
-			var tmp10 = react_ReactType.fromString("p");
+			var tmp10 = react_ReactType.fromString("div");
 			var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 				src_utils_react_StateObject.setState(displayedGroup,function(g) {
-					return js_Boot.__cast(Math.max(g - 1,0) , Int);
+					if(g <= 0) {
+						var tmp = props.randomon.groups;
+						return (tmp != null ? tmp.length : null) - 1;
+					} else {
+						return g - 1;
+					}
 				});
-			}, disabled : src_utils_react_StateObject.get_state(displayedGroup) == 0},"<");
-			var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-			var tmp13 = "Name stats (" + (src_utils_react_StateObject.get_state(displayedGroup) + 1) + "/";
-			var tmp14 = props.randomon.groups;
-			var tmp15 = tmp14 != null ? tmp14.length : null;
-			var tmp14 = props.randomon.stats;
-			var tmp16 = tmp14 != null ? tmp14.name[src_utils_react_StateObject.get_state(displayedGroup)] : null;
-			var tmp14 = group;
-			var tmp17 = React.createElement(tmp12,{ title : tmp13 + (tmp15 != null ? tmp15 : 1) + ")", stats : tmp16 != null ? tmp16 : null, selected : tmp14 != null ? tmp14 : null});
-			var tmp12 = react_ReactType.fromString("button");
-			var tmp13 = src_utils_react_StateObject.get_state(displayedGroup);
-			var tmp14 = props.randomon.groups;
-			var tmp15 = tmp14 != null ? tmp14.length : null;
-			var tmp14 = React.createElement(tmp10,{ className : "navigation"},tmp11,tmp17,React.createElement(tmp12,{ onClick : function() {
+			}},"<");
+			var _g = [];
+			var _g_current = 0;
+			var _g_array = props.randomon.groups;
+			while(_g_current < _g_array.length) {
+				var _g_value = _g_array[_g_current];
+				var _g_key = _g_current++;
+				var n = _g_key;
+				var group = _g_value;
+				var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+				var tmp13 = src_utils_react_StateObject.get_state(displayedGroup) != n;
+				var tmp14 = props.randomon.stats;
+				_g.push(React.createElement(tmp12,{ key : n, title : "Name stats " + (n + 1), fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.name[src_utils_react_StateObject.get_state(displayedGroup)] : null, selected : group}));
+			}
+			var tmp12 = React.createElement(tmp10,{ className : "navigation"},tmp11,_g,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 				src_utils_react_StateObject.setState(displayedGroup,function(g) {
 					var tmp = props.randomon.groups;
-					var tmp1 = tmp != null ? tmp.length : null;
-					return js_Boot.__cast(Math.min(g + 1,(tmp1 != null ? tmp1 : 1) - 1) , Int);
+					if(g >= (tmp != null ? tmp.length : null) - 1) {
+						return 0;
+					} else {
+						return g + 1;
+					}
 				});
-			}, disabled : tmp13 == (tmp15 != null ? tmp15 : 1) - 1},">"));
-			tmp8 = React.createElement(tmp9,{ },tmp14);
+			}},">"));
+			tmp8 = React.createElement(tmp9,{ },tmp12);
 		} else {
 			tmp8 = null;
 		}
@@ -487,67 +507,50 @@ src_client_RandomonDetails.render = function(props) {
 		var tmp11 = tmp10 != null ? tmp10.secondType : null;
 		var tmp10 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Second type stats", stats : tmp11, selected : props.randomon.secondType}));
 		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = react_ReactType.fromString("p");
+		var tmp8 = react_ReactType.fromString("div");
 		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 			src_utils_react_StateObject.setState(displayedStat,function(g) {
-				return js_Boot.__cast(Math.max(g - 1,0) , Int);
+				if(g <= 0) {
+					return 5;
+				} else {
+					return g - 1;
+				}
 			});
-		}, disabled : src_utils_react_StateObject.get_state(displayedStat) == 0},"<");
-		var tmp12;
-		switch(src_utils_react_StateObject.get_state(displayedStat)) {
-		case 0:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.hp : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "HP stats", stats : tmp15, selected : props.randomon.hp});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		case 1:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.attack : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Attack stats", stats : tmp15, selected : props.randomon.attack});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		case 2:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.defense : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Defense stats", stats : tmp15, selected : props.randomon.defense});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		case 3:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.spAttack : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Attack stats", stats : tmp15, selected : props.randomon.spAttack});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		case 4:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.spDefense : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Sp Defense stats", stats : tmp15, selected : props.randomon.spDefense});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		case 5:
-			var tmp13 = react_ReactType.fromComp(React.Fragment);
-			var tmp14 = props.randomon.stats;
-			var tmp15 = tmp14 != null ? tmp14.speed : null;
-			var tmp14 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Speed stats", stats : tmp15, selected : props.randomon.speed});
-			tmp12 = React.createElement(tmp13,{ },tmp14);
-			break;
-		default:
-			tmp12 = null;
-		}
-		var tmp13 = react_ReactType.fromString("button");
-		var tmp14 = src_utils_react_StateObject.get_state(displayedStat) == 5;
-		var tmp15 = React.createElement(tmp7,{ className : "statistics-wrapper"},React.createElement(tmp8,{ className : "navigation"},tmp11,tmp12,React.createElement(tmp13,{ onClick : function() {
+		}},"<");
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 0;
+		var tmp14 = props.randomon.stats;
+		var tmp15 = React.createElement(tmp12,{ title : "HP stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.hp : null, selected : props.randomon.hp});
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 1;
+		var tmp14 = props.randomon.stats;
+		var tmp16 = React.createElement(tmp12,{ title : "Attack stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.attack : null, selected : props.randomon.attack});
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 2;
+		var tmp14 = props.randomon.stats;
+		var tmp17 = React.createElement(tmp12,{ title : "Defense stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.defense : null, selected : props.randomon.defense});
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 3;
+		var tmp14 = props.randomon.stats;
+		var tmp18 = React.createElement(tmp12,{ title : "Sp Attack stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.spAttack : null, selected : props.randomon.spAttack});
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 4;
+		var tmp14 = props.randomon.stats;
+		var tmp19 = React.createElement(tmp12,{ title : "Sp Defense stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.spDefense : null, selected : props.randomon.spDefense});
+		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 5;
+		var tmp14 = props.randomon.stats;
+		var tmp20 = React.createElement(tmp12,{ title : "Speed stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.speed : null, selected : props.randomon.speed});
+		var tmp12 = React.createElement(tmp7,{ className : "statistics-wrapper"},React.createElement(tmp8,{ className : "navigation"},tmp11,tmp15,tmp16,tmp17,tmp18,tmp19,tmp20,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 			src_utils_react_StateObject.setState(displayedStat,function(g) {
-				return js_Boot.__cast(Math.min(g + 1,5) , Int);
+				if(g >= 5) {
+					return 0;
+				} else {
+					return g + 1;
+				}
 			});
-		}, disabled : tmp14},">")));
-		tmp5 = React.createElement(tmp6,{ },tmp9,tmp10,tmp15);
+		}},">")));
+		tmp5 = React.createElement(tmp6,{ },tmp9,tmp10,tmp12);
 	} else {
 		tmp5 = null;
 	}
@@ -610,6 +613,25 @@ src_client_RandomonList.render = function(props) {
 	}
 	var tmp3 = React.createElement(tmp1,{ id : "list", className : "body"},tmp2,_g);
 	return React.createElement(tmp,{ },tmp10,tmp3);
+};
+var haxe_Resource = function() { };
+$hxClasses["haxe.Resource"] = haxe_Resource;
+haxe_Resource.__name__ = "haxe.Resource";
+haxe_Resource.getString = function(name) {
+	var _g = 0;
+	var _g1 = haxe_Resource.content;
+	while(_g < _g1.length) {
+		var x = _g1[_g];
+		++_g;
+		if(x.name == name) {
+			if(x.str != null) {
+				return x.str;
+			}
+			var b = haxe_crypto_Base64.decode(x.data);
+			return b.toString();
+		}
+	}
+	return null;
 };
 var haxe_io_Bytes = function(data) {
 	this.length = data.byteLength;
@@ -826,6 +848,547 @@ haxe_crypto_BaseCode.prototype = {
 	}
 	,__class__: haxe_crypto_BaseCode
 };
+var src_core_Randomon = function(name,language,type,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,stats) {
+	this.stats = null;
+	this.speed = null;
+	this.spDefense = null;
+	this.spAttack = null;
+	this.defense = null;
+	this.attack = null;
+	this.hp = null;
+	this.secondType = null;
+	this.type = null;
+	this.language = null;
+	this.name = null;
+	this.name = name;
+	this.language = language;
+	this.type = type;
+	this.secondType = secondType;
+	this.hp = hp;
+	this.attack = attack;
+	this.defense = defense;
+	this.spAttack = spAttack;
+	this.spDefense = spDefense;
+	this.speed = speed;
+	this.groups = groups;
+	this.stats = stats;
+};
+$hxClasses["src.core.Randomon"] = src_core_Randomon;
+src_core_Randomon.__name__ = "src.core.Randomon";
+src_core_Randomon.prototype = {
+	toString: function() {
+		var str = this.name;
+		str += " " + this.language;
+		str += " / " + this.type;
+		str += this.secondType != null ? "," + this.secondType : "";
+		str += " / HP: " + this.hp;
+		str += " / ATK: " + this.attack;
+		str += " / DEF: " + this.defense;
+		str += " / Sp ATK: " + this.spAttack;
+		str += " / Sp DEF: " + this.spDefense;
+		str += " / Speed: " + this.speed;
+		return str;
+	}
+	,hxSerialize: function(s) {
+		var array = [];
+		array[0] = "" + this.name;
+		array[1] = "" + this.language;
+		array[2] = "" + this.type;
+		array[3] = "" + this.secondType;
+		array[4] = "" + this.hp;
+		array[5] = "" + this.attack;
+		array[6] = "" + this.defense;
+		array[7] = "" + this.spAttack;
+		array[8] = "" + this.spDefense;
+		array[9] = "" + this.speed;
+		s.serialize(array);
+	}
+	,hxUnserialize: function(u) {
+		var unserialized = js_Boot.__cast(u.unserialize() , Array);
+		this.name = js_Boot.__cast(unserialized[0] , String);
+		this.language = js_Boot.__cast(unserialized[1] , String);
+		this.type = js_Boot.__cast(unserialized[2] , String);
+		this.secondType = js_Boot.__cast(unserialized[3] , String);
+		this.hp = Std.parseInt(js_Boot.__cast(unserialized[4] , String));
+		this.attack = Std.parseInt(js_Boot.__cast(unserialized[5] , String));
+		this.defense = Std.parseInt(js_Boot.__cast(unserialized[6] , String));
+		this.spAttack = Std.parseInt(js_Boot.__cast(unserialized[7] , String));
+		this.spDefense = Std.parseInt(js_Boot.__cast(unserialized[8] , String));
+		this.speed = Std.parseInt(js_Boot.__cast(unserialized[9] , String));
+		this.stats = new src_core_RandomonStats();
+	}
+	,__class__: src_core_Randomon
+};
+var src_core_BaseGenerator = function(language,depth) {
+	if(depth == null) {
+		depth = 1;
+	}
+	this.language = language;
+	this.sizeStats = new haxe_ds_IntMap();
+	this.startStats = new haxe_ds_StringMap();
+	this.endStats = new haxe_ds_StringMap();
+	this.nameStats = new haxe_ds_StringMap();
+	this.typeStats = new haxe_ds_StringMap();
+	this.hpStats = new haxe_ds_StringMap();
+	this.attackStats = new haxe_ds_StringMap();
+	this.defenseStats = new haxe_ds_StringMap();
+	this.spAttackStats = new haxe_ds_StringMap();
+	this.spDefenseStats = new haxe_ds_StringMap();
+	this.speedStats = new haxe_ds_StringMap();
+	this.typePairsStats = new haxe_ds_StringMap();
+	this.depth = depth;
+	this.maxSteps = 100;
+};
+$hxClasses["src.core.BaseGenerator"] = src_core_BaseGenerator;
+src_core_BaseGenerator.__name__ = "src.core.BaseGenerator";
+src_core_BaseGenerator.generateStats_Int = function(groups,refStats) {
+	var possibleTypes = new haxe_ds_IntMap();
+	var _g = 0;
+	while(_g < groups.length) {
+		var group = groups[_g];
+		++_g;
+		var tmp = refStats.h[group];
+		var _g1 = (tmp != null ? tmp : new haxe_ds_IntMap()).keyValueIterator();
+		while(_g1.hasNext()) {
+			var _g2 = _g1.next();
+			var type = _g2.key;
+			var weight = _g2.value;
+			var tmp1 = possibleTypes.h[type];
+			var v = (tmp1 != null ? tmp1 : 0) + weight;
+			possibleTypes.h[type] = v;
+		}
+	}
+	return src_core_RandomToolbox.normalizeWeights(possibleTypes);
+};
+src_core_BaseGenerator.generateStats_String = function(groups,refStats) {
+	var possibleTypes = new haxe_ds_StringMap();
+	var _g = 0;
+	while(_g < groups.length) {
+		var group = groups[_g];
+		++_g;
+		var tmp = refStats.h[group];
+		var _g1 = (tmp != null ? tmp : new haxe_ds_StringMap()).keyValueIterator();
+		while(_g1.hasNext()) {
+			var _g2 = _g1.next();
+			var type = _g2.key;
+			var weight = _g2.value;
+			var tmp1 = possibleTypes.h[type];
+			var v = (tmp1 != null ? tmp1 : 0) + weight;
+			possibleTypes.h[type] = v;
+		}
+	}
+	return src_core_RandomToolbox.normalizeWeights(possibleTypes);
+};
+src_core_BaseGenerator.prototype = {
+	processNames: function(pokemons) {
+		var _g = 0;
+		while(_g < pokemons.length) {
+			var pokemon = pokemons[_g];
+			++_g;
+			var name = pokemon.name;
+			if(name.length == 0) {
+				continue;
+			}
+			name = name.toLowerCase();
+			var tmp = this.sizeStats.h[name.length];
+			var v = (tmp != null ? tmp : 0) + 1;
+			this.sizeStats.h[name.length] = v;
+			var firstType = pokemon.type;
+			var tmp1 = pokemon.secondType;
+			var secondType = tmp1 != null ? tmp1 : "Ø";
+			if(this.typePairsStats.h[firstType] == null) {
+				var this1 = this.typePairsStats;
+				var _g1 = new haxe_ds_StringMap();
+				_g1.h[secondType] = 1.;
+				var v1 = _g1;
+				this1.h[firstType] = v1;
+			} else {
+				var tmp2 = this.typePairsStats.h[firstType].h[secondType];
+				var v2 = (tmp2 != null ? tmp2 : 0) + 1;
+				this.typePairsStats.h[firstType].h[secondType] = v2;
+			}
+			var groups = this.cutName(name);
+			var _g2 = 0;
+			var _g3 = groups.length - 1;
+			while(_g2 < _g3) {
+				var i = _g2++;
+				var group = groups[i + 1];
+				var _g4 = [];
+				var _g5 = 0;
+				var _g6 = this.depth;
+				while(_g5 < _g6) {
+					var j = _g5++;
+					if(j <= i) {
+						_g4.push(groups[i - j]);
+					}
+				}
+				var previousGroups = _g4;
+				var previousString = "";
+				var _g7 = 0;
+				while(_g7 < previousGroups.length) {
+					var previousGroup = previousGroups[_g7];
+					++_g7;
+					previousString = previousGroup + previousString;
+					if(this.nameStats.h[previousString] == null) {
+						var this2 = this.nameStats;
+						var v3 = new haxe_ds_StringMap();
+						this2.h[previousString] = v3;
+					}
+					if(this.nameStats.h[previousString].h[group] == null) {
+						this.nameStats.h[previousString].h[group] = 0;
+					}
+					var tmp3 = group;
+					var this31 = this.nameStats;
+					var this31 = this.nameStats;
+					var v4 = this31.h[previousString].h[tmp3] + 1;
+					this31.h[previousString].h[tmp3] = v4;
+				}
+			}
+			var _g8 = 0;
+			while(_g8 < groups.length) {
+				var group1 = groups[_g8];
+				++_g8;
+				if(this.typeStats.h[group1] == null) {
+					var this3 = this.typeStats;
+					var v5 = new haxe_ds_StringMap();
+					this3.h[group1] = v5;
+				}
+				if(this.typeStats.h[group1].h[firstType] == null) {
+					this.typeStats.h[group1].h[firstType] = 0;
+				}
+				var tmp4 = firstType;
+				var this41 = this.typeStats;
+				var this41 = this.typeStats;
+				var v6 = this41.h[group1].h[tmp4] + 1;
+				this41.h[group1].h[tmp4] = v6;
+				if(secondType != "Ø") {
+					if(this.typeStats.h[group1] == null) {
+						var this4 = this.typeStats;
+						var v7 = new haxe_ds_StringMap();
+						this4.h[group1] = v7;
+					}
+					if(this.typeStats.h[group1].h[secondType] == null) {
+						this.typeStats.h[group1].h[secondType] = 0;
+					}
+					var tmp5 = secondType;
+					var this51 = this.typeStats;
+					var this51 = this.typeStats;
+					var v8 = this51.h[group1].h[tmp5] + 1;
+					this51.h[group1].h[tmp5] = v8;
+				}
+				if(this.hpStats.h[group1] == null) {
+					var this5 = this.hpStats;
+					var v9 = new haxe_ds_IntMap();
+					this5.h[group1] = v9;
+				}
+				if(this.hpStats.h[group1].h[pokemon.hp] == null) {
+					this.hpStats.h[group1].h[pokemon.hp] = 0;
+				}
+				var tmp6 = pokemon.hp;
+				var this61 = this.hpStats;
+				var this61 = this.hpStats;
+				var v10 = this61.h[group1].h[tmp6] + 1;
+				this61.h[group1].h[tmp6] = v10;
+				if(this.attackStats.h[group1] == null) {
+					var this6 = this.attackStats;
+					var v11 = new haxe_ds_IntMap();
+					this6.h[group1] = v11;
+				}
+				if(this.attackStats.h[group1].h[pokemon.attack] == null) {
+					this.attackStats.h[group1].h[pokemon.attack] = 0;
+				}
+				var tmp7 = pokemon.attack;
+				var this71 = this.attackStats;
+				var this71 = this.attackStats;
+				var v12 = this71.h[group1].h[tmp7] + 1;
+				this71.h[group1].h[tmp7] = v12;
+				if(this.defenseStats.h[group1] == null) {
+					var this7 = this.defenseStats;
+					var v13 = new haxe_ds_IntMap();
+					this7.h[group1] = v13;
+				}
+				if(this.defenseStats.h[group1].h[pokemon.defense] == null) {
+					this.defenseStats.h[group1].h[pokemon.defense] = 0;
+				}
+				var tmp8 = pokemon.defense;
+				var this81 = this.defenseStats;
+				var this81 = this.defenseStats;
+				var v14 = this81.h[group1].h[tmp8] + 1;
+				this81.h[group1].h[tmp8] = v14;
+				if(this.spAttackStats.h[group1] == null) {
+					var this8 = this.spAttackStats;
+					var v15 = new haxe_ds_IntMap();
+					this8.h[group1] = v15;
+				}
+				if(this.spAttackStats.h[group1].h[pokemon.spAttack] == null) {
+					this.spAttackStats.h[group1].h[pokemon.spAttack] = 0;
+				}
+				var tmp9 = pokemon.spAttack;
+				var this91 = this.spAttackStats;
+				var this91 = this.spAttackStats;
+				var v16 = this91.h[group1].h[tmp9] + 1;
+				this91.h[group1].h[tmp9] = v16;
+				if(this.spDefenseStats.h[group1] == null) {
+					var this9 = this.spDefenseStats;
+					var v17 = new haxe_ds_IntMap();
+					this9.h[group1] = v17;
+				}
+				if(this.spDefenseStats.h[group1].h[pokemon.spDefense] == null) {
+					this.spDefenseStats.h[group1].h[pokemon.spDefense] = 0;
+				}
+				var tmp10 = pokemon.spDefense;
+				var this101 = this.spDefenseStats;
+				var this101 = this.spDefenseStats;
+				var v18 = this101.h[group1].h[tmp10] + 1;
+				this101.h[group1].h[tmp10] = v18;
+				if(this.speedStats.h[group1] == null) {
+					var this10 = this.speedStats;
+					var v19 = new haxe_ds_IntMap();
+					this10.h[group1] = v19;
+				}
+				if(this.speedStats.h[group1].h[pokemon.speed] == null) {
+					this.speedStats.h[group1].h[pokemon.speed] = 0;
+				}
+				var tmp11 = pokemon.speed;
+				var this111 = this.speedStats;
+				var this111 = this.speedStats;
+				var v20 = this111.h[group1].h[tmp11] + 1;
+				this111.h[group1].h[tmp11] = v20;
+			}
+			var firstGroup = groups[0];
+			var lastGroup = groups[groups.length - 1];
+			var tmp12 = this.startStats.h[firstGroup];
+			var v21 = (tmp12 != null ? tmp12 : 0) + 1;
+			this.startStats.h[firstGroup] = v21;
+			var tmp13 = this.endStats.h[lastGroup];
+			var v22 = tmp13 != null ? tmp13 : 1;
+			this.endStats.h[lastGroup] = v22;
+		}
+		this.sizeStats = src_core_RandomToolbox.normalizeWeights(this.sizeStats);
+		this.startStats = src_core_RandomToolbox.normalizeWeights(this.startStats);
+		this.endStats = src_core_RandomToolbox.normalizeWeights(this.endStats);
+		this.nameStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.nameStats);
+		this.typeStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.typeStats);
+		this.hpStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.hpStats);
+		this.attackStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.attackStats);
+		this.defenseStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.defenseStats);
+		this.spAttackStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.spAttackStats);
+		this.spDefenseStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.spDefenseStats);
+		this.speedStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.speedStats);
+		this.typePairsStats = src_core_RandomToolbox.normalizeWeightsRecursive(this.typePairsStats);
+	}
+	,cutName: function(name) {
+		var groups = [];
+		var _g = 0;
+		var _g1 = name.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var nextGroup = name.charAt(i);
+			groups.push(nextGroup);
+		}
+		return groups;
+	}
+	,generateRandomon: function() {
+		var fails = 0;
+		var steps = 0;
+		var size = src_core_RandomToolbox.pickWeightedRandom_Int_Float(this.sizeStats);
+		var group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
+		var groups = [group];
+		var name = group;
+		while(true) {
+			++steps;
+			if(steps >= this.maxSteps) {
+				haxe_Log.trace("max steps reached : " + steps,{ fileName : "src/core/Generator.hx", lineNumber : 194, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
+				return null;
+			}
+			var possibleGroups = this.predictNextGroups(groups);
+			group = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleGroups);
+			if(group == null) {
+				++fails;
+				var _g = 0;
+				var _g1 = fails;
+				while(_g < _g1) {
+					var i = _g++;
+					groups.pop();
+					if(groups.length == 0) {
+						haxe_Log.trace("forced break : " + name + " " + name.length + " / " + size + " (" + fails + ")",{ fileName : "src/core/Generator.hx", lineNumber : 206, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
+						fails = 0;
+						group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
+						groups = [group];
+						name = group;
+						break;
+					}
+				}
+				if(!(name.length < size || !Object.prototype.hasOwnProperty.call(this.endStats.h,group))) {
+					break;
+				} else {
+					continue;
+				}
+			}
+			groups.push(group);
+			name = groups.join("");
+			if(!(name.length < size || !Object.prototype.hasOwnProperty.call(this.endStats.h,group))) {
+				break;
+			}
+		}
+		name = name.charAt(0).toUpperCase() + HxOverrides.substr(name,1,null);
+		var possibleTypes = src_core_BaseGenerator.generateStats_String(groups,this.typeStats);
+		var firstType = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleTypes);
+		var stats = this.deduceStats(groups,firstType);
+		var secondType = src_core_RandomToolbox.pickWeightedRandom_String_Float(stats.secondType);
+		var hp = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.hp);
+		var attack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.attack);
+		var defense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.defense);
+		var spAttack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.spAttack);
+		var spDefense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.spDefense);
+		var speed = src_core_RandomToolbox.pickWeightedRandom_Int_Float(stats.speed);
+		return new src_core_Randomon(name,this.language,firstType,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,stats);
+	}
+	,predictNextGroups: function(groups) {
+		var i = groups.length - 1;
+		var possibleGroups = new haxe_ds_StringMap();
+		var localDepth = this.depth;
+		do {
+			possibleGroups = new haxe_ds_StringMap();
+			var _g = [];
+			var _g1 = 0;
+			var _g2 = localDepth;
+			while(_g1 < _g2) {
+				var j = _g1++;
+				if(j <= i) {
+					_g.push(groups[i - j]);
+				}
+			}
+			var previousGroups = _g;
+			var previousString = "";
+			var _g3 = 0;
+			while(_g3 < previousGroups.length) {
+				var previousGroup = previousGroups[_g3];
+				++_g3;
+				previousString = previousGroup + previousString;
+				var tmp = this.nameStats.h[previousString];
+				if(tmp != null) {
+					possibleGroups = tmp;
+				}
+			}
+			--localDepth;
+		} while(Lambda.count(possibleGroups) < 2 && localDepth > 0);
+		return possibleGroups;
+	}
+	,deduceStats: function(groups,firstType) {
+		var groupStats = [this.startStats];
+		var prevGroups = [];
+		var _g = 0;
+		while(_g < groups.length) {
+			var group = groups[_g];
+			++_g;
+			prevGroups.push(group);
+			groupStats.push(this.predictNextGroups(prevGroups));
+		}
+		var possibleTypes = src_core_BaseGenerator.generateStats_String(groups,this.typeStats);
+		var possibleSecondTypes = new haxe_ds_StringMap();
+		var h = this.typePairsStats.h[firstType].h;
+		var _g_h = h;
+		var _g_keys = Object.keys(h);
+		var _g_length = _g_keys.length;
+		var _g_current = 0;
+		while(_g_current < _g_length) {
+			var key = _g_keys[_g_current++];
+			var _g_key = key;
+			var _g_value = _g_h[key];
+			var type = _g_key;
+			var weight = _g_value;
+			if(weight != 0 && possibleTypes.h[type] != null) {
+				var v = possibleTypes.h[type] * weight;
+				possibleSecondTypes.h[type] = v;
+			}
+		}
+		if(Lambda.count(possibleSecondTypes) > 0) {
+			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights(possibleSecondTypes);
+			if(this.typePairsStats.h[firstType].h["Ø"] != null) {
+				var v = this.typePairsStats.h[firstType].h["Ø"] / (1 - this.typePairsStats.h[firstType].h["Ø"]);
+				possibleSecondTypes.h["Ø"] = v;
+			}
+			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights(possibleSecondTypes);
+		}
+		var possibleHp = src_core_BaseGenerator.generateStats_Int(groups,this.hpStats);
+		var possibleAttack = src_core_BaseGenerator.generateStats_Int(groups,this.attackStats);
+		var possibleDefense = src_core_BaseGenerator.generateStats_Int(groups,this.defenseStats);
+		var possibleSpAttack = src_core_BaseGenerator.generateStats_Int(groups,this.spAttackStats);
+		var possibleSpDefense = src_core_BaseGenerator.generateStats_Int(groups,this.spDefenseStats);
+		var possibleSpeed = src_core_BaseGenerator.generateStats_Int(groups,this.speedStats);
+		return new src_core_RandomonStats(groupStats,src_core_RandomToolbox.normalizeWeights(this.sizeStats),possibleTypes,possibleSecondTypes,src_core_RandomToolbox.normalizeWeights(possibleHp),src_core_RandomToolbox.normalizeWeights(possibleAttack),src_core_RandomToolbox.normalizeWeights(possibleDefense),src_core_RandomToolbox.normalizeWeights(possibleSpAttack),src_core_RandomToolbox.normalizeWeights(possibleSpDefense),src_core_RandomToolbox.normalizeWeights(possibleSpeed));
+	}
+	,__class__: src_core_BaseGenerator
+};
+var src_core_FrenchGenerator = function(depth) {
+	if(depth == null) {
+		depth = 2;
+	}
+	src_core_BaseGenerator.call(this,"FR",depth);
+};
+$hxClasses["src.core.FrenchGenerator"] = src_core_FrenchGenerator;
+src_core_FrenchGenerator.__name__ = "src.core.FrenchGenerator";
+src_core_FrenchGenerator.__super__ = src_core_BaseGenerator;
+src_core_FrenchGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
+	cutName: function(name) {
+		name = name.toLowerCase();
+		var isPrevAVowel = src_core_FrenchGenerator.vowelList.indexOf(name.charAt(0)) != -1;
+		var groups = [];
+		var nextGroup = name.charAt(0);
+		var _g = 1;
+		var _g1 = name.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var isCurrentAVowel = src_core_FrenchGenerator.vowelList.indexOf(name.charAt(i)) != -1;
+			var isCurrentAConsonant = src_core_FrenchGenerator.consonantList.indexOf(name.charAt(i)) != -1;
+			if(!isCurrentAVowel && !isCurrentAConsonant || isCurrentAVowel != isPrevAVowel) {
+				groups.push(nextGroup);
+				nextGroup = name.charAt(i);
+			} else {
+				nextGroup += name.charAt(i);
+			}
+			isPrevAVowel = isCurrentAVowel;
+		}
+		groups.push(nextGroup);
+		return groups;
+	}
+	,__class__: src_core_FrenchGenerator
+});
+var src_core_EnglishGenerator = function(depth) {
+	if(depth == null) {
+		depth = 2;
+	}
+	src_core_BaseGenerator.call(this,"EN",depth);
+};
+$hxClasses["src.core.EnglishGenerator"] = src_core_EnglishGenerator;
+src_core_EnglishGenerator.__name__ = "src.core.EnglishGenerator";
+src_core_EnglishGenerator.__super__ = src_core_BaseGenerator;
+src_core_EnglishGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
+	cutName: function(name) {
+		name = name.toLowerCase();
+		var isPrevAVowel = src_core_EnglishGenerator.vowelList.indexOf(name.charAt(0)) != -1;
+		var groups = [];
+		var nextGroup = name.charAt(0);
+		var _g = 1;
+		var _g1 = name.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var isCurrentAVowel = src_core_EnglishGenerator.vowelList.indexOf(name.charAt(i)) != -1;
+			var isCurrentAConsonant = src_core_EnglishGenerator.consonantList.indexOf(name.charAt(i)) != -1;
+			if(!isCurrentAVowel && !isCurrentAConsonant || isCurrentAVowel != isPrevAVowel) {
+				groups.push(nextGroup);
+				nextGroup = name.charAt(i);
+			} else {
+				nextGroup += name.charAt(i);
+			}
+			isPrevAVowel = isCurrentAVowel;
+		}
+		groups.push(nextGroup);
+		return groups;
+	}
+	,__class__: src_core_EnglishGenerator
+});
 var haxe__$Unserializer_DefaultResolver = function() {
 };
 $hxClasses["haxe._Unserializer.DefaultResolver"] = haxe__$Unserializer_DefaultResolver;
@@ -1201,677 +1764,6 @@ haxe_Log.trace = function(v,infos) {
 		console.log(str);
 	}
 };
-var haxe_Resource = function() { };
-$hxClasses["haxe.Resource"] = haxe_Resource;
-haxe_Resource.__name__ = "haxe.Resource";
-haxe_Resource.getString = function(name) {
-	var _g = 0;
-	var _g1 = haxe_Resource.content;
-	while(_g < _g1.length) {
-		var x = _g1[_g];
-		++_g;
-		if(x.name == name) {
-			if(x.str != null) {
-				return x.str;
-			}
-			var b = haxe_crypto_Base64.decode(x.data);
-			return b.toString();
-		}
-	}
-	return null;
-};
-var src_core_Randomon = function(name,language,type,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,stats) {
-	this.stats = null;
-	this.speed = null;
-	this.spDefense = null;
-	this.spAttack = null;
-	this.defense = null;
-	this.attack = null;
-	this.hp = null;
-	this.secondType = null;
-	this.type = null;
-	this.language = null;
-	this.name = null;
-	this.name = name;
-	this.language = language;
-	this.type = type;
-	this.secondType = secondType;
-	this.hp = hp;
-	this.attack = attack;
-	this.defense = defense;
-	this.spAttack = spAttack;
-	this.spDefense = spDefense;
-	this.speed = speed;
-	this.groups = groups;
-	this.stats = stats;
-};
-$hxClasses["src.core.Randomon"] = src_core_Randomon;
-src_core_Randomon.__name__ = "src.core.Randomon";
-src_core_Randomon.prototype = {
-	toString: function() {
-		var str = this.name;
-		str += " " + this.language;
-		str += " / " + this.type;
-		str += this.secondType != null ? "," + this.secondType : "";
-		str += " / HP: " + this.hp;
-		str += " / ATK: " + this.attack;
-		str += " / DEF: " + this.defense;
-		str += " / Sp ATK: " + this.spAttack;
-		str += " / Sp DEF: " + this.spDefense;
-		str += " / Speed: " + this.speed;
-		return str;
-	}
-	,hxSerialize: function(s) {
-		var array = [];
-		array[0] = "" + this.name;
-		array[1] = "" + this.language;
-		array[2] = "" + this.type;
-		array[3] = "" + this.secondType;
-		array[4] = "" + this.hp;
-		array[5] = "" + this.attack;
-		array[6] = "" + this.defense;
-		array[7] = "" + this.spAttack;
-		array[8] = "" + this.spDefense;
-		array[9] = "" + this.speed;
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.size.h[this.name.length] : null;
-		array[10] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.type.h[this.type] : null;
-		array[11] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.secondType.h[this.secondType] : null;
-		array[12] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.hp.h[this.hp] : null;
-		array[13] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.attack.h[this.attack] : null;
-		array[14] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.defense.h[this.defense] : null;
-		array[15] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.spAttack.h[this.spAttack] : null;
-		array[16] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.spDefense.h[this.spDefense] : null;
-		array[17] = "" + (tmp1 != null ? tmp1 : 1);
-		var tmp = this.stats;
-		var tmp1 = tmp != null ? tmp.speed.h[this.speed] : null;
-		array[18] = "" + (tmp1 != null ? tmp1 : 1);
-		s.serialize(array);
-	}
-	,hxUnserialize: function(u) {
-		var unserialized = js_Boot.__cast(u.unserialize() , Array);
-		this.name = js_Boot.__cast(unserialized[0] , String);
-		this.language = js_Boot.__cast(unserialized[1] , String);
-		this.type = js_Boot.__cast(unserialized[2] , String);
-		this.secondType = js_Boot.__cast(unserialized[3] , String);
-		this.hp = Std.parseInt(js_Boot.__cast(unserialized[4] , String));
-		this.attack = Std.parseInt(js_Boot.__cast(unserialized[5] , String));
-		this.defense = Std.parseInt(js_Boot.__cast(unserialized[6] , String));
-		this.spAttack = Std.parseInt(js_Boot.__cast(unserialized[7] , String));
-		this.spDefense = Std.parseInt(js_Boot.__cast(unserialized[8] , String));
-		this.speed = Std.parseInt(js_Boot.__cast(unserialized[9] , String));
-		var tmp = parseFloat(js_Boot.__cast(unserialized[10] , String));
-		var sizePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[11] , String));
-		var typePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[12] , String));
-		var secondTypePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[13] , String));
-		var hpPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[14] , String));
-		var attackPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[15] , String));
-		var defensePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[16] , String));
-		var spAttackPercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[17] , String));
-		var spDefensePercentage = tmp != null ? tmp : 1;
-		var tmp = parseFloat(js_Boot.__cast(unserialized[18] , String));
-		var speedPercentage = tmp != null ? tmp : 1;
-		var _g = new haxe_ds_IntMap();
-		_g.h[this.name.length] = sizePercentage;
-		var _g1 = new haxe_ds_StringMap();
-		_g1.h[this.type] = typePercentage;
-		var _g2 = new haxe_ds_StringMap();
-		_g2.h[this.secondType] = secondTypePercentage;
-		var _g3 = new haxe_ds_IntMap();
-		_g3.h[this.hp] = hpPercentage;
-		var _g4 = new haxe_ds_IntMap();
-		_g4.h[this.attack] = attackPercentage;
-		var _g5 = new haxe_ds_IntMap();
-		_g5.h[this.defense] = defensePercentage;
-		var _g6 = new haxe_ds_IntMap();
-		_g6.h[this.spAttack] = spAttackPercentage;
-		var _g7 = new haxe_ds_IntMap();
-		_g7.h[this.spDefense] = spDefensePercentage;
-		var _g8 = new haxe_ds_IntMap();
-		_g8.h[this.speed] = speedPercentage;
-		this.stats = new src_core_RandomonStats([],_g,_g1,_g2,_g3,_g4,_g5,_g6,_g7,_g8);
-	}
-	,__class__: src_core_Randomon
-};
-var src_core_BaseGenerator = function(language,depth) {
-	if(depth == null) {
-		depth = 1;
-	}
-	this.language = language;
-	this.sizeStats = new haxe_ds_IntMap();
-	this.startStats = new haxe_ds_StringMap();
-	this.endStats = new haxe_ds_StringMap();
-	this.nameStats = new haxe_ds_StringMap();
-	this.typeStats = new haxe_ds_StringMap();
-	this.hpStats = new haxe_ds_StringMap();
-	this.attackStats = new haxe_ds_StringMap();
-	this.defenseStats = new haxe_ds_StringMap();
-	this.spAttackStats = new haxe_ds_StringMap();
-	this.spDefenseStats = new haxe_ds_StringMap();
-	this.speedStats = new haxe_ds_StringMap();
-	this.typePairsStats = new haxe_ds_StringMap();
-	this.depth = depth;
-	this.maxSteps = 100;
-};
-$hxClasses["src.core.BaseGenerator"] = src_core_BaseGenerator;
-src_core_BaseGenerator.__name__ = "src.core.BaseGenerator";
-src_core_BaseGenerator.prototype = {
-	processNames: function(pokemons) {
-		var _g = 0;
-		while(_g < pokemons.length) {
-			var pokemon = pokemons[_g];
-			++_g;
-			var name = pokemon.name;
-			if(name.length == 0) {
-				continue;
-			}
-			name = name.toLowerCase();
-			var tmp = this.sizeStats.h[name.length];
-			var v = (tmp != null ? tmp : 0) + 1;
-			this.sizeStats.h[name.length] = v;
-			var firstType = pokemon.type;
-			var tmp1 = pokemon.secondType;
-			var secondType = tmp1 != null ? tmp1 : "Ø";
-			if(this.typePairsStats.h[firstType] == null) {
-				var this1 = this.typePairsStats;
-				var _g1 = new haxe_ds_StringMap();
-				_g1.h[secondType] = 1.;
-				var v1 = _g1;
-				this1.h[firstType] = v1;
-			} else {
-				var tmp2 = this.typePairsStats.h[firstType].h[secondType];
-				var v2 = (tmp2 != null ? tmp2 : 0) + 1;
-				this.typePairsStats.h[firstType].h[secondType] = v2;
-			}
-			var groups = this.cutName(name);
-			var _g2 = 0;
-			var _g3 = groups.length - 1;
-			while(_g2 < _g3) {
-				var i = _g2++;
-				var group = groups[i + 1];
-				var _g4 = [];
-				var _g5 = 0;
-				var _g6 = this.depth;
-				while(_g5 < _g6) {
-					var j = _g5++;
-					if(j <= i) {
-						_g4.push(groups[i - j]);
-					}
-				}
-				var previousGroups = _g4;
-				var previousString = "";
-				var _g7 = 0;
-				while(_g7 < previousGroups.length) {
-					var previousGroup = previousGroups[_g7];
-					++_g7;
-					previousString = previousGroup + previousString;
-					if(this.nameStats.h[previousString] == null) {
-						var this2 = this.nameStats;
-						var v3 = new haxe_ds_StringMap();
-						this2.h[previousString] = v3;
-					}
-					if(this.nameStats.h[previousString].h[group] == null) {
-						this.nameStats.h[previousString].h[group] = 0;
-					}
-					var tmp3 = group;
-					var this31 = this.nameStats;
-					var this31 = this.nameStats;
-					var v4 = this31.h[previousString].h[tmp3] + 1;
-					this31.h[previousString].h[tmp3] = v4;
-				}
-			}
-			var _g8 = 0;
-			while(_g8 < groups.length) {
-				var group1 = groups[_g8];
-				++_g8;
-				if(this.typeStats.h[group1] == null) {
-					var this3 = this.typeStats;
-					var v5 = new haxe_ds_StringMap();
-					this3.h[group1] = v5;
-				}
-				if(this.typeStats.h[group1].h[firstType] == null) {
-					this.typeStats.h[group1].h[firstType] = 0;
-				}
-				var tmp4 = firstType;
-				var this41 = this.typeStats;
-				var this41 = this.typeStats;
-				var v6 = this41.h[group1].h[tmp4] + 1;
-				this41.h[group1].h[tmp4] = v6;
-				if(secondType != "Ø") {
-					if(this.typeStats.h[group1] == null) {
-						var this4 = this.typeStats;
-						var v7 = new haxe_ds_StringMap();
-						this4.h[group1] = v7;
-					}
-					if(this.typeStats.h[group1].h[secondType] == null) {
-						this.typeStats.h[group1].h[secondType] = 0;
-					}
-					var tmp5 = secondType;
-					var this51 = this.typeStats;
-					var this51 = this.typeStats;
-					var v8 = this51.h[group1].h[tmp5] + 1;
-					this51.h[group1].h[tmp5] = v8;
-				}
-				if(this.hpStats.h[group1] == null) {
-					var this5 = this.hpStats;
-					var v9 = new haxe_ds_IntMap();
-					this5.h[group1] = v9;
-				}
-				if(this.hpStats.h[group1].h[pokemon.hp] == null) {
-					this.hpStats.h[group1].h[pokemon.hp] = 0;
-				}
-				var tmp6 = pokemon.hp;
-				var this61 = this.hpStats;
-				var this61 = this.hpStats;
-				var v10 = this61.h[group1].h[tmp6] + 1;
-				this61.h[group1].h[tmp6] = v10;
-				if(this.attackStats.h[group1] == null) {
-					var this6 = this.attackStats;
-					var v11 = new haxe_ds_IntMap();
-					this6.h[group1] = v11;
-				}
-				if(this.attackStats.h[group1].h[pokemon.attack] == null) {
-					this.attackStats.h[group1].h[pokemon.attack] = 0;
-				}
-				var tmp7 = pokemon.attack;
-				var this71 = this.attackStats;
-				var this71 = this.attackStats;
-				var v12 = this71.h[group1].h[tmp7] + 1;
-				this71.h[group1].h[tmp7] = v12;
-				if(this.defenseStats.h[group1] == null) {
-					var this7 = this.defenseStats;
-					var v13 = new haxe_ds_IntMap();
-					this7.h[group1] = v13;
-				}
-				if(this.defenseStats.h[group1].h[pokemon.defense] == null) {
-					this.defenseStats.h[group1].h[pokemon.defense] = 0;
-				}
-				var tmp8 = pokemon.defense;
-				var this81 = this.defenseStats;
-				var this81 = this.defenseStats;
-				var v14 = this81.h[group1].h[tmp8] + 1;
-				this81.h[group1].h[tmp8] = v14;
-				if(this.spAttackStats.h[group1] == null) {
-					var this8 = this.spAttackStats;
-					var v15 = new haxe_ds_IntMap();
-					this8.h[group1] = v15;
-				}
-				if(this.spAttackStats.h[group1].h[pokemon.spAttack] == null) {
-					this.spAttackStats.h[group1].h[pokemon.spAttack] = 0;
-				}
-				var tmp9 = pokemon.spAttack;
-				var this91 = this.spAttackStats;
-				var this91 = this.spAttackStats;
-				var v16 = this91.h[group1].h[tmp9] + 1;
-				this91.h[group1].h[tmp9] = v16;
-				if(this.spDefenseStats.h[group1] == null) {
-					var this9 = this.spDefenseStats;
-					var v17 = new haxe_ds_IntMap();
-					this9.h[group1] = v17;
-				}
-				if(this.spDefenseStats.h[group1].h[pokemon.spDefense] == null) {
-					this.spDefenseStats.h[group1].h[pokemon.spDefense] = 0;
-				}
-				var tmp10 = pokemon.spDefense;
-				var this101 = this.spDefenseStats;
-				var this101 = this.spDefenseStats;
-				var v18 = this101.h[group1].h[tmp10] + 1;
-				this101.h[group1].h[tmp10] = v18;
-				if(this.speedStats.h[group1] == null) {
-					var this10 = this.speedStats;
-					var v19 = new haxe_ds_IntMap();
-					this10.h[group1] = v19;
-				}
-				if(this.speedStats.h[group1].h[pokemon.speed] == null) {
-					this.speedStats.h[group1].h[pokemon.speed] = 0;
-				}
-				var tmp11 = pokemon.speed;
-				var this111 = this.speedStats;
-				var this111 = this.speedStats;
-				var v20 = this111.h[group1].h[tmp11] + 1;
-				this111.h[group1].h[tmp11] = v20;
-			}
-			var firstGroup = groups[0];
-			var lastGroup = groups[groups.length - 1];
-			var tmp12 = this.startStats.h[firstGroup];
-			var v21 = (tmp12 != null ? tmp12 : 0) + 1;
-			this.startStats.h[firstGroup] = v21;
-			var tmp13 = this.endStats.h[lastGroup];
-			var v22 = tmp13 != null ? tmp13 : 1;
-			this.endStats.h[lastGroup] = v22;
-		}
-		this.sizeStats = src_core_RandomToolbox.normalizeWeights_Int(this.sizeStats);
-		this.startStats = src_core_RandomToolbox.normalizeWeights_String(this.startStats);
-		this.endStats = src_core_RandomToolbox.normalizeWeights_String(this.endStats);
-		this.nameStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_String(this.nameStats);
-		this.typeStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_String(this.typeStats);
-		this.hpStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.hpStats);
-		this.attackStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.attackStats);
-		this.defenseStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.defenseStats);
-		this.spAttackStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.spAttackStats);
-		this.spDefenseStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.spDefenseStats);
-		this.speedStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_Int(this.speedStats);
-		this.typePairsStats = src_core_RandomToolbox.normalizeWeightsRecursive_String_String(this.typePairsStats);
-	}
-	,generateRandomon: function() {
-		var fails = 0;
-		var steps = 0;
-		var size = src_core_RandomToolbox.pickWeightedRandom_Int_Float(this.sizeStats);
-		var groupStats = [];
-		var possibleTypes = new haxe_ds_StringMap();
-		var possibleHp = new haxe_ds_IntMap();
-		var possibleAttack = new haxe_ds_IntMap();
-		var possibleDefense = new haxe_ds_IntMap();
-		var possibleSpAttack = new haxe_ds_IntMap();
-		var possibleSpDefense = new haxe_ds_IntMap();
-		var possibleSpeed = new haxe_ds_IntMap();
-		groupStats.push(this.startStats);
-		var group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
-		var groups = [group];
-		var name = group;
-		while(true) {
-			++steps;
-			if(steps >= this.maxSteps) {
-				haxe_Log.trace("max steps reached : " + steps,{ fileName : "src/core/Generator.hx", lineNumber : 196, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
-				return null;
-			}
-			var i = groups.length - 1;
-			var possibleGroups = new haxe_ds_StringMap();
-			var localDepth = this.depth;
-			do {
-				possibleGroups = new haxe_ds_StringMap();
-				var _g = [];
-				var _g1 = 0;
-				var _g2 = localDepth;
-				while(_g1 < _g2) {
-					var j = _g1++;
-					if(j <= i) {
-						_g.push(groups[i - j]);
-					}
-				}
-				var previousGroups = _g;
-				var previousString = "";
-				var _g3 = 0;
-				while(_g3 < previousGroups.length) {
-					var previousGroup = previousGroups[_g3];
-					++_g3;
-					previousString = previousGroup + previousString;
-					var tmp = this.nameStats.h[previousString];
-					if(tmp != null) {
-						possibleGroups = tmp;
-					}
-				}
-				--localDepth;
-			} while(Lambda.count(possibleGroups) < 2 && localDepth > 0);
-			group = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleGroups);
-			if(group == null) {
-				++fails;
-				var _g4 = 0;
-				var _g5 = fails;
-				while(_g4 < _g5) {
-					var i1 = _g4++;
-					groups.pop();
-					if(groups.length == 0) {
-						haxe_Log.trace("forced break : " + name + " " + name.length + " / " + size + " (" + fails + ")",{ fileName : "src/core/Generator.hx", lineNumber : 220, className : "src.core.BaseGenerator", methodName : "generateRandomon"});
-						fails = 0;
-						group = src_core_RandomToolbox.pickWeightedRandom_String_Float(this.startStats);
-						groups = [group];
-						name = group;
-						break;
-					}
-				}
-				if(!(name.length < size || !Object.prototype.hasOwnProperty.call(this.endStats.h,group))) {
-					break;
-				} else {
-					continue;
-				}
-			}
-			groupStats.push(src_core_RandomToolbox.normalizeWeights_String(possibleGroups));
-			var tmp1 = this.typeStats.h[group];
-			var h = (tmp1 != null ? tmp1 : new haxe_ds_StringMap()).h;
-			var _g_h = h;
-			var _g_keys = Object.keys(h);
-			var _g_length = _g_keys.length;
-			var _g_current = 0;
-			while(_g_current < _g_length) {
-				var key = _g_keys[_g_current++];
-				var _g_key = key;
-				var _g_value = _g_h[key];
-				var type = _g_key;
-				var weight = _g_value;
-				var tmp2 = possibleTypes.h[type];
-				var v = (tmp2 != null ? tmp2 : 0) + weight;
-				possibleTypes.h[type] = v;
-			}
-			var tmp3 = this.hpStats.h[group];
-			var map = tmp3 != null ? tmp3 : new haxe_ds_IntMap();
-			var _g_map = map;
-			var _g_keys1 = map.keys();
-			while(_g_keys1.hasNext()) {
-				var key1 = _g_keys1.next();
-				var _g_value1 = _g_map.get(key1);
-				var _g_key1 = key1;
-				var hp = _g_key1;
-				var weight1 = _g_value1;
-				var tmp4 = possibleHp.h[hp];
-				var v1 = (tmp4 != null ? tmp4 : 0) + weight1;
-				possibleHp.h[hp] = v1;
-			}
-			var tmp5 = this.attackStats.h[group];
-			var map1 = tmp5 != null ? tmp5 : new haxe_ds_IntMap();
-			var _g_map1 = map1;
-			var _g_keys2 = map1.keys();
-			while(_g_keys2.hasNext()) {
-				var key2 = _g_keys2.next();
-				var _g_value2 = _g_map1.get(key2);
-				var _g_key2 = key2;
-				var attack = _g_key2;
-				var weight2 = _g_value2;
-				var tmp6 = possibleAttack.h[attack];
-				var v2 = (tmp6 != null ? tmp6 : 0) + weight2;
-				possibleAttack.h[attack] = v2;
-			}
-			var tmp7 = this.defenseStats.h[group];
-			var map2 = tmp7 != null ? tmp7 : new haxe_ds_IntMap();
-			var _g_map2 = map2;
-			var _g_keys3 = map2.keys();
-			while(_g_keys3.hasNext()) {
-				var key3 = _g_keys3.next();
-				var _g_value3 = _g_map2.get(key3);
-				var _g_key3 = key3;
-				var defense = _g_key3;
-				var weight3 = _g_value3;
-				var tmp8 = possibleDefense.h[defense];
-				var v3 = (tmp8 != null ? tmp8 : 0) + weight3;
-				possibleDefense.h[defense] = v3;
-			}
-			var tmp9 = this.spAttackStats.h[group];
-			var map3 = tmp9 != null ? tmp9 : new haxe_ds_IntMap();
-			var _g_map3 = map3;
-			var _g_keys4 = map3.keys();
-			while(_g_keys4.hasNext()) {
-				var key4 = _g_keys4.next();
-				var _g_value4 = _g_map3.get(key4);
-				var _g_key4 = key4;
-				var spattack = _g_key4;
-				var weight4 = _g_value4;
-				var tmp10 = possibleSpAttack.h[spattack];
-				var v4 = (tmp10 != null ? tmp10 : 0) + weight4;
-				possibleSpAttack.h[spattack] = v4;
-			}
-			var tmp11 = this.spDefenseStats.h[group];
-			var map4 = tmp11 != null ? tmp11 : new haxe_ds_IntMap();
-			var _g_map4 = map4;
-			var _g_keys5 = map4.keys();
-			while(_g_keys5.hasNext()) {
-				var key5 = _g_keys5.next();
-				var _g_value5 = _g_map4.get(key5);
-				var _g_key5 = key5;
-				var spdefense = _g_key5;
-				var weight5 = _g_value5;
-				var tmp12 = possibleSpDefense.h[spdefense];
-				var v5 = (tmp12 != null ? tmp12 : 0) + weight5;
-				possibleSpDefense.h[spdefense] = v5;
-			}
-			var tmp13 = this.speedStats.h[group];
-			var map5 = tmp13 != null ? tmp13 : new haxe_ds_IntMap();
-			var _g_map5 = map5;
-			var _g_keys6 = map5.keys();
-			while(_g_keys6.hasNext()) {
-				var key6 = _g_keys6.next();
-				var _g_value6 = _g_map5.get(key6);
-				var _g_key6 = key6;
-				var speed = _g_key6;
-				var weight6 = _g_value6;
-				var tmp14 = possibleSpeed.h[speed];
-				var v6 = (tmp14 != null ? tmp14 : 0) + weight6;
-				possibleSpeed.h[speed] = v6;
-			}
-			groups.push(group);
-			name = groups.join("");
-			if(!(name.length < size || !Object.prototype.hasOwnProperty.call(this.endStats.h,group))) {
-				break;
-			}
-		}
-		name = name.charAt(0).toUpperCase() + HxOverrides.substr(name,1,null);
-		var firstType = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleTypes);
-		var secondType = "Ø";
-		var possibleSecondTypes = new haxe_ds_StringMap();
-		var h = this.typePairsStats.h[firstType].h;
-		var _g_h = h;
-		var _g_keys = Object.keys(h);
-		var _g_length = _g_keys.length;
-		var _g_current = 0;
-		while(_g_current < _g_length) {
-			var key = _g_keys[_g_current++];
-			var _g_key = key;
-			var _g_value = _g_h[key];
-			var type = _g_key;
-			var weight = _g_value;
-			if(weight != 0 && possibleTypes.h[type] != null) {
-				var v = possibleTypes.h[type] * weight;
-				possibleSecondTypes.h[type] = v;
-			}
-		}
-		if(Lambda.count(possibleSecondTypes) > 0) {
-			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights_String(possibleSecondTypes);
-			if(this.typePairsStats.h[firstType].h["Ø"] != null) {
-				var v = this.typePairsStats.h[firstType].h["Ø"] / (1 - this.typePairsStats.h[firstType].h["Ø"]);
-				possibleSecondTypes.h["Ø"] = v;
-			}
-			possibleSecondTypes = src_core_RandomToolbox.normalizeWeights_String(possibleSecondTypes);
-			secondType = src_core_RandomToolbox.pickWeightedRandom_String_Float(possibleSecondTypes);
-		}
-		var hp = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleHp);
-		var attack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleAttack);
-		var defense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleDefense);
-		var spAttack = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpAttack);
-		var spDefense = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpDefense);
-		var speed = src_core_RandomToolbox.pickWeightedRandom_Int_Float(possibleSpeed);
-		return new src_core_Randomon(name,this.language,firstType,secondType,hp,attack,defense,spAttack,spDefense,speed,groups,new src_core_RandomonStats(groupStats,src_core_RandomToolbox.normalizeWeights_Int(this.sizeStats),src_core_RandomToolbox.normalizeWeights_String(possibleTypes),src_core_RandomToolbox.normalizeWeights_String(this.typePairsStats.h[firstType]),src_core_RandomToolbox.normalizeWeights_Int(possibleHp),src_core_RandomToolbox.normalizeWeights_Int(possibleAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpAttack),src_core_RandomToolbox.normalizeWeights_Int(possibleSpDefense),src_core_RandomToolbox.normalizeWeights_Int(possibleSpeed)));
-	}
-	,cutName: function(name) {
-		var groups = [];
-		var _g = 0;
-		var _g1 = name.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var nextGroup = name.charAt(i);
-			groups.push(nextGroup);
-		}
-		return groups;
-	}
-	,__class__: src_core_BaseGenerator
-};
-var src_core_FrenchGenerator = function(depth) {
-	if(depth == null) {
-		depth = 2;
-	}
-	src_core_BaseGenerator.call(this,"FR",depth);
-};
-$hxClasses["src.core.FrenchGenerator"] = src_core_FrenchGenerator;
-src_core_FrenchGenerator.__name__ = "src.core.FrenchGenerator";
-src_core_FrenchGenerator.__super__ = src_core_BaseGenerator;
-src_core_FrenchGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
-	cutName: function(name) {
-		name = name.toLowerCase();
-		var isPrevAVowel = src_core_FrenchGenerator.vowelList.indexOf(name.charAt(0)) != -1;
-		var groups = [];
-		var nextGroup = name.charAt(0);
-		var _g = 1;
-		var _g1 = name.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var isCurrentAVowel = src_core_FrenchGenerator.vowelList.indexOf(name.charAt(i)) != -1;
-			var isCurrentAConsonant = src_core_FrenchGenerator.consonantList.indexOf(name.charAt(i)) != -1;
-			if(!isCurrentAVowel && !isCurrentAConsonant || isCurrentAVowel != isPrevAVowel) {
-				groups.push(nextGroup);
-				nextGroup = name.charAt(i);
-			} else {
-				nextGroup += name.charAt(i);
-			}
-			isPrevAVowel = isCurrentAVowel;
-		}
-		groups.push(nextGroup);
-		return groups;
-	}
-	,__class__: src_core_FrenchGenerator
-});
-var src_core_EnglishGenerator = function(depth) {
-	if(depth == null) {
-		depth = 2;
-	}
-	src_core_BaseGenerator.call(this,"EN",depth);
-};
-$hxClasses["src.core.EnglishGenerator"] = src_core_EnglishGenerator;
-src_core_EnglishGenerator.__name__ = "src.core.EnglishGenerator";
-src_core_EnglishGenerator.__super__ = src_core_BaseGenerator;
-src_core_EnglishGenerator.prototype = $extend(src_core_BaseGenerator.prototype,{
-	cutName: function(name) {
-		name = name.toLowerCase();
-		var isPrevAVowel = src_core_EnglishGenerator.vowelList.indexOf(name.charAt(0)) != -1;
-		var groups = [];
-		var nextGroup = name.charAt(0);
-		var _g = 1;
-		var _g1 = name.length;
-		while(_g < _g1) {
-			var i = _g++;
-			var isCurrentAVowel = src_core_EnglishGenerator.vowelList.indexOf(name.charAt(i)) != -1;
-			var isCurrentAConsonant = src_core_EnglishGenerator.consonantList.indexOf(name.charAt(i)) != -1;
-			if(!isCurrentAVowel && !isCurrentAConsonant || isCurrentAVowel != isPrevAVowel) {
-				groups.push(nextGroup);
-				nextGroup = name.charAt(i);
-			} else {
-				nextGroup += name.charAt(i);
-			}
-			isPrevAVowel = isCurrentAVowel;
-		}
-		groups.push(nextGroup);
-		return groups;
-	}
-	,__class__: src_core_EnglishGenerator
-});
 var haxe_Serializer = function() {
 	this.buf = new StringBuf();
 	this.cache = [];
@@ -2198,6 +2090,11 @@ var haxe_ds_StringMap = function() {
 $hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
 haxe_ds_StringMap.__name__ = "haxe.ds.StringMap";
 haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.createCopy = function(h) {
+	var copy = new haxe_ds_StringMap();
+	for (var key in h) copy.h[key] = h[key];
+	return copy;
+};
 haxe_ds_StringMap.stringify = function(h) {
 	var s = "[";
 	var first = true;
@@ -2211,6 +2108,9 @@ haxe_ds_StringMap.prototype = {
 	get: function(key) {
 		return this.h[key];
 	}
+	,set: function(key,value) {
+		this.h[key] = value;
+	}
 	,keys: function() {
 		return new haxe_ds__$StringMap_StringMapKeyIterator(this.h);
 	}
@@ -2219,6 +2119,12 @@ haxe_ds_StringMap.prototype = {
 	}
 	,keyValueIterator: function() {
 		return new haxe_ds__$StringMap_StringMapKeyValueIterator(this.h);
+	}
+	,copy: function() {
+		return haxe_ds_StringMap.createCopy(this.h);
+	}
+	,clear: function() {
+		this.h = Object.create(null);
 	}
 	,__class__: haxe_ds_StringMap
 };
@@ -2271,16 +2177,13 @@ src_client_App.render = function(props) {
 			return src_utils_react_StateObject.get_state(generatorEn);
 		}
 	},[src_utils_react_StateObject.get_state(language),src_utils_react_StateObject.get_state(generatorFr),src_utils_react_StateObject.get_state(generatorEn),src_utils_react_StateObject.get_state(generatorJp),src_utils_react_StateObject.get_state(generatorCn)]);
-	var pokemonsFr = src_utils_react_ReactHooks_useState([]);
-	var pokemonsEn = src_utils_react_ReactHooks_useState([]);
-	var pokemonsJp = src_utils_react_ReactHooks_useState([]);
-	var pokemonsCn = src_utils_react_ReactHooks_useState([]);
 	var timerRef = React.useRef(null);
 	var randomons = src_utils_react_ReactHooks_useState([]);
 	var displayedRandomons = src_utils_react_ReactHooks_useState([]);
 	var selectedRandomon = src_utils_react_ReactHooks_useState(null);
 	var amount = src_utils_react_ReactHooks_useState(10);
-	var duration = src_utils_react_ReactHooks_useState(null);
+	var loadingDuration = src_utils_react_ReactHooks_useState(null);
+	var generationDuration = src_utils_react_ReactHooks_useState(null);
 	var copied = src_utils_react_ReactHooks_useState(false);
 	var copiedTimer = React.useRef(null);
 	var ball = React.useMemo(function() {
@@ -2289,18 +2192,7 @@ src_client_App.render = function(props) {
 		return React.createElement(ball,{ className : "ball", viewBox : "0 0 5.2916666 5.2916666"},React.createElement(ball1,{ },React.createElement(react_ReactType.fromString("path"),{ d : "M 2.6458333 0 A 2.6458333 2.6458333 0 0 0 0 2.6458333 A 2.6458333 2.6458333 0 0 0 2.6458333 5.2916667 A 2.6458333 2.6458333 0 0 0 5.2916667 2.6458333 A 2.6458333 2.6458333 0 0 0 2.6458333 0 z M 2.6458333 0.52916667 A 2.1166666 2.1166666 0 0 1 4.7454468 2.38125 L 3.670577 2.38125 A 1.0583333 1.0583333 0 0 0 2.6458333 1.5875 A 1.0583333 1.0583333 0 0 0 1.6231567 2.38125 L 0.54983724 2.38125 A 2.1166666 2.1166666 0 0 1 2.6458333 0.52916667 z M 2.6458333 2.1166667 A 0.5291667 0.52916676 0 0 1 3.175 2.6458333 A 0.5291667 0.52916676 0 0 1 2.6458333 3.175 A 0.5291667 0.52916676 0 0 1 2.1166667 2.6458333 A 0.5291667 0.52916676 0 0 1 2.6458333 2.1166667 z M 0.54983724 2.9104167 L 1.6231567 2.9104167 A 1.0583333 1.0583333 0 0 0 2.6458333 3.7041667 A 1.0583333 1.0583333 0 0 0 3.670577 2.9104167 L 4.7454468 2.9104167 A 2.1166666 2.1166666 0 0 1 2.6458333 4.7625 A 2.1166666 2.1166666 0 0 1 0.54983724 2.9104167 z "})));
 	},[]);
 	React.useEffect(function() {
-		var params = new URL(window.document.URL).searchParams;
-		var param = params.get("r");
-		if(param != null) {
-			try {
-				var serialized = haxe_crypto_Base64.decode(param).toString();
-				var decoded = haxe_Unserializer.run(serialized);
-				src_utils_react_StateObject.setState(selectedRandomon,decoded);
-			} catch( _g ) {
-				haxe_Log.trace("invalid arg",{ fileName : "src/client/App.hx", lineNumber : 81, className : "src.client.App", methodName : "render", customParams : [param]});
-				src_utils_react_StateObject.setState(selectedRandomon,null);
-			}
-		}
+		var t1 = HxOverrides.now() / 1000;
 		var file = haxe_Resource.getString("pokedex");
 		var pokemonsJson = [];
 		pokemonsJson = JSON.parse(file);
@@ -2317,35 +2209,54 @@ src_client_App.render = function(props) {
 			_pokemonsJp.push(new src_core_Randomon(pokemonJson.name.japanese,"JP",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
 			_pokemonsCn.push(new src_core_Randomon(pokemonJson.name.chinese,"CN",pokemonJson.type[0],pokemonJson.type[1],pokemonJson.base.hp,pokemonJson.base.attack,pokemonJson.base.defense,pokemonJson.base.spAttack,pokemonJson.base.spDefense,pokemonJson.base.speed));
 		}
-		src_utils_react_StateObject.setState(pokemonsFr,_pokemonsFr);
-		src_utils_react_StateObject.setState(pokemonsEn,_pokemonsEn);
-		src_utils_react_StateObject.setState(pokemonsJp,_pokemonsJp);
-		src_utils_react_StateObject.setState(pokemonsCn,_pokemonsCn);
+		var _generatorFr = new src_core_FrenchGenerator();
+		_generatorFr.processNames(_pokemonsFr);
+		src_utils_react_StateObject.setState(generatorFr,_generatorFr);
+		var _generatorEn = new src_core_EnglishGenerator();
+		_generatorEn.processNames(_pokemonsEn);
+		src_utils_react_StateObject.setState(generatorEn,_generatorEn);
+		var _generatorJp = new src_core_BaseGenerator("JP");
+		_generatorJp.processNames(_pokemonsJp);
+		src_utils_react_StateObject.setState(generatorJp,_generatorJp);
+		var _generatorCn = new src_core_BaseGenerator("CN");
+		_generatorCn.processNames(_pokemonsCn);
+		src_utils_react_StateObject.setState(generatorCn,_generatorCn);
+		var params = new URL(window.document.URL).searchParams;
+		var param = params.get("r");
+		if(param != null) {
+			try {
+				var serialized = haxe_crypto_Base64.decode(param).toString();
+				var decoded = haxe_Unserializer.run(serialized);
+				var gen;
+				switch(decoded.language) {
+				case "CN":
+					gen = _generatorCn;
+					break;
+				case "FR":
+					gen = _generatorFr;
+					break;
+				case "JP":
+					gen = _generatorJp;
+					break;
+				default:
+					gen = _generatorEn;
+				}
+				try {
+					decoded.groups = gen != null ? gen.cutName(decoded.name) : null;
+					decoded.stats = gen != null ? gen.deduceStats(decoded.groups,decoded.type) : null;
+					src_utils_react_StateObject.setState(selectedRandomon,decoded);
+				} catch( _g ) {
+					var e = haxe_Exception.caught(_g);
+					haxe_Log.trace("invalid process",{ fileName : "src/client/App.hx", lineNumber : 163, className : "src.client.App", methodName : "render", customParams : [e]});
+				}
+			} catch( _g ) {
+				haxe_Log.trace("invalid arg",{ fileName : "src/client/App.hx", lineNumber : 166, className : "src.client.App", methodName : "render", customParams : [param]});
+				src_utils_react_StateObject.setState(selectedRandomon,null);
+			}
+		}
+		var t2 = HxOverrides.now() / 1000;
+		src_utils_react_StateObject.setState(loadingDuration,t2 - t1);
 	},[]);
-	var tmp = src_utils_react_StateObject.get_state(pokemonsFr);
-	React.useEffect(function() {
-		var _generator = new src_core_FrenchGenerator();
-		_generator.processNames(src_utils_react_StateObject.get_state(pokemonsFr));
-		src_utils_react_StateObject.setState(generatorFr,_generator);
-	},[tmp != null ? tmp.length : null]);
-	var tmp = src_utils_react_StateObject.get_state(pokemonsEn);
-	React.useEffect(function() {
-		var _generator = new src_core_EnglishGenerator();
-		_generator.processNames(src_utils_react_StateObject.get_state(pokemonsEn));
-		src_utils_react_StateObject.setState(generatorEn,_generator);
-	},[tmp != null ? tmp.length : null]);
-	var tmp = src_utils_react_StateObject.get_state(pokemonsJp);
-	React.useEffect(function() {
-		var _generator = new src_core_BaseGenerator("JP");
-		_generator.processNames(src_utils_react_StateObject.get_state(pokemonsJp));
-		src_utils_react_StateObject.setState(generatorJp,_generator);
-	},[tmp != null ? tmp.length : null]);
-	var tmp = src_utils_react_StateObject.get_state(pokemonsCn);
-	React.useEffect(function() {
-		var _generator = new src_core_BaseGenerator("CN");
-		_generator.processNames(src_utils_react_StateObject.get_state(pokemonsCn));
-		src_utils_react_StateObject.setState(generatorCn,_generator);
-	},[tmp != null ? tmp.length : null]);
 	React.useEffect(function() {
 		if(src_utils_react_StateObject.get_state(selectedRandomon) == null) {
 			var location = $global.location;
@@ -2373,7 +2284,7 @@ src_client_App.render = function(props) {
 		var _randomons = _g;
 		src_utils_react_StateObject.setState(randomons,_randomons);
 		var t2 = HxOverrides.now() / 1000;
-		src_utils_react_StateObject.setState(duration,t2 - t1);
+		src_utils_react_StateObject.setState(generationDuration,t2 - t1);
 	};
 	var pushRandomon = null;
 	pushRandomon = function(list) {
@@ -2456,15 +2367,18 @@ src_client_App.render = function(props) {
 	}}) : null;
 	var tmp3 = react_ReactType.fromString("div");
 	var tmp4 = react_ReactType.fromString("span");
+	var tmp5 = src_utils_react_StateObject.get_state(loadingDuration) != null ? "initial loading in " + Math.round(src_utils_react_StateObject.get_state(loadingDuration) * 1000) + " ms" : null;
+	var tmp6 = React.createElement(tmp4,{ },tmp5);
+	var tmp4 = react_ReactType.fromString("span");
 	var tmp5;
-	if(src_utils_react_StateObject.get_state(duration) != null) {
-		var tmp6 = src_utils_react_StateObject.get_state(randomons);
-		tmp5 = (tmp6 != null ? tmp6.length : null) + " randomons generated in " + Math.round(src_utils_react_StateObject.get_state(duration) * 1000) + " ms";
+	if(src_utils_react_StateObject.get_state(generationDuration) != null) {
+		var tmp8 = src_utils_react_StateObject.get_state(randomons);
+		tmp5 = (tmp8 != null ? tmp8.length : null) + " randomons generated in " + Math.round(src_utils_react_StateObject.get_state(generationDuration) * 1000) + " ms";
 	} else {
 		tmp5 = null;
 	}
-	var tmp6 = React.createElement(tmp3,{ className : "footer"},React.createElement(tmp4,{ },tmp5));
-	return React.createElement(tmp,{ },tmp7,tmp1,tmp2,tmp6);
+	var tmp8 = React.createElement(tmp3,{ className : "footer"},tmp6,React.createElement(tmp4,{ },tmp5));
+	return React.createElement(tmp,{ },tmp7,tmp1,tmp2,tmp8);
 };
 var JsxStaticInit_$_$ = function() { };
 $hxClasses["JsxStaticInit__"] = JsxStaticInit_$_$;
@@ -2617,6 +2531,15 @@ var haxe_Exception = function(message,previous,native) {
 };
 $hxClasses["haxe.Exception"] = haxe_Exception;
 haxe_Exception.__name__ = "haxe.Exception";
+haxe_Exception.caught = function(value) {
+	if(((value) instanceof haxe_Exception)) {
+		return value;
+	} else if(((value) instanceof Error)) {
+		return new haxe_Exception(value.message,null,value);
+	} else {
+		return new haxe_ValueException(value,null,value);
+	}
+};
 haxe_Exception.thrown = function(value) {
 	if(((value) instanceof haxe_Exception)) {
 		return value.get_native();
@@ -2629,7 +2552,13 @@ haxe_Exception.thrown = function(value) {
 };
 haxe_Exception.__super__ = Error;
 haxe_Exception.prototype = $extend(Error.prototype,{
-	get_native: function() {
+	toString: function() {
+		return this.get_message();
+	}
+	,get_message: function() {
+		return this.message;
+	}
+	,get_native: function() {
 		return this.__nativeException;
 	}
 	,__class__: haxe_Exception
@@ -2651,7 +2580,10 @@ $hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
 haxe_ds_IntMap.__name__ = "haxe.ds.IntMap";
 haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
 haxe_ds_IntMap.prototype = {
-	get: function(key) {
+	set: function(key,value) {
+		this.h[key] = value;
+	}
+	,get: function(key) {
 		return this.h[key];
 	}
 	,keys: function() {
@@ -2661,6 +2593,15 @@ haxe_ds_IntMap.prototype = {
 	}
 	,keyValueIterator: function() {
 		return new haxe_iterators_MapKeyValueIterator(this);
+	}
+	,copy: function() {
+		var copied = new haxe_ds_IntMap();
+		var key = this.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			copied.h[key1] = this.h[key1];
+		}
+		return copied;
 	}
 	,toString: function() {
 		var s_b = "";
@@ -2678,6 +2619,9 @@ haxe_ds_IntMap.prototype = {
 		}
 		s_b += "]";
 		return s_b;
+	}
+	,clear: function() {
+		this.h = { };
 	}
 	,__class__: haxe_ds_IntMap
 };
@@ -2737,6 +2681,18 @@ haxe_ds_ObjectMap.prototype = {
 	}
 	,keyValueIterator: function() {
 		return new haxe_iterators_MapKeyValueIterator(this);
+	}
+	,copy: function() {
+		var copied = new haxe_ds_ObjectMap();
+		var key = this.keys();
+		while(key.hasNext()) {
+			var key1 = key.next();
+			copied.set(key1,this.h[key1.__id__]);
+		}
+		return copied;
+	}
+	,clear: function() {
+		this.h = { __keys__ : { }};
 	}
 	,__class__: haxe_ds_ObjectMap
 };
@@ -3010,165 +2966,78 @@ src_core_RandomToolbox.pickWeightedRandom_Int_Float = function(values) {
 	}
 	return lastId;
 };
-src_core_RandomToolbox.normalizeWeightsRecursive_String_Int = function(input) {
-	var output = new haxe_ds_StringMap();
-	var h = input.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g_key = key;
-		var _g_value = _g_h[key];
-		var key1 = _g_key;
-		var subMap = _g_value;
-		var _subMap = new haxe_ds_IntMap();
-		var total = 0;
-		var map = subMap;
-		var _g_map = map;
-		var _g_keys1 = map.keys();
-		while(_g_keys1.hasNext()) {
-			var key2 = _g_keys1.next();
-			var _g_value1 = _g_map.get(key2);
-			var _g_key1 = key2;
-			var _ = _g_key1;
-			var weight = _g_value1;
-			total += weight;
-		}
-		var map1 = subMap;
-		var _g_map1 = map1;
-		var _g_keys2 = map1.keys();
-		while(_g_keys2.hasNext()) {
-			var key3 = _g_keys2.next();
-			var _g_value2 = _g_map1.get(key3);
-			var _g_key2 = key3;
-			var subKey = _g_key2;
-			var weight1 = _g_value2;
-			var v = weight1 / total;
-			_subMap.h[subKey] = v;
-		}
-		output.h[key1] = _subMap;
-	}
-	return output;
-};
-src_core_RandomToolbox.normalizeWeightsRecursive_String_String = function(input) {
-	var output = new haxe_ds_StringMap();
-	var h = input.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g_key = key;
-		var _g_value = _g_h[key];
-		var key1 = _g_key;
-		var subMap = _g_value;
-		var _subMap = new haxe_ds_StringMap();
-		var total = 0;
-		var h = subMap.h;
-		var _g_h1 = h;
-		var _g_keys1 = Object.keys(h);
-		var _g_length1 = _g_keys1.length;
-		var _g_current1 = 0;
-		while(_g_current1 < _g_length1) {
-			var key2 = _g_keys1[_g_current1++];
-			var _g_key1 = key2;
-			var _g_value1 = _g_h1[key2];
-			var _ = _g_key1;
-			var weight = _g_value1;
-			total += weight;
-		}
-		var h1 = subMap.h;
-		var _g_h2 = h1;
-		var _g_keys2 = Object.keys(h1);
-		var _g_length2 = _g_keys2.length;
-		var _g_current2 = 0;
-		while(_g_current2 < _g_length2) {
-			var key3 = _g_keys2[_g_current2++];
-			var _g_key2 = key3;
-			var _g_value2 = _g_h2[key3];
-			var subKey = _g_key2;
-			var weight1 = _g_value2;
-			var v = weight1 / total;
-			_subMap.h[subKey] = v;
-		}
-		output.h[key1] = _subMap;
-	}
-	return output;
-};
-src_core_RandomToolbox.normalizeWeights_String = function(input) {
-	var output = new haxe_ds_StringMap();
+src_core_RandomToolbox.normalizeWeights = function(input) {
+	var output = input.copy();
+	output.clear();
 	var total = 0;
-	var h = input.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g_key = key;
-		var _g_value = _g_h[key];
-		var _ = _g_key;
-		var weight = _g_value;
+	var _g = input.keyValueIterator();
+	while(_g.hasNext()) {
+		var _g1 = _g.next();
+		var _ = _g1.key;
+		var weight = _g1.value;
 		total += weight;
 	}
-	var h = input.h;
-	var _g_h = h;
-	var _g_keys = Object.keys(h);
-	var _g_length = _g_keys.length;
-	var _g_current = 0;
-	while(_g_current < _g_length) {
-		var key = _g_keys[_g_current++];
-		var _g_key = key;
-		var _g_value = _g_h[key];
-		var subKey = _g_key;
-		var weight = _g_value;
+	var _g = input.keyValueIterator();
+	while(_g.hasNext()) {
+		var _g1 = _g.next();
+		var subKey = _g1.key;
+		var weight = _g1.value;
 		var v = weight / total;
-		output.h[subKey] = v;
+		output.set(subKey,v);
 	}
 	return output;
 };
-src_core_RandomToolbox.normalizeWeights_Int = function(input) {
-	var output = new haxe_ds_IntMap();
-	var total = 0;
-	var map = input;
-	var _g_map = map;
-	var _g_keys = map.keys();
-	while(_g_keys.hasNext()) {
-		var key = _g_keys.next();
-		var _g_value = _g_map.get(key);
-		var _g_key = key;
-		var _ = _g_key;
-		var weight = _g_value;
-		total += weight;
-	}
-	var map = input;
-	var _g_map = map;
-	var _g_keys = map.keys();
-	while(_g_keys.hasNext()) {
-		var key = _g_keys.next();
-		var _g_value = _g_map.get(key);
-		var _g_key = key;
-		var subKey = _g_key;
-		var weight = _g_value;
-		var v = weight / total;
-		output.h[subKey] = v;
+src_core_RandomToolbox.normalizeWeightsRecursive = function(input) {
+	var output = input.copy();
+	output.clear();
+	var _g = input.keyValueIterator();
+	while(_g.hasNext()) {
+		var _g1 = _g.next();
+		var key = _g1.key;
+		var subMap = _g1.value;
+		var _subMap = subMap.copy();
+		_subMap.clear();
+		var total = 0;
+		var _g2 = subMap.keyValueIterator();
+		while(_g2.hasNext()) {
+			var _g3 = _g2.next();
+			var _ = _g3.key;
+			var weight = _g3.value;
+			total += weight;
+		}
+		var _g4 = subMap.keyValueIterator();
+		while(_g4.hasNext()) {
+			var _g5 = _g4.next();
+			var subKey = _g5.key;
+			var weight1 = _g5.value;
+			var v = weight1 / total;
+			_subMap.set(subKey,v);
+		}
+		output.set(key,_subMap);
 	}
 	return output;
 };
 var src_core_RandomonStats = function(name,size,type,secondType,hp,attack,defense,spAttack,spDefense,speed) {
-	this.name = name;
-	this.size = size;
-	this.type = type;
-	this.secondType = secondType;
-	this.hp = hp;
-	this.attack = attack;
-	this.defense = defense;
-	this.spAttack = spAttack;
-	this.spDefense = spDefense;
-	this.speed = speed;
+	var tmp = name;
+	this.name = tmp != null ? tmp : [];
+	var tmp = size;
+	this.size = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = type;
+	this.type = tmp != null ? tmp : new haxe_ds_StringMap();
+	var tmp = secondType;
+	this.secondType = tmp != null ? tmp : new haxe_ds_StringMap();
+	var tmp = hp;
+	this.hp = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = attack;
+	this.attack = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = defense;
+	this.defense = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = spAttack;
+	this.spAttack = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = spDefense;
+	this.spDefense = tmp != null ? tmp : new haxe_ds_IntMap();
+	var tmp = speed;
+	this.speed = tmp != null ? tmp : new haxe_ds_IntMap();
 };
 $hxClasses["src.core.RandomonStats"] = src_core_RandomonStats;
 src_core_RandomonStats.__name__ = "src.core.RandomonStats";
@@ -3210,12 +3079,6 @@ var tink_core_Noise = {};
 tink_core_Noise.ofAny = function(t) {
 	return null;
 };
-var tink_macro_Bouncer = function() { };
-$hxClasses["tink.macro.Bouncer"] = tink_macro_Bouncer;
-tink_macro_Bouncer.__name__ = "tink.macro.Bouncer";
-tink_macro_Bouncer.makeOuter = function(a) {
-	return null;
-};
 function $getIterator(o) { if( o instanceof Array ) return new haxe_iterators_ArrayIterator(o); else return o.iterator(); }
 $global.$haxeUID |= 0;
 if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
@@ -3248,12 +3111,12 @@ src_client_RandomonLine.__jsxStatic = src_client_RandomonLine.render;
 src_client_RandomonList.__jsxStatic = src_client_RandomonList.render;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
-haxe_Unserializer.DEFAULT_RESOLVER = new haxe__$Unserializer_DefaultResolver();
-haxe_Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 src_core_FrenchGenerator.vowelList = "aàâeéèêëiîïouùy";
 src_core_FrenchGenerator.consonantList = "bcçdfghjklmnpqrstvwxz";
 src_core_EnglishGenerator.vowelList = "aeiouy";
 src_core_EnglishGenerator.consonantList = "bcdfghjklmnpqrstvwxz";
+haxe_Unserializer.DEFAULT_RESOLVER = new haxe__$Unserializer_DefaultResolver();
+haxe_Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe_Serializer.USE_CACHE = false;
 haxe_Serializer.USE_ENUM_INDEX = false;
 haxe_Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
