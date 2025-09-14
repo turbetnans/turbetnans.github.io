@@ -71,6 +71,51 @@ src_utils_react_StateObject.get_state = function(this1) {
 src_utils_react_StateObject.setState = function(this1,t) {
 	this1[1](t);
 };
+var Reflect = function() { };
+$hxClasses["Reflect"] = Reflect;
+Reflect.__name__ = "Reflect";
+Reflect.field = function(o,field) {
+	try {
+		return o[field];
+	} catch( _g ) {
+		return null;
+	}
+};
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
+			a.push(f);
+		}
+		}
+	}
+	return a;
+};
+Reflect.isFunction = function(f) {
+	if(typeof(f) == "function") {
+		return !(f.__name__ || f.__ename__);
+	} else {
+		return false;
+	}
+};
+Reflect.compare = function(a,b) {
+	if(a == b) {
+		return 0;
+	} else if(a > b) {
+		return 1;
+	} else {
+		return -1;
+	}
+};
+Reflect.deleteField = function(o,field) {
+	if(!Object.prototype.hasOwnProperty.call(o,field)) {
+		return false;
+	}
+	delete(o[field]);
+	return true;
+};
 Math.__name__ = "Math";
 var react_ReactType = {};
 react_ReactType.fromString = function(s) {
@@ -331,54 +376,87 @@ $hxClasses["src.client.Statistics"] = src_client_Statistics;
 src_client_Statistics.__name__ = "src.client.Statistics";
 src_client_Statistics.render = function(props) {
 	var collapsed = src_utils_react_ReactHooks_useState(true);
-	var className = "statistics";
-	if(src_utils_react_StateObject.get_state(collapsed)) {
-		className += " collapsed";
-	}
-	if(props.fullyCollapsed) {
-		className += " collapsed fully-collapsed";
-	}
-	React.useEffect(function() {
-		if(props.fullyCollapsed == true) {
-			src_utils_react_StateObject.setState(collapsed,true);
+	var keys = React.useMemo(function() {
+		if(props.stats == null) {
+			return [];
 		}
-	},[props.fullyCollapsed]);
-	var selectedFound = false;
-	var content = [];
-	var max = 0;
-	if(props.stats != null) {
+		var _g = [];
+		var k = props.stats.keys();
+		while(k.hasNext()) {
+			var k1 = k.next();
+			_g.push(k1);
+		}
+		var _keys = _g;
+		_keys.sort(function(x,y) {
+			return Reflect.compare(props.stats.get(y),props.stats.get(x));
+		});
+		return _keys;
+	},[props.stats]);
+	var max = React.useMemo(function() {
+		var _max = 0;
+		if(props.stats == null) {
+			return _max;
+		}
 		var _g = props.stats.keyValueIterator();
 		while(_g.hasNext()) {
 			var _g1 = _g.next();
 			var _ = _g1.key;
 			var weight = _g1.value;
-			max = Math.max(max,weight);
+			var tmp = weight;
+			_max = Math.max(_max,tmp != null ? tmp : 0);
 		}
-		var tmp = max;
-		max = tmp != null ? tmp : 1;
-		var _g = props.stats.keyValueIterator();
-		while(_g.hasNext()) {
-			var _g1 = _g.next();
-			var data = _g1.key;
-			var weight = _g1.value;
+		return _max;
+	},[props.stats]);
+	var content = React.useMemo(function() {
+		var _content = [];
+		if(props.stats == null || keys.length == 0) {
+			return _content;
+		}
+		var _g = 0;
+		while(_g < keys.length) {
+			var data = keys[_g];
+			++_g;
+			var tmp = props.stats.get(data);
+			var weight = tmp != null ? tmp : 0;
 			var percentage = 100 * weight / max;
 			var selected = data == props.selected ? " selected" : "";
-			selectedFound = selectedFound || data == props.selected;
-			var tmp = react_ReactType.fromString("div");
-			var tmp1 = Std.string(data);
-			content.push(React.createElement(tmp,{ key : "" + Std.string(data) + weight, className : selected},React.createElement(react_ReactType.fromString("div"),{ className : "label" + selected},"" + tmp1),React.createElement(react_ReactType.fromString("div"),{ className : "bar-wrapper" + selected},React.createElement(react_ReactType.fromString("div"),{ className : "bar" + selected, style : { width : percentage + "%"}})),React.createElement(react_ReactType.fromString("div"),{ className : "percentage" + selected},Math.round(weight * 10000) / 100," %")));
+			var value = Math.round(weight * 10000) / 100;
+			var prefix = value != 100 && value < 10 ? " " : "";
+			var suffix = value == 100 ? " " : value == Math.floor(value) ? ".00 " : value == Math.floor(10 * value) / 10 ? "0 " : " ";
+			var content = react_ReactType.fromString("div");
+			var content1 = Std.string(data);
+			_content.push(React.createElement(content,{ key : "" + Std.string(data) + weight, className : selected},React.createElement(react_ReactType.fromString("div"),{ className : "label" + selected},"" + content1),React.createElement(react_ReactType.fromString("div"),{ className : "bar-wrapper" + selected},React.createElement(react_ReactType.fromString("div"),{ className : "bar" + selected, style : { width : percentage + "%"}})),React.createElement(react_ReactType.fromString("div"),{ className : "percentage" + selected},React.createElement(react_ReactType.fromString("span"),{ style : { whiteSpace : "pre"}},prefix + value + suffix + "%"))));
 		}
-	}
+		return _content;
+	},[props.stats,props.selected,keys]);
+	var selectedFound = React.useMemo(function() {
+		var tmp = props.stats;
+		var tmp1 = tmp != null ? tmp.exists(props.selected) : null;
+		if(tmp1 != null) {
+			return tmp1;
+		} else {
+			return false;
+		}
+	},[props.stats,props.selected]);
+	React.useEffect(function() {
+		src_utils_react_StateObject.setState(collapsed,function(c) {
+			if(!props.fullyCollapsed) {
+				return c;
+			} else {
+				return true;
+			}
+		});
+	},[props.fullyCollapsed]);
+	var className = props.fullyCollapsed ? "statistics collapsed fully-collapsed" : src_utils_react_StateObject.get_state(collapsed) ? "statistics collapsed" : "statistics";
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = props.fullyCollapsed ? null : function() {
+	var tmp2 = React.createElement(react_ReactType.fromString("p"),{ className : "title", onClick : function() {
 		src_utils_react_StateObject.setState(collapsed,function(c) {
 			return !c;
 		});
-	};
-	var tmp3 = React.createElement(react_ReactType.fromString("p"),{ className : "title", onClick : tmp2},props.title);
-	var tmp2 = selectedFound ? null : "Not found : " + Std.string(props.selected);
-	var tmp4 = React.createElement(tmp1,{ className : className},tmp3,content,React.createElement(react_ReactType.fromString("div"),{ className : "selected"},tmp2));
+	}},props.title);
+	var tmp3 = selectedFound ? null : "Not found : " + Std.string(props.selected);
+	var tmp4 = React.createElement(tmp1,{ className : className},tmp2,content,React.createElement(react_ReactType.fromString("div"),{ className : "selected"},tmp3));
 	return React.createElement(tmp,{ },tmp4);
 };
 var src_client_RandomonDetails = function() { };
@@ -387,79 +465,65 @@ src_client_RandomonDetails.__name__ = "src.client.RandomonDetails";
 src_client_RandomonDetails.render = function(props) {
 	var displayedGroup = src_utils_react_ReactHooks_useState(0);
 	var displayedStat = src_utils_react_ReactHooks_useState(0);
+	if(props.randomon == null) {
+		return React.createElement(react_ReactType.fromString("div"),{ className : "body"});
+	}
 	var typesSet = props.randomon.type != null;
 	var baseStatsSet = props.randomon.hp != null || props.randomon.attack != null || props.randomon.defense != null || props.randomon.spAttack != null || props.randomon.spDefense != null || props.randomon.speed != null;
 	var statsSet = props.randomon.stats != null;
 	var groupsSet = props.randomon.groups != null;
-	if(props.randomon == null) {
-		return React.createElement(react_ReactType.fromString("div"),{ className : "body"});
-	}
-	var tmp = react_ReactType.fromComp(React.Fragment);
-	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = props.randomon.name;
-	var tmp3 = React.createElement(react_ReactType.fromString("div"),{ className : "title"},tmp2 != null ? tmp2 : "MissingNo.");
-	var tmp2;
-	if(typesSet) {
-		var tmp4 = react_ReactType.fromComp(React.Fragment);
-		var tmp5 = react_ReactType.fromString("div");
-		var tmp6 = react_ReactType.fromString("p");
-		var tmp7;
+	var typesTemplate = function() {
+		var typesTemplate = react_ReactType.fromComp(React.Fragment);
+		var typesTemplate1 = react_ReactType.fromString("div");
+		var typesTemplate2 = react_ReactType.fromString("p");
+		var typesTemplate3;
 		if(props.randomon.secondType != "Ø") {
-			var tmp8 = react_ReactType.fromComp(React.Fragment);
-			var tmp9 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.type);
-			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.secondType);
-			tmp7 = React.createElement(tmp8,{ },tmp9,tmp10);
+			var typesTemplate4 = react_ReactType.fromComp(React.Fragment);
+			var typesTemplate5 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.type);
+			var typesTemplate6 = React.createElement(react_ReactType.fromString("span"),{ },props.randomon.secondType);
+			typesTemplate3 = React.createElement(typesTemplate4,{ },typesTemplate5,typesTemplate6);
 		} else {
-			tmp7 = null;
+			typesTemplate3 = null;
 		}
-		var tmp8;
+		var typesTemplate4;
 		if(props.randomon.secondType == "Ø") {
-			var tmp9 = react_ReactType.fromComp(React.Fragment);
-			var tmp10 = React.createElement(react_ReactType.fromString("span"),{ className : "monoType"},props.randomon.type);
-			tmp8 = React.createElement(tmp9,{ },tmp10);
+			var typesTemplate5 = react_ReactType.fromComp(React.Fragment);
+			var typesTemplate6 = React.createElement(react_ReactType.fromString("span"),{ className : "monoType"},props.randomon.type);
+			typesTemplate4 = React.createElement(typesTemplate5,{ },typesTemplate6);
 		} else {
-			tmp8 = null;
+			typesTemplate4 = null;
 		}
-		var tmp9 = React.createElement(tmp5,{ className : "types"},React.createElement(tmp6,{ },tmp7,tmp8));
-		tmp2 = React.createElement(tmp4,{ },tmp9);
-	} else {
-		tmp2 = null;
-	}
-	var tmp4;
-	if(baseStatsSet) {
-		var tmp5 = react_ReactType.fromComp(React.Fragment);
-		var tmp6 = react_ReactType.fromString("div");
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"HP");
-		var tmp9 = React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.hp));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"ATK");
-		var tmp10 = React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.attack));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"DEF");
-		var tmp11 = React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.defense));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"Sp ATK");
-		var tmp12 = React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.spAttack));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"Sp DEF");
-		var tmp13 = React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.spDefense));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = React.createElement(react_ReactType.fromString("span"),{ },"Speed");
-		var tmp14 = React.createElement(tmp6,{ className : "stats"},tmp9,tmp10,tmp11,tmp12,tmp13,React.createElement(tmp7,{ },tmp8,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.speed)));
-		tmp4 = React.createElement(tmp5,{ },tmp14);
-	} else {
-		tmp4 = null;
-	}
-	var tmp5;
-	if(statsSet) {
-		var tmp6 = react_ReactType.fromComp(React.Fragment);
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8;
-		if(groupsSet) {
-			var tmp9 = react_ReactType.fromComp(React.Fragment);
-			var tmp10 = react_ReactType.fromString("div");
-			var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+		var typesTemplate5 = React.createElement(typesTemplate1,{ className : "types"},React.createElement(typesTemplate2,{ },typesTemplate3,typesTemplate4));
+		return React.createElement(typesTemplate,{ },typesTemplate5);
+	};
+	var baseStatsTemplate = function() {
+		var baseStatsTemplate = react_ReactType.fromComp(React.Fragment);
+		var baseStatsTemplate1 = react_ReactType.fromString("div");
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"HP");
+		var baseStatsTemplate4 = React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.hp));
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"ATK");
+		var baseStatsTemplate5 = React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.attack));
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"DEF");
+		var baseStatsTemplate6 = React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.defense));
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"Sp ATK");
+		var baseStatsTemplate7 = React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.spAttack));
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"Sp DEF");
+		var baseStatsTemplate8 = React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.spDefense));
+		var baseStatsTemplate2 = react_ReactType.fromString("div");
+		var baseStatsTemplate3 = React.createElement(react_ReactType.fromString("span"),{ },"Speed");
+		var baseStatsTemplate9 = React.createElement(baseStatsTemplate1,{ className : "stats"},baseStatsTemplate4,baseStatsTemplate5,baseStatsTemplate6,baseStatsTemplate7,baseStatsTemplate8,React.createElement(baseStatsTemplate2,{ },baseStatsTemplate3,React.createElement(react_ReactType.fromString("span"),{ },props.randomon.speed)));
+		return React.createElement(baseStatsTemplate,{ },baseStatsTemplate9);
+	};
+	var statsTemplate = function() {
+		var groupStatsTemplate = function() {
+			var groupStatsTemplate = react_ReactType.fromComp(React.Fragment);
+			var groupStatsTemplate1 = react_ReactType.fromString("div");
+			var groupStatsTemplate2 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 				src_utils_react_StateObject.setState(displayedGroup,function(g) {
 					if(g <= 0) {
 						var tmp = props.randomon.groups;
@@ -477,12 +541,12 @@ src_client_RandomonDetails.render = function(props) {
 				var _g_key = _g_current++;
 				var n = _g_key;
 				var group = _g_value;
-				var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-				var tmp13 = src_utils_react_StateObject.get_state(displayedGroup) != n;
-				var tmp14 = props.randomon.stats;
-				_g.push(React.createElement(tmp12,{ key : n, title : "Name stats " + (n + 1), fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.name[src_utils_react_StateObject.get_state(displayedGroup)] : null, selected : group}));
+				var groupStatsTemplate3 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+				var groupStatsTemplate4 = src_utils_react_StateObject.get_state(displayedGroup) != n;
+				var tmp = props.randomon.stats;
+				_g.push(React.createElement(groupStatsTemplate3,{ key : n, title : "Name stats " + (n + 1), fullyCollapsed : groupStatsTemplate4, stats : tmp != null ? tmp.name[n] : null, selected : group}));
 			}
-			var tmp12 = React.createElement(tmp10,{ className : "navigation"},tmp11,_g,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+			var groupStatsTemplate3 = React.createElement(groupStatsTemplate1,{ className : "navigation"},groupStatsTemplate2,_g,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 				src_utils_react_StateObject.setState(displayedGroup,function(g) {
 					var tmp = props.randomon.groups;
 					if(g >= (tmp != null ? tmp.length : null) - 1) {
@@ -492,23 +556,24 @@ src_client_RandomonDetails.render = function(props) {
 					}
 				});
 			}},">"));
-			tmp8 = React.createElement(tmp9,{ },tmp12);
-		} else {
-			tmp8 = null;
-		}
-		var tmp9 = props.randomon.stats;
-		var tmp10 = tmp9 != null ? tmp9.size : null;
-		var tmp9 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Name size stats", stats : tmp10, selected : props.randomon.name.length}));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = props.randomon.stats;
-		var tmp10 = tmp8 != null ? tmp8.type : null;
-		var tmp8 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "First type stats", stats : tmp10, selected : props.randomon.type});
-		var tmp10 = props.randomon.stats;
-		var tmp11 = tmp10 != null ? tmp10.secondType : null;
-		var tmp10 = React.createElement(tmp7,{ className : "statistics-wrapper"},tmp8,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Second type stats", stats : tmp11, selected : props.randomon.secondType}));
-		var tmp7 = react_ReactType.fromString("div");
-		var tmp8 = react_ReactType.fromString("div");
-		var tmp11 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+			return React.createElement(groupStatsTemplate,{ },groupStatsTemplate3);
+		};
+		var statsTemplate = react_ReactType.fromComp(React.Fragment);
+		var statsTemplate1 = react_ReactType.fromString("div");
+		var statsTemplate2 = groupsSet ? groupStatsTemplate() : null;
+		var tmp = props.randomon.stats;
+		var statsTemplate3 = tmp != null ? tmp.size : null;
+		var statsTemplate4 = React.createElement(statsTemplate1,{ className : "statistics-wrapper"},statsTemplate2,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Name size stats", stats : statsTemplate3, selected : props.randomon.name.length}));
+		var statsTemplate1 = react_ReactType.fromString("div");
+		var tmp = props.randomon.stats;
+		var statsTemplate2 = tmp != null ? tmp.type : null;
+		var statsTemplate3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "First type stats", stats : statsTemplate2, selected : props.randomon.type});
+		var tmp = props.randomon.stats;
+		var statsTemplate2 = tmp != null ? tmp.secondType : null;
+		var statsTemplate5 = React.createElement(statsTemplate1,{ className : "statistics-wrapper"},statsTemplate3,React.createElement(react_ReactType.fromFunctionWithProps(src_client_Statistics.render),{ title : "Second type stats", stats : statsTemplate2, selected : props.randomon.secondType}));
+		var statsTemplate1 = react_ReactType.fromString("div");
+		var statsTemplate2 = react_ReactType.fromString("div");
+		var statsTemplate3 = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 			src_utils_react_StateObject.setState(displayedStat,function(g) {
 				if(g <= 0) {
 					return 5;
@@ -517,31 +582,31 @@ src_client_RandomonDetails.render = function(props) {
 				}
 			});
 		}},"<");
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 0;
-		var tmp14 = props.randomon.stats;
-		var tmp15 = React.createElement(tmp12,{ title : "HP stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.hp : null, selected : props.randomon.hp});
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 1;
-		var tmp14 = props.randomon.stats;
-		var tmp16 = React.createElement(tmp12,{ title : "Attack stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.attack : null, selected : props.randomon.attack});
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 2;
-		var tmp14 = props.randomon.stats;
-		var tmp17 = React.createElement(tmp12,{ title : "Defense stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.defense : null, selected : props.randomon.defense});
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 3;
-		var tmp14 = props.randomon.stats;
-		var tmp18 = React.createElement(tmp12,{ title : "Sp Attack stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.spAttack : null, selected : props.randomon.spAttack});
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 4;
-		var tmp14 = props.randomon.stats;
-		var tmp19 = React.createElement(tmp12,{ title : "Sp Defense stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.spDefense : null, selected : props.randomon.spDefense});
-		var tmp12 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
-		var tmp13 = src_utils_react_StateObject.get_state(displayedStat) != 5;
-		var tmp14 = props.randomon.stats;
-		var tmp20 = React.createElement(tmp12,{ title : "Speed stats", fullyCollapsed : tmp13, stats : tmp14 != null ? tmp14.speed : null, selected : props.randomon.speed});
-		var tmp12 = React.createElement(tmp7,{ className : "statistics-wrapper"},React.createElement(tmp8,{ className : "navigation"},tmp11,tmp15,tmp16,tmp17,tmp18,tmp19,tmp20,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 0;
+		var tmp = props.randomon.stats;
+		var statsTemplate8 = React.createElement(statsTemplate6,{ title : "HP stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.hp : null, selected : props.randomon.hp});
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 1;
+		var tmp = props.randomon.stats;
+		var statsTemplate9 = React.createElement(statsTemplate6,{ title : "Attack stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.attack : null, selected : props.randomon.attack});
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 2;
+		var tmp = props.randomon.stats;
+		var statsTemplate10 = React.createElement(statsTemplate6,{ title : "Defense stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.defense : null, selected : props.randomon.defense});
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 3;
+		var tmp = props.randomon.stats;
+		var statsTemplate11 = React.createElement(statsTemplate6,{ title : "Sp Attack stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.spAttack : null, selected : props.randomon.spAttack});
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 4;
+		var tmp = props.randomon.stats;
+		var statsTemplate12 = React.createElement(statsTemplate6,{ title : "Sp Defense stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.spDefense : null, selected : props.randomon.spDefense});
+		var statsTemplate6 = react_ReactType.fromFunctionWithProps(src_client_Statistics.render);
+		var statsTemplate7 = src_utils_react_StateObject.get_state(displayedStat) != 5;
+		var tmp = props.randomon.stats;
+		var statsTemplate13 = React.createElement(statsTemplate6,{ title : "Speed stats", fullyCollapsed : statsTemplate7, stats : tmp != null ? tmp.speed : null, selected : props.randomon.speed});
+		var statsTemplate6 = React.createElement(statsTemplate1,{ className : "statistics-wrapper"},React.createElement(statsTemplate2,{ className : "navigation"},statsTemplate3,statsTemplate8,statsTemplate9,statsTemplate10,statsTemplate11,statsTemplate12,statsTemplate13,React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
 			src_utils_react_StateObject.setState(displayedStat,function(g) {
 				if(g >= 5) {
 					return 0;
@@ -550,10 +615,15 @@ src_client_RandomonDetails.render = function(props) {
 				}
 			});
 		}},">")));
-		tmp5 = React.createElement(tmp6,{ },tmp9,tmp10,tmp12);
-	} else {
-		tmp5 = null;
-	}
+		return React.createElement(statsTemplate,{ },statsTemplate4,statsTemplate5,statsTemplate6);
+	};
+	var tmp = react_ReactType.fromComp(React.Fragment);
+	var tmp1 = react_ReactType.fromString("div");
+	var tmp2 = props.randomon.name;
+	var tmp3 = React.createElement(react_ReactType.fromString("div"),{ className : "title"},tmp2 != null ? tmp2 : "MissingNo.");
+	var tmp2 = typesSet ? typesTemplate() : null;
+	var tmp4 = baseStatsSet ? baseStatsTemplate() : null;
+	var tmp5 = statsSet ? statsTemplate() : null;
 	var tmp6 = React.createElement(tmp1,{ id : "details", className : "body"},tmp3,tmp2,tmp4,tmp5);
 	return React.createElement(tmp,{ },tmp6);
 };
@@ -2105,7 +2175,10 @@ haxe_ds_StringMap.stringify = function(h) {
 	return s + "]";
 };
 haxe_ds_StringMap.prototype = {
-	get: function(key) {
+	exists: function(key) {
+		return Object.prototype.hasOwnProperty.call(this.h,key);
+	}
+	,get: function(key) {
 		return this.h[key];
 	}
 	,set: function(key,value) {
@@ -2289,13 +2362,13 @@ src_client_App.render = function(props) {
 	var pushRandomon = null;
 	pushRandomon = function(list) {
 		if(list.length > 0) {
-			var randomon = list.splice(0,20);
+			var randomon = list.splice(0,1);
 			src_utils_react_StateObject.setState(displayedRandomons,function(prev) {
 				return prev.concat(randomon);
 			});
 			timerRef.current = haxe_Timer.delay(function() {
 				pushRandomon(list);
-			},100);
+			},0);
 		}
 	};
 	React.useEffect(function() {
@@ -2404,42 +2477,6 @@ Lambda.count = function(it,pred) {
 		}
 	}
 	return n;
-};
-var Reflect = function() { };
-$hxClasses["Reflect"] = Reflect;
-Reflect.__name__ = "Reflect";
-Reflect.field = function(o,field) {
-	try {
-		return o[field];
-	} catch( _g ) {
-		return null;
-	}
-};
-Reflect.fields = function(o) {
-	var a = [];
-	if(o != null) {
-		var hasOwnProperty = Object.prototype.hasOwnProperty;
-		for( var f in o ) {
-		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
-			a.push(f);
-		}
-		}
-	}
-	return a;
-};
-Reflect.isFunction = function(f) {
-	if(typeof(f) == "function") {
-		return !(f.__name__ || f.__ename__);
-	} else {
-		return false;
-	}
-};
-Reflect.deleteField = function(o,field) {
-	if(!Object.prototype.hasOwnProperty.call(o,field)) {
-		return false;
-	}
-	delete(o[field]);
-	return true;
 };
 var ValueType = $hxEnums["ValueType"] = { __ename__:"ValueType",__constructs__:null
 	,TNull: {_hx_name:"TNull",_hx_index:0,__enum__:"ValueType",toString:$estr}
@@ -2586,6 +2623,9 @@ haxe_ds_IntMap.prototype = {
 	,get: function(key) {
 		return this.h[key];
 	}
+	,exists: function(key) {
+		return this.h.hasOwnProperty(key);
+	}
 	,keys: function() {
 		var a = [];
 		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(+key);
@@ -2669,6 +2709,9 @@ haxe_ds_ObjectMap.prototype = {
 	}
 	,get: function(key) {
 		return this.h[key.__id__];
+	}
+	,exists: function(key) {
+		return this.h.__keys__[key.__id__] != null;
 	}
 	,keys: function() {
 		var a = [];
