@@ -34,7 +34,7 @@
 	en Haxe
 	</p>
 	<p>
-	<a href="/Randomon/index.html" style="text-decoration: none;">Générateur de Pokémons</a>
+	<a href="/Randomon/" style="text-decoration: none;">Générateur de Pokémons</a>
 	<br>
 	réalisé en 2025
 	<br>
