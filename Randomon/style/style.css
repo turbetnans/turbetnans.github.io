@@ -216,7 +216,10 @@ button {
     }
 
     &.flag {
-        width: 2rem;
+        width: 2.5rem;
+        margin-left: .125rem !important;
+        margin-right: .125rem !important;
+        font-size: 125%;
 
         &.selected {
             transition: none;
