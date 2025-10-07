@@ -29,14 +29,21 @@
 	<p>
 	<a href="/hex_gamebase/run_js.html" style="text-decoration: none;">Pathfinding héxagonal</a>
 	<br>
-	réalisé en 2023 en projet d'apprentissage de Haxe, Heaps.io et GameBase
+	réalisé entre 2023 et 2025 en projet d'apprentissage de Haxe, Heaps.io et GameBase
 	<br>
 	en Haxe
 	</p>
 	<p>
 	<a href="/Randomon/" style="text-decoration: none;">Générateur de Pokémons</a>
 	<br>
-	réalisé en 2025
+	réalisé en 2025 en projet perso
+	<br>
+	en Haxe
+	</p>
+	<p>
+	<a href="/SecretDictator/" style="text-decoration: none;">Jeu du Secret Dictator</a>
+	<br>
+	réalisé entre 2020 et 2025 en projet perso
 	<br>
 	en Haxe
 	</p>
