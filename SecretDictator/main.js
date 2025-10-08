@@ -1805,12 +1805,17 @@ $hxClasses["src.client.components.game.PlayerCard"] = src_client_components_game
 src_client_components_game_PlayerCard.__name__ = "src.client.components.game.PlayerCard";
 src_client_components_game_PlayerCard.render = function(props) {
 	var dictionary = React.useContext(src_client_App_DictionaryContext);
+	var votePopupOpen = src_utils_react_ReactHooks_useState(false);
+	React.useEffect(function() {
+		src_utils_react_StateObject.setState(votePopupOpen,false);
+	},[props.game.getState()]);
 	var nbPlayers = props.game.players.length;
 	var player = props.game.players[props.playerId];
 	var playerVoted = props.game.votes.h.hasOwnProperty(props.playerId);
 	var playerIsPresident = props.playerId == props.game.president;
 	var playerIsChancelor = props.playerId == props.game.chancelor;
 	var playerIsFascist = player.role == 3 || player.role == 2;
+	var canVote = props.localGame && !props.game.votes.h.hasOwnProperty(props.playerId) && props.game.players[props.playerId].status != 1;
 	var localVote = props.game.votes.h[props.playerId];
 	var localRole = props.game.players[props.localId].role;
 	var playerClassName = "";
@@ -1847,15 +1852,10 @@ src_client_components_game_PlayerCard.render = function(props) {
 	} else if(props.game.isInState("GOVERNMENT_VOTE")) {
 		if(playerVoted) {
 			actionContent = React.createElement(react_ReactType.fromString("span"),{ },dictionary.GAME_VOTED);
-		} else if(props.localGame) {
-			var actionContent1 = react_ReactType.fromComp(React.Fragment);
-			var actionContent2 = React.createElement(react_ReactType.fromString("button"),{ className : "half ja", onClick : function() {
-				props.clickHandeler("JA",props.playerId);
-			}},dictionary.GAME_ACTION_JA);
-			var actionContent3 = React.createElement(react_ReactType.fromString("button"),{ className : "half nein", onClick : function() {
-				props.clickHandeler("NEIN",props.playerId);
-			}},dictionary.GAME_ACTION_NEIN);
-			actionContent = React.createElement(actionContent1,{ },actionContent2,actionContent3);
+		} else if(canVote) {
+			actionContent = React.createElement(react_ReactType.fromString("button"),{ onClick : function() {
+				src_utils_react_StateObject.setState(votePopupOpen,true);
+			}},dictionary.GAME_ACTION_VOTE);
 		}
 	} else if(props.game.isInState("VOTE_COUNTING")) {
 		if(localVote == null) {
@@ -1945,6 +1945,22 @@ src_client_components_game_PlayerCard.render = function(props) {
 			props.pushWarning(mandateTutorial);
 		}},mandateFormated) : null;
 	}
+	var voteChoices = React.useMemo(function() {
+		if(canVote && props.game.isInState("GOVERNMENT_VOTE")) {
+			var _g = new haxe_ds_IntMap();
+			_g.h[0] = dictionary.GAME_ACTION_NEIN;
+			_g.h[1] = dictionary.GAME_ACTION_JA;
+			return _g;
+		}
+		return new haxe_ds_IntMap();
+	},[props.game.getState(),canVote]);
+	var voteElementClassName = function(id,chosen) {
+		if(id == 1) {
+			return "ja";
+		} else {
+			return "nein";
+		}
+	};
 	var tmp = react_ReactType.fromString("div");
 	var tmp1 = { key : props.playerId, className : "player " + playerClassName};
 	var tmp2 = react_ReactType.fromString("div");
@@ -1953,7 +1969,11 @@ src_client_components_game_PlayerCard.render = function(props) {
 	var tmp5 = React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp4});
 	var tmp4 = React.createElement(react_ReactType.fromString("span"),{ },player.name);
 	var tmp6 = !props.localGame && props.playerId == props.localId;
-	return React.createElement(tmp,tmp1,React.createElement(tmp2,{ id : "title", className : tmp3 ? "self" : ""},tmp5,tmp4,React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp6})),React.createElement(react_ReactType.fromString("div"),{ id : "role", className : roleClassName},roleContent),React.createElement(react_ReactType.fromString("div"),{ id : "mandate", className : mandateClassName},mandateContent),React.createElement(react_ReactType.fromString("div"),{ id : "action", className : actionClassName},actionContent));
+	return React.createElement(tmp,tmp1,React.createElement(tmp2,{ id : "title", className : tmp3 ? "self" : ""},tmp5,tmp4,React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp6})),React.createElement(react_ReactType.fromString("div"),{ id : "role", className : roleClassName},roleContent),React.createElement(react_ReactType.fromString("div"),{ id : "mandate", className : mandateClassName},mandateContent),React.createElement(react_ReactType.fromString("div"),{ id : "action", className : actionClassName},actionContent),React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_dropper_Dropper.render),{ title : dictionary.GAME_ACTION_VOTE, sourceTitle : null, destinationTItle : null, destinationEmpty : dictionary.GAME_DROP_VOTE, choices : src_utils_react_StateObject.get_state(votePopupOpen) ? voteChoices : new haxe_ds_IntMap(), actionConfirm : function(id) {
+		props.clickHandeler(id == 1 ? "JA" : "NEIN",props.playerId);
+	}, className : "vote", elementClassName : voteElementClassName, icon : "bi-envelope-fill", actionClose : function() {
+		src_utils_react_StateObject.setState(votePopupOpen,false);
+	}}));
 };
 var src_client_components_global_MainTitle = function() { };
 $hxClasses["src.client.components.global.MainTitle"] = src_client_components_global_MainTitle;
@@ -6253,7 +6273,7 @@ src_client_App.saveShowStats = function(showStats) {
 	window.localStorage.setItem(src_client_Consts.STORAGE_SHOW_STATS,haxe_Serializer.run(showStats));
 };
 src_client_App.sendToHost = function(receiver,message) {
-	console.log("src/client/App.hx:673:"," -> host " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name);
+	console.log("src/client/App.hx:674:"," -> host " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name);
 	receiver.send(haxe_Serializer.run(message));
 };
 src_client_App.sendToGuests = function(receivers,message) {
@@ -6265,7 +6285,7 @@ src_client_App.sendToGuests = function(receivers,message) {
 	}
 };
 src_client_App.sendToGuest = function(receiver,message) {
-	console.log("src/client/App.hx:684:"," -> " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name + " " + receiver.label);
+	console.log("src/client/App.hx:685:"," -> " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name + " " + receiver.label);
 	receiver.send(haxe_Serializer.run(message));
 };
 src_client_App.startGame = function(playerNames) {
@@ -7048,7 +7068,7 @@ src_utils_fsm__$FSM_State.NULL_ID = -1;
 src_client_components_game_Log.__jsxStatic = src_client_components_game_Log.render;
 src_client_components_game_BottomBoard.__jsxStatic = src_client_components_game_BottomBoard.render;
 src_Main.VERSION = "0.1";
-src_Main.BUILD = "v" + src_Main.VERSION + "-" + "20251007.230115";
+src_Main.BUILD = "v" + src_Main.VERSION + "-" + "20251008.075246";
 src_client_components_global_Credits.__jsxStatic = src_client_components_global_Credits.render;
 src_client_components_global_Block.__jsxStatic = src_client_components_global_Block.render;
 src_client_components_global_IdComponent.__jsxStatic = src_client_components_global_IdComponent.render;
