@@ -267,10 +267,10 @@ hr {
     box-shadow: 0 0 .5rem var(--darkerGray),
         inset .25rem 0 0 0 var(--darkerGray),
         inset -.25rem 0 0 0 var(--darkerGray),
-        inset .5rem 0 0 0 var(--darkGray),
-        inset -.5rem 0 0 0 var(--darkGray),
-        inset 1rem 0 0 0 var(--lightGray),
-        inset -1rem 0 0 0 var(--lightGray);
+        inset .75rem 0 0 0 var(--darkGray),
+        inset -.75rem 0 0 0 var(--darkGray),
+        inset 1.5rem 0 0 0 var(--lightGray),
+        inset -1.5rem 0 0 0 var(--lightGray);
 
     &:not(:last-child) {
         margin-bottom: 1rem;
@@ -299,9 +299,21 @@ hr {
     text-align: center;
     display: flex;
     flex-direction: column;
+    align-items: center;
     border-radius: 0;
     overflow: clip;
     position: relative;
+}
+
+#game {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: min-content;
+    padding: 0;
+    margin: 0;
+    max-height: 100vh;
 }
 
 #header,
@@ -469,36 +481,52 @@ hr {
     }
 }
 
+.board-wrapper {
+    position: absolute;
+    padding: 1rem;
+    display: flex;
+    height: 100vh;
+
+    &.left {
+        left: 0;
+        transform: translateX(-100%);
+    }
+
+    &.right {
+        right: 0;
+        transform: translateX(100%);
+    }
+}
+
 .board {
-    padding: .25rem .5rem;
+    padding: .5rem;
     background-color: var(--lighterGray);
-    margin: .5rem auto;
     border-radius: .5rem;
     user-select: none;
     display: flex;
-    justify-content: space-between;
+    flex-flow: column-reverse nowrap;
+    align-items: center;
+    flex-grow: 1;
+    overflow-y: auto;
 
-    & #policies span {
-        padding: 0 .5rem;
-        margin: 0 .25rem;
+    & span {
+        position: relative;
+        width: 7rem;
+        height: 4rem;
+        margin: 1rem 0;
         border-radius: 1rem;
         outline: var(--darkerGray) solid 1px;
-        display: inline-block;
-
-        &:first-child {
-            margin-left: 0;
-        }
-
-        &:last-child {
-            margin-right: 0;
-        }
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
 
         &#separator {
-            font-weight: bold;
-            padding: 0;
             outline: none;
+            height: unset;
+            padding: 0;
 
             & .bi {
+                font-size: 150%;
                 color: var(--fascistDarkerColor);
             }
         }
@@ -508,13 +536,37 @@ hr {
             background-color: var(--black);
             animation: policyZoomOut var(--bumpDuration) cubic-bezier(0.5, 0.5, 0.5, 1.75);
         }
-    }
 
-    & #count {
-        padding: 0 .25rem;
-        margin: 0 .25rem;
-        font-weight: bold;
-        outline: none !important;
+        &#count {
+            font-size: 120%;
+            font-weight: bold;
+            outline: none !important;
+            height: 2rem;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-bottom: .5rem;
+            border-radius: 0;
+            border-bottom: .25rem dotted var(--fascistDarkColor);
+        }
+
+        & .arrow {
+            position: absolute;
+            top: -1rem;
+            left: auto;
+            right: auto;
+            height: 2rem;
+            width: 2rem;
+            transform: rotate(45deg);
+            border: none;
+        }
+
+        &:nth-last-child(2) .arrow {
+            display: none;
+        }
+
+        &:first-child {
+            margin-bottom: auto !important;
+        }
     }
 
     &#liberalBoard {
@@ -526,6 +578,10 @@ hr {
         & span.passed {
             color: var(--liberalLightColor);
         }
+
+        & .arrow {
+            background: linear-gradient(-45deg, var(--transparent) 67%, var(--liberalDarkColor) 100%);
+        }
     }
 
     &#fascistBoard {
@@ -533,10 +589,13 @@ hr {
         border-radius: .5rem;
         border-bottom: .25rem solid var(--fascistDarkColor);
         box-shadow: inset 0 0 .25rem var(--white);
-        margin-bottom: 0;
 
         & span.passed {
             color: var(--fascistLightColor);
+        }
+
+        & .arrow {
+            background: linear-gradient(-45deg, var(--transparent) 67%, var(--fascistDarkColor) 100%);
         }
     }
 }
@@ -567,7 +626,8 @@ hr {
         background-color: var(--lighterGray);
         border-top-left-radius: .5rem;
         border-top-right-radius: .5rem;
-        box-shadow: inset 0 -1rem 1rem -1rem var(--darkestGray);
+        box-shadow: inset 0 -1rem 1rem -1rem var(--darkestGray),
+            0 0 .5rem var(--darkGray);
 
         &.dead {
             background-color: var(--darkerGray);
@@ -1476,6 +1536,7 @@ hr {
     & #destination,
     & #source {
         padding: .5rem;
+        padding-top: 0;
         margin: .5rem;
         background-color: var(--darkGray);
         display: flex;
@@ -1663,6 +1724,7 @@ hr {
 
     & #list {
         padding: .5rem;
+        padding-top: 0;
         margin: .5rem;
         background-color: var(--darkGray);
         display: flex;

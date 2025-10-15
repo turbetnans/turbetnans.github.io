@@ -298,7 +298,11 @@ src_client_components_dropper_Dropper.render = function(props) {
 				next.push(src_utils_react_StateObject.get_state(chosen));
 			}
 			next.sort(function(a,b) {
-				return a - b;
+				if(props.choices.h[a] > props.choices.h[b]) {
+					return 1;
+				} else {
+					return -1;
+				}
 			});
 			return next;
 		});
@@ -1969,7 +1973,7 @@ src_client_components_game_PlayerCard.render = function(props) {
 	var tmp5 = React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp4});
 	var tmp4 = React.createElement(react_ReactType.fromString("span"),{ },player.name);
 	var tmp6 = !props.localGame && props.playerId == props.localId;
-	return React.createElement(tmp,tmp1,React.createElement(tmp2,{ id : "title", className : tmp3 ? "self" : ""},tmp5,tmp4,React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp6})),React.createElement(react_ReactType.fromString("div"),{ id : "role", className : roleClassName},roleContent),React.createElement(react_ReactType.fromString("div"),{ id : "mandate", className : mandateClassName},mandateContent),React.createElement(react_ReactType.fromString("div"),{ id : "action", className : actionClassName},actionContent),React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_dropper_Dropper.render),{ title : dictionary.GAME_ACTION_VOTE, sourceTitle : null, destinationTItle : null, destinationEmpty : dictionary.GAME_DROP_VOTE, choices : src_utils_react_StateObject.get_state(votePopupOpen) ? voteChoices : new haxe_ds_IntMap(), actionConfirm : function(id) {
+	return React.createElement(tmp,tmp1,React.createElement(tmp2,{ id : "title", className : tmp3 ? "self" : ""},tmp5,tmp4,React.createElement(react_ReactType.fromString("input"),{ type : "checkbox", hidden : tmp6})),React.createElement(react_ReactType.fromString("div"),{ id : "role", className : roleClassName},roleContent),React.createElement(react_ReactType.fromString("div"),{ id : "mandate", className : mandateClassName},mandateContent),React.createElement(react_ReactType.fromString("div"),{ id : "action", className : actionClassName},actionContent),React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_dropper_Dropper.render),{ title : dictionary.GAME_ACTION_VOTE, sourceTitle : dictionary.GAME_BALLOTS, destinationTItle : dictionary.GAME_BALLOT_BOX, destinationEmpty : dictionary.GAME_DROP_VOTE, choices : src_utils_react_StateObject.get_state(votePopupOpen) ? voteChoices : new haxe_ds_IntMap(), actionConfirm : function(id) {
 		props.clickHandeler(id == 1 ? "JA" : "NEIN",props.playerId);
 	}, className : "vote", elementClassName : voteElementClassName, icon : "bi-envelope-fill", actionClose : function() {
 		src_utils_react_StateObject.setState(votePopupOpen,false);
@@ -2006,149 +2010,6 @@ src_client_components_game_TopBoard.render = function(props) {
 		props.pushWarning(new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_DISCARD_PILE_TITLE,dictionary.TUTORIAL_DISCARD_PILE));
 	}},dictionary.GAME_DISCARD_PILE);
 	return React.createElement(tmp,{ id : "topBoard"},tmp3,tmp4,React.createElement(tmp1,{ },tmp2," : ",React.createElement(react_ReactType.fromString("span"),{ id : "discardPile"},"" + discardPileSize + " / " + src_core_SecretDictatorGame.NB_POLICIES)));
-};
-var src_client_components_game_LiberalBoard = function() { };
-$hxClasses["src.client.components.game.LiberalBoard"] = src_client_components_game_LiberalBoard;
-src_client_components_game_LiberalBoard.__name__ = "src.client.components.game.LiberalBoard";
-src_client_components_game_LiberalBoard.render = function(props) {
-	var dictionary = React.useContext(src_client_App_DictionaryContext);
-	var liberalBoard = props.game.liberalBoard;
-	var liberalBoardSize = liberalBoard.length;
-	var liberalPoliciesPassed = props.game.liberalPoliciesPassed;
-	var policies = React.useMemo(function() {
-		var formatPower = function(power) {
-			switch(power) {
-			case 0:
-				return dictionary.GAME_NO_POWER;
-			case 1:
-				return dictionary.GAME_LOYALTY_INVESTIGATION;
-			case 2:
-				return dictionary.GAME_SPECIAL_ELECTION;
-			case 3:
-				return dictionary.GAME_POLICY_PEEK;
-			case 4:
-				return dictionary.GAME_EXECUTION;
-			case 5:
-				return dictionary.GAME_FASCIST_VICTORY;
-			case 6:
-				return dictionary.GAME_LIBERAL_VICTORY;
-			default:
-				return null;
-			}
-		};
-		var formatPowerTutorial = function(power) {
-			switch(power) {
-			case 0:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_NO_POWER_TITLE,dictionary.TUTORIAL_NO_POWER);
-			case 1:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LOYALTY_INVESTIGATION_TITLE,dictionary.TUTORIAL_LOYALTY_INVESTIGATION);
-			case 2:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_SPECIAL_ELECTION_TITLE,dictionary.TUTORIAL_SPECIAL_ELECTION);
-			case 3:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_POLICY_PEEK_TITLE,dictionary.TUTORIAL_POLICY_PEEK);
-			case 4:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_EXECUTION_TITLE,dictionary.TUTORIAL_EXECUTION);
-			case 5:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_FASCIST_VICTORY_TITLE,dictionary.TUTORIAL_FASCIST_VICTORY);
-			case 6:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LIBERAL_VICTORY_TITLE,dictionary.TUTORIAL_LIBERAL_VICTORY);
-			default:
-				return null;
-			}
-		};
-		var _g = [];
-		var _g1 = 1;
-		var _g2 = liberalBoardSize;
-		while(_g1 < _g2) {
-			var i = [_g1++];
-			_g.push(React.createElement(react_ReactType.fromString("span"),{ key : "liberalpolicy" + i[0], className : i[0] <= liberalPoliciesPassed ? "passed" : ""},React.createElement(react_ReactType.fromString("button"),{ className : "tutorial", onClick : (function(i) {
-				return function() {
-					props.pushWarning(formatPowerTutorial(liberalBoard[i[0]]));
-				};
-			})(i)},formatPower(liberalBoard[i[0]]))));
-		}
-		return _g;
-	},[liberalBoard,liberalPoliciesPassed,dictionary]);
-	var tmp = react_ReactType.fromString("div");
-	var tmp1 = React.createElement(react_ReactType.fromString("span"),{ id : "policies"},policies);
-	var tmp2 = "" + liberalPoliciesPassed + " / ";
-	var tmp3 = liberalBoardSize - 1;
-	return React.createElement(tmp,{ id : "liberalBoard", className : "board"},tmp1,React.createElement(react_ReactType.fromString("span"),{ id : "count"},tmp2 + tmp3));
-};
-var src_client_components_game_FascistBoard = function() { };
-$hxClasses["src.client.components.game.FascistBoard"] = src_client_components_game_FascistBoard;
-src_client_components_game_FascistBoard.__name__ = "src.client.components.game.FascistBoard";
-src_client_components_game_FascistBoard.render = function(props) {
-	var dictionary = React.useContext(src_client_App_DictionaryContext);
-	var fascistBoard = props.game.fascistBoard;
-	var fascistBoardSize = fascistBoard.length;
-	var fascistPoliciesPassed = props.game.fascistPoliciesPassed;
-	var policies = React.useMemo(function() {
-		var formatPower = function(power) {
-			switch(power) {
-			case 0:
-				return dictionary.GAME_NO_POWER;
-			case 1:
-				return dictionary.GAME_LOYALTY_INVESTIGATION;
-			case 2:
-				return dictionary.GAME_SPECIAL_ELECTION;
-			case 3:
-				return dictionary.GAME_POLICY_PEEK;
-			case 4:
-				return dictionary.GAME_EXECUTION;
-			case 5:
-				return dictionary.GAME_FASCIST_VICTORY;
-			case 6:
-				return dictionary.GAME_LIBERAL_VICTORY;
-			default:
-				return null;
-			}
-		};
-		var formatPowerTutorial = function(power) {
-			switch(power) {
-			case 0:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_NO_POWER_TITLE,dictionary.TUTORIAL_NO_POWER);
-			case 1:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LOYALTY_INVESTIGATION_TITLE,dictionary.TUTORIAL_LOYALTY_INVESTIGATION);
-			case 2:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_SPECIAL_ELECTION_TITLE,dictionary.TUTORIAL_SPECIAL_ELECTION);
-			case 3:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_POLICY_PEEK_TITLE,dictionary.TUTORIAL_POLICY_PEEK);
-			case 4:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_EXECUTION_TITLE,dictionary.TUTORIAL_EXECUTION);
-			case 5:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_FASCIST_VICTORY_TITLE,dictionary.TUTORIAL_FASCIST_VICTORY);
-			case 6:
-				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LIBERAL_VICTORY_TITLE,dictionary.TUTORIAL_LIBERAL_VICTORY);
-			default:
-				return null;
-			}
-		};
-		var _g = [];
-		var _g1 = 1;
-		var _g2 = fascistBoardSize;
-		while(_g1 < _g2) {
-			var i = [_g1++];
-			_g.push(React.createElement(react_ReactType.fromString("span"),{ key : "fascistpolicy" + i[0], className : i[0] <= fascistPoliciesPassed ? "passed" : ""},React.createElement(react_ReactType.fromString("button"),{ className : "tutorial", onClick : (function(i) {
-				return function() {
-					props.pushWarning(formatPowerTutorial(fascistBoard[i[0]]));
-				};
-			})(i)},formatPower(fascistBoard[i[0]]))));
-		}
-		var list = _g;
-		var x = react_ReactType.fromString("span");
-		var x1 = react_ReactType.fromString("button");
-		var x2 = React.createElement(x,{ key : "separator", id : "separator"},React.createElement(x1,{ className : "tutorial", onClick : function() {
-			props.pushWarning(new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_DICTATOR_CHANCELOR_TITLE,dictionary.TUTORIAL_DICTATOR_CHANCELOR));
-		}},React.createElement(react_ReactType.fromString("i"),{ className : "bi bi-exclamation-triangle-fill", disabled : true})));
-		list.splice(src_core_SecretDictatorGame.FASCIST_POLICIES_BEFORE_DICTATOR_VICTORY,0,x2);
-		return list;
-	},[fascistBoard,fascistPoliciesPassed,dictionary]);
-	var tmp = react_ReactType.fromString("div");
-	var tmp1 = React.createElement(react_ReactType.fromString("span"),{ id : "policies"},policies);
-	var tmp2 = "" + fascistPoliciesPassed + " / ";
-	var tmp3 = fascistBoardSize - 1;
-	return React.createElement(tmp,{ id : "fascistBoard", className : "board"},tmp1,React.createElement(react_ReactType.fromString("span"),{ id : "count"},tmp2 + tmp3));
 };
 Math.__name__ = "Math";
 var src_client_components_game_PlayerList = function() { };
@@ -2307,6 +2168,8 @@ var src_client_dictionary_Dictionary = function() {
 	this.GAME_DROP_VETO = "WIP";
 	this.GAME_VOTED = "WIP";
 	this.GAME_DROP_VOTE = "WIP";
+	this.GAME_BALLOT_BOX = "WIP";
+	this.GAME_BALLOTS = "WIP";
 	this.GAME_ACTION_NEIN = "WIP";
 	this.GAME_ACTION_JA = "WIP";
 	this.GAME_DROP_NOMINATION = "WIP";
@@ -3089,7 +2952,7 @@ src_client_components_game_Buttons.render = function(props) {
 	}, className : "chancelorNomination", elementClassName : null, icon : "bi-person-fill", actionClose : function() {
 		src_utils_react_StateObject.setState(nominatePopupOpen,false);
 	}});
-	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_dropper_Dropper.render),{ title : dictionary.GAME_ACTION_VOTE, sourceTitle : null, destinationTItle : null, destinationEmpty : dictionary.GAME_DROP_VOTE, choices : src_utils_react_StateObject.get_state(votePopupOpen) ? voteChoices : new haxe_ds_IntMap(), actionConfirm : function(id) {
+	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_dropper_Dropper.render),{ title : dictionary.GAME_ACTION_VOTE, sourceTitle : dictionary.GAME_BALLOTS, destinationTItle : dictionary.GAME_BALLOT_BOX, destinationEmpty : dictionary.GAME_DROP_VOTE, choices : src_utils_react_StateObject.get_state(votePopupOpen) ? voteChoices : new haxe_ds_IntMap(), actionConfirm : function(id) {
 		props.clickHandeler(id == 1 ? "JA" : "NEIN",props.playerId);
 	}, className : "vote", elementClassName : voteElementClassName, icon : "bi-envelope-fill", actionClose : function() {
 		src_utils_react_StateObject.setState(votePopupOpen,false);
@@ -3327,6 +3190,150 @@ src_client_components_game_Log.render = function(props) {
 		}},dictionary.GAME_BACK));
 	}
 	return React.createElement(react_ReactType.fromString("div"),{ id : "log"},logs,React.createElement(react_ReactType.fromString("p"),{ ref : logEndElement, id : "last"}));
+};
+var src_client_components_game_LiberalBoard = function() { };
+$hxClasses["src.client.components.game.LiberalBoard"] = src_client_components_game_LiberalBoard;
+src_client_components_game_LiberalBoard.__name__ = "src.client.components.game.LiberalBoard";
+src_client_components_game_LiberalBoard.render = function(props) {
+	var dictionary = React.useContext(src_client_App_DictionaryContext);
+	var liberalBoard = props.game.liberalBoard;
+	var liberalBoardSize = liberalBoard.length;
+	var liberalPoliciesPassed = props.game.liberalPoliciesPassed;
+	var policies = React.useMemo(function() {
+		var formatPower = function(power) {
+			switch(power) {
+			case 0:
+				return dictionary.GAME_NO_POWER;
+			case 1:
+				return dictionary.GAME_LOYALTY_INVESTIGATION;
+			case 2:
+				return dictionary.GAME_SPECIAL_ELECTION;
+			case 3:
+				return dictionary.GAME_POLICY_PEEK;
+			case 4:
+				return dictionary.GAME_EXECUTION;
+			case 5:
+				return dictionary.GAME_FASCIST_VICTORY;
+			case 6:
+				return dictionary.GAME_LIBERAL_VICTORY;
+			default:
+				return null;
+			}
+		};
+		var formatPowerTutorial = function(power) {
+			switch(power) {
+			case 0:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_NO_POWER_TITLE,dictionary.TUTORIAL_NO_POWER);
+			case 1:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LOYALTY_INVESTIGATION_TITLE,dictionary.TUTORIAL_LOYALTY_INVESTIGATION);
+			case 2:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_SPECIAL_ELECTION_TITLE,dictionary.TUTORIAL_SPECIAL_ELECTION);
+			case 3:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_POLICY_PEEK_TITLE,dictionary.TUTORIAL_POLICY_PEEK);
+			case 4:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_EXECUTION_TITLE,dictionary.TUTORIAL_EXECUTION);
+			case 5:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_FASCIST_VICTORY_TITLE,dictionary.TUTORIAL_FASCIST_VICTORY);
+			case 6:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LIBERAL_VICTORY_TITLE,dictionary.TUTORIAL_LIBERAL_VICTORY);
+			default:
+				return null;
+			}
+		};
+		var _g = [];
+		var _g1 = 1;
+		var _g2 = liberalBoardSize;
+		while(_g1 < _g2) {
+			var i = [_g1++];
+			_g.push(React.createElement(react_ReactType.fromString("span"),{ key : "liberalpolicy" + i[0], className : i[0] <= liberalPoliciesPassed ? "passed" : ""},React.createElement(react_ReactType.fromString("div"),{ className : "arrow"}),React.createElement(react_ReactType.fromString("button"),{ className : "tutorial", onClick : (function(i) {
+				return function() {
+					props.pushWarning(formatPowerTutorial(liberalBoard[i[0]]));
+				};
+			})(i)},formatPower(liberalBoard[i[0]]))));
+		}
+		return _g;
+	},[liberalBoard,liberalPoliciesPassed,dictionary]);
+	var tmp = react_ReactType.fromString("div");
+	var tmp1 = react_ReactType.fromString("div");
+	var tmp2 = "" + liberalPoliciesPassed + " / ";
+	var tmp3 = liberalBoardSize - 1;
+	return React.createElement(tmp,{ className : "board-wrapper left"},React.createElement(tmp1,{ id : "liberalBoard", className : "board"},policies,React.createElement(react_ReactType.fromString("span"),{ id : "count"},tmp2 + tmp3)));
+};
+var src_client_components_game_FascistBoard = function() { };
+$hxClasses["src.client.components.game.FascistBoard"] = src_client_components_game_FascistBoard;
+src_client_components_game_FascistBoard.__name__ = "src.client.components.game.FascistBoard";
+src_client_components_game_FascistBoard.render = function(props) {
+	var dictionary = React.useContext(src_client_App_DictionaryContext);
+	var fascistBoard = props.game.fascistBoard;
+	var fascistBoardSize = fascistBoard.length;
+	var fascistPoliciesPassed = props.game.fascistPoliciesPassed;
+	var policies = React.useMemo(function() {
+		var formatPower = function(power) {
+			switch(power) {
+			case 0:
+				return dictionary.GAME_NO_POWER;
+			case 1:
+				return dictionary.GAME_LOYALTY_INVESTIGATION;
+			case 2:
+				return dictionary.GAME_SPECIAL_ELECTION;
+			case 3:
+				return dictionary.GAME_POLICY_PEEK;
+			case 4:
+				return dictionary.GAME_EXECUTION;
+			case 5:
+				return dictionary.GAME_FASCIST_VICTORY;
+			case 6:
+				return dictionary.GAME_LIBERAL_VICTORY;
+			default:
+				return null;
+			}
+		};
+		var formatPowerTutorial = function(power) {
+			switch(power) {
+			case 0:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_NO_POWER_TITLE,dictionary.TUTORIAL_NO_POWER);
+			case 1:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LOYALTY_INVESTIGATION_TITLE,dictionary.TUTORIAL_LOYALTY_INVESTIGATION);
+			case 2:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_SPECIAL_ELECTION_TITLE,dictionary.TUTORIAL_SPECIAL_ELECTION);
+			case 3:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_POLICY_PEEK_TITLE,dictionary.TUTORIAL_POLICY_PEEK);
+			case 4:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_EXECUTION_TITLE,dictionary.TUTORIAL_EXECUTION);
+			case 5:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_FASCIST_VICTORY_TITLE,dictionary.TUTORIAL_FASCIST_VICTORY);
+			case 6:
+				return new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_LIBERAL_VICTORY_TITLE,dictionary.TUTORIAL_LIBERAL_VICTORY);
+			default:
+				return null;
+			}
+		};
+		var _g = [];
+		var _g1 = 1;
+		var _g2 = fascistBoardSize;
+		while(_g1 < _g2) {
+			var i = [_g1++];
+			_g.push(React.createElement(react_ReactType.fromString("span"),{ key : "fascistpolicy" + i[0], className : i[0] <= fascistPoliciesPassed ? "passed" : ""},React.createElement(react_ReactType.fromString("div"),{ className : "arrow"}),React.createElement(react_ReactType.fromString("button"),{ className : "tutorial", onClick : (function(i) {
+				return function() {
+					props.pushWarning(formatPowerTutorial(fascistBoard[i[0]]));
+				};
+			})(i)},formatPower(fascistBoard[i[0]]))));
+		}
+		var list = _g;
+		var x = react_ReactType.fromString("span");
+		var x1 = React.createElement(react_ReactType.fromString("div"),{ className : "arrow"});
+		var x2 = react_ReactType.fromString("button");
+		var x3 = React.createElement(x,{ key : "separator", id : "separator"},x1,React.createElement(x2,{ className : "tutorial", onClick : function() {
+			props.pushWarning(new src_client_components_warning_WarningMessage(dictionary.TUTORIAL_DICTATOR_CHANCELOR_TITLE,dictionary.TUTORIAL_DICTATOR_CHANCELOR));
+		}},React.createElement(react_ReactType.fromString("i"),{ className : "bi bi-exclamation-triangle-fill", disabled : true})));
+		list.splice(src_core_SecretDictatorGame.FASCIST_POLICIES_BEFORE_DICTATOR_VICTORY,0,x3);
+		return list;
+	},[fascistBoard,fascistPoliciesPassed,dictionary]);
+	var tmp = react_ReactType.fromString("div");
+	var tmp1 = react_ReactType.fromString("div");
+	var tmp2 = "" + fascistPoliciesPassed + " / ";
+	var tmp3 = fascistBoardSize - 1;
+	return React.createElement(tmp,{ className : "board-wrapper right"},React.createElement(tmp1,{ id : "fascistBoard", className : "board"},policies,React.createElement(react_ReactType.fromString("span"),{ id : "count"},tmp2 + tmp3)));
 };
 var src_client_components_game_BottomBoard = function() { };
 $hxClasses["src.client.components.game.BottomBoard"] = src_client_components_game_BottomBoard;
@@ -3566,7 +3573,9 @@ var src_client_dictionary_FrenchDictionary = function() {
 	this.GAME_DROP_NOMINATION = "Déposez le candidat choisi ici...";
 	this.GAME_ACTION_JA = "Ja !";
 	this.GAME_ACTION_NEIN = "Nein !";
-	this.GAME_DROP_VOTE = "Déposez votre vote ici...";
+	this.GAME_BALLOTS = "Bulletins";
+	this.GAME_BALLOT_BOX = "Urne électorale";
+	this.GAME_DROP_VOTE = "Déposez votre bulletin ici...";
 	this.GAME_VOTED = "A voté !";
 	this.GAME_DROP_VETO = "Déposez votre choix ici...";
 	this.GAME_TURN = "Tour";
@@ -3668,7 +3677,7 @@ var src_client_dictionary_FrenchDictionary = function() {
 	this.TUTORIAL_LOYALTY_INVESTIGATION_TITLE = "ENQUÊTE DE LOYAUTÉ";
 	this.TUTORIAL_LOYALTY_INVESTIGATION = "Le président choisit un joueur et voit sa carte de parti (libéral ou fasciste). Le dictateur est affiché comme un simple fasciste.";
 	this.TUTORIAL_SPECIAL_ELECTION_TITLE = "ÉLECTION SPÉCIALE";
-	this.TUTORIAL_SPECIAL_ELECTION = "Le président désigne son successeur. Il ne peut ppas se désigner lui même.\n" + "Après le tour de ce président désigné, le titre de président revient au joueur suivant celui qui a déclenché ce pouvoir. " + "Si c'est le même joueur que celui désigné, il passe deux tour d'affilé en tant que président.";
+	this.TUTORIAL_SPECIAL_ELECTION = "Le président désigne son successeur. Il ne peut pas se désigner lui même.\n" + "Après le tour de ce président désigné, le titre de président revient au joueur suivant celui qui a déclenché ce pouvoir. " + "Si c'est le même joueur que celui désigné, il passe deux tour d'affilée en tant que président.";
 	this.TUTORIAL_POLICY_PEEK_TITLE = "ESPIONNAGE DES DÉCRETS";
 	this.TUTORIAL_POLICY_PEEK = "Le président consulte les trois décrets du haut de la pioche. L'ordre de ces décrets reste le même.";
 	this.TUTORIAL_EXECUTION_TITLE = "ÉXÉCUTION";
@@ -4827,17 +4836,18 @@ src_client_components_Game.__name__ = "src.client.components.Game";
 src_client_components_Game.render = function(props) {
 	var tmp = react_ReactType.fromComp(React.Fragment);
 	var tmp1 = react_ReactType.fromString("div");
-	var tmp2 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_global_MainTitle.render),{ });
-	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_TopBoard.render),{ game : props.game, pushWarning : props.pushWarning});
-	var tmp4 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_LiberalBoard.render),{ game : props.game, pushWarning : props.pushWarning});
-	var tmp5 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_FascistBoard.render),{ game : props.game, pushWarning : props.pushWarning});
-	var tmp6 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_PlayerList.render),{ game : props.game, clickHandeler : props.update, localGame : props.localGame, playerId : props.playerId, pushWarning : props.pushWarning});
-	var tmp7 = React.createElement(tmp1,{ id : "header"},tmp2,tmp3,tmp4,tmp5,tmp6,React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_Buttons.render),{ game : props.game, clickHandeler : props.update, localGame : props.localGame, playerId : props.playerId}));
-	var tmp1 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_Log.render),{ game : props.game, history : props.history, actionBack : props.actionBack});
 	var tmp2 = react_ReactType.fromString("div");
-	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_BottomBoard.render),{ game : props.game});
-	var tmp4 = React.createElement(tmp2,{ id : "footer"},tmp3,React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_global_Credits.render),{ }));
-	return React.createElement(tmp,{ },tmp7,tmp1,tmp4);
+	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_global_MainTitle.render),{ });
+	var tmp4 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_TopBoard.render),{ game : props.game, pushWarning : props.pushWarning});
+	var tmp5 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_PlayerList.render),{ game : props.game, clickHandeler : props.update, localGame : props.localGame, playerId : props.playerId, pushWarning : props.pushWarning});
+	var tmp6 = React.createElement(tmp2,{ id : "header"},tmp3,tmp4,tmp5,React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_Buttons.render),{ game : props.game, clickHandeler : props.update, localGame : props.localGame, playerId : props.playerId}));
+	var tmp2 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_Log.render),{ game : props.game, history : props.history, actionBack : props.actionBack});
+	var tmp3 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_LiberalBoard.render),{ game : props.game, pushWarning : props.pushWarning});
+	var tmp4 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_FascistBoard.render),{ game : props.game, pushWarning : props.pushWarning});
+	var tmp5 = react_ReactType.fromString("div");
+	var tmp7 = React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_game_BottomBoard.render),{ game : props.game});
+	var tmp8 = React.createElement(tmp1,{ id : "game"},tmp6,tmp2,tmp3,tmp4,React.createElement(tmp5,{ id : "footer"},tmp7,React.createElement(react_ReactType.fromFunctionWithProps(src_client_components_global_Credits.render),{ })));
+	return React.createElement(tmp,{ },tmp8);
 };
 var src_client_Stats = function(stats) {
 	var tmp = stats != null ? stats.dictatorVictories : null;
@@ -5594,13 +5604,14 @@ src_client_App.render = function(props) {
 			pushWarning(new src_client_components_warning_WarningMessage("Attention","WebRTC a rencontré une erreur."));
 			src_utils_react_StateObject.setState(clientState,1);
 			break;
+		default:
 		}
 	};
 	var hostReducerCallback = function(hostState,action) {
 		var processHostMessage = function(hostMessage) {
 			switch(hostMessage._hx_index) {
 			case 0:
-				console.log("src/client/App.hx:168:"," <- host message ACCEPT");
+				console.log("src/client/App.hx:169:"," <- host message ACCEPT");
 				src_utils_react_StateObject.setState(clientState,3);
 				if(src_utils_react_StateObject.get_state(showStats)) {
 					src_client_App.sendToHost(hostState,src_client__$App_GuestMessage.STATS(src_utils_react_StateObject.get_state(playerStats)));
@@ -5609,7 +5620,7 @@ src_client_App.render = function(props) {
 			case 1:
 				var playerList = hostMessage.players;
 				var guestId = hostMessage.guestId;
-				console.log("src/client/App.hx:187:"," <- host message ROOM : " + guestId + " / " + Std.string(playerList));
+				console.log("src/client/App.hx:189:"," <- host message ROOM : " + guestId + " / " + Std.string(playerList));
 				src_utils_react_StateObject.setState(playerId,guestId);
 				var players1 = players;
 				var _g = [];
@@ -5624,7 +5635,7 @@ src_client_App.render = function(props) {
 			case 2:
 				var message = hostMessage.message;
 				var sender = hostMessage.sender;
-				console.log("src/client/App.hx:191:"," <- host message MESSAGE : " + sender + " " + message);
+				console.log("src/client/App.hx:193:"," <- host message MESSAGE : " + sender + " " + message);
 				if(sender == null) {
 					src_utils_react_StateObject.setState(chatMessages,function(msgs) {
 						return msgs.concat([new src_client_components_chat_ChatMessage(message)]);
@@ -5637,7 +5648,7 @@ src_client_App.render = function(props) {
 				break;
 			case 3:
 				var shuffledPlayers = hostMessage.shuffledPlayers;
-				console.log("src/client/App.hx:202:"," <- host message LAUNCH : " + Std.string(shuffledPlayers));
+				console.log("src/client/App.hx:204:"," <- host message LAUNCH : " + Std.string(shuffledPlayers));
 				var _g = [];
 				var _g1 = 0;
 				var tmp = shuffledPlayers;
@@ -5665,7 +5676,7 @@ src_client_App.render = function(props) {
 				break;
 			case 4:
 				var gameMessage = hostMessage.message;
-				console.log("src/client/App.hx:213:"," <- host message UPDATE : " + $hxEnums[gameMessage.__enum__].__constructs__[gameMessage._hx_index]._hx_name);
+				console.log("src/client/App.hx:215:"," <- host message UPDATE : " + $hxEnums[gameMessage.__enum__].__constructs__[gameMessage._hx_index]._hx_name);
 				switch(gameMessage._hx_index) {
 				case 0:
 					var cards = gameMessage.cards;
@@ -5697,7 +5708,7 @@ src_client_App.render = function(props) {
 				break;
 			case 5:
 				var reason = hostMessage.reason;
-				console.log("src/client/App.hx:174:"," <- host message REJECT : " + reason);
+				console.log("src/client/App.hx:175:"," <- host message REJECT : " + reason);
 				src_utils_react_StateObject.setState(clientState,1);
 				switch(reason) {
 				case 0:
@@ -5712,6 +5723,7 @@ src_client_App.render = function(props) {
 				case 3:
 					pushWarning(new src_client_components_warning_WarningMessage("Connexion refusée",dictionary.GAME_LAUNCHED));
 					break;
+				default:
 				}
 				break;
 			}
@@ -5719,15 +5731,15 @@ src_client_App.render = function(props) {
 		switch(action._hx_index) {
 		case 0:
 			var connection = action.connection;
-			console.log("src/client/App.hx:241:"," <- host OPEN : " + connection.peer + " - " + connection.label);
+			console.log("src/client/App.hx:242:"," <- host OPEN : " + connection.peer + " - " + connection.label);
 			return connection;
 		case 1:
 			var data = action.data;
-			console.log("src/client/App.hx:244:"," <- host DATA");
+			console.log("src/client/App.hx:245:"," <- host DATA");
 			processHostMessage(haxe_Unserializer.run(data));
 			return hostState;
 		case 2:
-			console.log("src/client/App.hx:248:"," <- host CLOSE");
+			console.log("src/client/App.hx:249:"," <- host CLOSE");
 			switch(src_utils_react_StateObject.get_state(clientState)) {
 			case 2:case 3:case 4:
 				pushWarning(new src_client_components_warning_WarningMessage("",dictionary.CONNECTION_CLOSED));
@@ -5738,7 +5750,7 @@ src_client_App.render = function(props) {
 			return null;
 		case 3:
 			var error = action.error;
-			console.log("src/client/App.hx:257:"," <- Host ERROR : " + error.type);
+			console.log("src/client/App.hx:258:"," <- Host ERROR : " + error.type);
 			return null;
 		}
 	};
@@ -5762,7 +5774,7 @@ src_client_App.render = function(props) {
 			switch(guestMessage._hx_index) {
 			case 0:
 				var stats = guestMessage.stats;
-				console.log("src/client/App.hx:278:"," <- guest message STATS : " + Std.string(stats));
+				console.log("src/client/App.hx:280:"," <- guest message STATS : " + Std.string(stats));
 				var _g_current = 0;
 				var _g_array = guestState;
 				while(_g_current < _g_array.length) {
@@ -5780,7 +5792,7 @@ src_client_App.render = function(props) {
 				break;
 			case 1:
 				var message = guestMessage.message;
-				console.log("src/client/App.hx:288:"," <- guest message MESSAGE : " + message);
+				console.log("src/client/App.hx:290:"," <- guest message MESSAGE : " + message);
 				var _g_current = 0;
 				var _g_array = guestState;
 				while(_g_current < _g_array.length) {
@@ -5803,7 +5815,7 @@ src_client_App.render = function(props) {
 				var event = guestMessage.event;
 				var source = guestMessage.source;
 				var target = guestMessage.target;
-				console.log("src/client/App.hx:302:"," <- guest message PLAY : " + event);
+				console.log("src/client/App.hx:304:"," <- guest message PLAY : " + event);
 				var messages = src_client_App.updateGame(event,source,target);
 				src_utils_react_StateObject.setState(history,function(histo) {
 					return histo.concat(messages);
@@ -5821,7 +5833,7 @@ src_client_App.render = function(props) {
 		switch(action._hx_index) {
 		case 0:
 			var connection = action.connection;
-			console.log("src/client/App.hx:319:"," <- host OPEN : " + connection.peer + " - " + connection.label);
+			console.log("src/client/App.hx:320:"," <- host OPEN : " + connection.peer + " - " + connection.label);
 			var messageContent = haxe_Serializer.run(src_client_components_chat_SystemMessage.ROOM_PLAYER_JOINED(connection.label));
 			src_client_App.sendToGuests(guestState,src_client__$App_HostMessage.MESSAGE(messageContent,null));
 			src_utils_react_StateObject.setState(chatMessages,function(msgs) {
@@ -5834,12 +5846,12 @@ src_client_App.render = function(props) {
 		case 1:
 			var guestId = action.guestId;
 			var data = action.data;
-			console.log("src/client/App.hx:328:"," <- guest DATA : " + guestId);
+			console.log("src/client/App.hx:329:"," <- guest DATA : " + guestId);
 			processGuestMessage(guestId,haxe_Unserializer.run(data));
 			return guestState;
 		case 2:
 			var guestId = action.guestId;
-			console.log("src/client/App.hx:332:"," <- guest CLOSE : " + guestId);
+			console.log("src/client/App.hx:333:"," <- guest CLOSE : " + guestId);
 			if(src_utils_react_StateObject.get_state(playerRole) != 1) {
 				return [];
 			}
@@ -5870,7 +5882,7 @@ src_client_App.render = function(props) {
 							return msgs.concat([new src_client_components_chat_ChatMessage(messageContent[0],null)]);
 						};
 					})(messageContent1));
-					console.log("src/client/App.hx:343:",id);
+					console.log("src/client/App.hx:344:",id);
 					newPlayers.splice(id + 1,1);
 					break;
 				}
@@ -5880,7 +5892,7 @@ src_client_App.render = function(props) {
 		case 3:
 			var guestId = action.guestId;
 			var error = action.error;
-			console.log("src/client/App.hx:351:"," <- guest ERROR : " + guestId + " - " + error.type);
+			console.log("src/client/App.hx:352:"," <- guest ERROR : " + guestId + " - " + error.type);
 			processError(error);
 			var _g = [];
 			var _g1 = 0;
@@ -5923,12 +5935,12 @@ src_client_App.render = function(props) {
 		case 0:
 			var id = action.id;
 			var peer = action.peer;
-			console.log("src/client/App.hx:375:"," <- peer OPEN : " + id);
+			console.log("src/client/App.hx:377:"," <- peer OPEN : " + id);
 			src_utils_react_StateObject.setState(clientState,1);
 			return peer;
 		case 1:
 			var connection = action.connection;
-			console.log("src/client/App.hx:379:"," <- peer CONNECTION");
+			console.log("src/client/App.hx:381:"," <- peer CONNECTION");
 			if(src_utils_react_StateObject.get_state(playerRole) != 1) {
 				connection.on("open",function(_) {
 					src_client_App.sendToGuest(connection,src_client__$App_HostMessage.REJECT(0));
@@ -5989,14 +6001,14 @@ src_client_App.render = function(props) {
 			}
 			return peerState;
 		case 2:
-			console.log("src/client/App.hx:411:"," <- peer DISCONNECTED");
+			console.log("src/client/App.hx:413:"," <- peer DISCONNECTED");
 			return peerState;
 		case 3:
-			console.log("src/client/App.hx:414:"," <- peer CLOSE");
+			console.log("src/client/App.hx:416:"," <- peer CLOSE");
 			return peerState;
 		case 4:
 			var error = action.error;
-			console.log("src/client/App.hx:417:"," <- peer ERROR : " + error.type);
+			console.log("src/client/App.hx:419:"," <- peer ERROR : " + error.type);
 			processError(error);
 			return peerState;
 		}
@@ -6273,7 +6285,7 @@ src_client_App.saveShowStats = function(showStats) {
 	window.localStorage.setItem(src_client_Consts.STORAGE_SHOW_STATS,haxe_Serializer.run(showStats));
 };
 src_client_App.sendToHost = function(receiver,message) {
-	console.log("src/client/App.hx:674:"," -> host " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name);
+	console.log("src/client/App.hx:678:"," -> host " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name);
 	receiver.send(haxe_Serializer.run(message));
 };
 src_client_App.sendToGuests = function(receivers,message) {
@@ -6285,7 +6297,7 @@ src_client_App.sendToGuests = function(receivers,message) {
 	}
 };
 src_client_App.sendToGuest = function(receiver,message) {
-	console.log("src/client/App.hx:685:"," -> " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name + " " + receiver.label);
+	console.log("src/client/App.hx:689:"," -> " + $hxEnums[message.__enum__].__constructs__[message._hx_index]._hx_name + " " + receiver.label);
 	receiver.send(haxe_Serializer.run(message));
 };
 src_client_App.startGame = function(playerNames) {
@@ -7020,11 +7032,11 @@ src_client_components_display_Display.render.displayName = src_client_components
 src_client_components_game_PlayerCard.render.displayName = src_client_components_game_PlayerCard.render.displayName || "PlayerCard";
 src_client_components_global_MainTitle.render.displayName = src_client_components_global_MainTitle.render.displayName || "MainTitle";
 src_client_components_game_TopBoard.render.displayName = src_client_components_game_TopBoard.render.displayName || "TopBoard";
-src_client_components_game_LiberalBoard.render.displayName = src_client_components_game_LiberalBoard.render.displayName || "LiberalBoard";
-src_client_components_game_FascistBoard.render.displayName = src_client_components_game_FascistBoard.render.displayName || "FascistBoard";
 src_client_components_game_PlayerList.render.displayName = src_client_components_game_PlayerList.render.displayName || "PlayerList";
 src_client_components_game_Buttons.render.displayName = src_client_components_game_Buttons.render.displayName || "Buttons";
 src_client_components_game_Log.render.displayName = src_client_components_game_Log.render.displayName || "Log";
+src_client_components_game_LiberalBoard.render.displayName = src_client_components_game_LiberalBoard.render.displayName || "LiberalBoard";
+src_client_components_game_FascistBoard.render.displayName = src_client_components_game_FascistBoard.render.displayName || "FascistBoard";
 src_client_components_game_BottomBoard.render.displayName = src_client_components_game_BottomBoard.render.displayName || "BottomBoard";
 src_client_components_global_Credits.render.displayName = src_client_components_global_Credits.render.displayName || "Credits";
 src_client_components_global_Block.render.displayName = src_client_components_global_Block.render.displayName || "Block";
@@ -7060,15 +7072,15 @@ src_core_SecretDictatorGame.LIBERAL_BOARDS = [[null,0,0,0,0,6]];
 src_client_components_game_PlayerCard.__jsxStatic = src_client_components_game_PlayerCard.render;
 src_client_components_global_MainTitle.__jsxStatic = src_client_components_global_MainTitle.render;
 src_client_components_game_TopBoard.__jsxStatic = src_client_components_game_TopBoard.render;
-src_client_components_game_LiberalBoard.__jsxStatic = src_client_components_game_LiberalBoard.render;
-src_client_components_game_FascistBoard.__jsxStatic = src_client_components_game_FascistBoard.render;
 src_client_components_game_PlayerList.__jsxStatic = src_client_components_game_PlayerList.render;
 src_client_components_game_Buttons.__jsxStatic = src_client_components_game_Buttons.render;
 src_utils_fsm__$FSM_State.NULL_ID = -1;
 src_client_components_game_Log.__jsxStatic = src_client_components_game_Log.render;
+src_client_components_game_LiberalBoard.__jsxStatic = src_client_components_game_LiberalBoard.render;
+src_client_components_game_FascistBoard.__jsxStatic = src_client_components_game_FascistBoard.render;
 src_client_components_game_BottomBoard.__jsxStatic = src_client_components_game_BottomBoard.render;
 src_Main.VERSION = "0.1";
-src_Main.BUILD = "v" + src_Main.VERSION + "-" + "20251008.075246";
+src_Main.BUILD = "v" + src_Main.VERSION + "-" + "20251015.131855";
 src_client_components_global_Credits.__jsxStatic = src_client_components_global_Credits.render;
 src_client_components_global_Block.__jsxStatic = src_client_components_global_Block.render;
 src_client_components_global_IdComponent.__jsxStatic = src_client_components_global_IdComponent.render;
